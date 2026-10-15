@@ -6,10 +6,10 @@
 //
 // 環境変数：ANTHROPIC_API_KEY（必須）
 //           KANJI_MODEL（任意。省略時 claude-sonnet-5-5）
-//           KANJI_AI_PER_DAY（任意。サイト全体で1日に使える回数。省略時 20）
+//           KANJI_AI_PER_DAY（任意。サイト全体で1日に使える回数。省略時 40）
 // データベース（Upstash Redis）がつながっていれば、1日の回数制限に使う。
 
-const DAILY = Number(process.env.KANJI_AI_PER_DAY || 20);
+const DAILY = Number(process.env.KANJI_AI_PER_DAY || 40);
 function envEnding(suffix) {
   const k = Object.keys(process.env).find(k => k.endsWith(suffix) && process.env[k]);
   return k ? process.env[k] : undefined;

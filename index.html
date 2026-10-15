@@ -75,7 +75,7 @@ button:focus-visible{outline:4px solid var(--ink);outline-offset:3px}
 .flag::after{content:"";position:absolute;left:3px;top:1px;border-left:11px solid var(--green);border-top:6px solid transparent;border-bottom:6px solid transparent}
 .status{font-size:16px;line-height:1.6;color:var(--ink)}
 .status b{color:var(--red)}
-.rule{display:grid;grid-template-columns:repeat(4,1fr);gap:6px;font-size:12px;text-align:center}
+.rule{display:grid;grid-template-columns:repeat(3,1fr);gap:6px;font-size:12px;text-align:center}
 .rule div{background:var(--sky-lite);border-radius:10px;padding:6px 2px;line-height:1.3}
 .rule div.on{background:var(--yellow)}
 .rule strong{display:block;font-family:var(--f-pixel);font-weight:400;font-size:18px}
@@ -132,6 +132,41 @@ button:focus-visible{outline:4px solid var(--ink);outline-offset:3px}
 .tools .btn{font-size:18px;padding:14px 12px}
 .tools .btn.small{flex:0 0 auto;min-width:76px}
 .tools .btn.grow{flex:1}
+/* ---- せってい ---- */
+#setup{padding-block:16px 0;gap:14px}
+.su-sec{padding:14px 16px;display:flex;flex-direction:column;gap:10px}
+.su-sec h2{margin:0;font-size:20px}
+.su-note{margin:0;font-size:13px;font-weight:500;line-height:1.6}
+.grade-row{display:grid;grid-template-columns:repeat(6,1fr);gap:6px}
+.grade-row button{aspect-ratio:1;max-width:100%;border:3px solid var(--ink);border-radius:14px;background:#fff;font:400 22px var(--f-pixel);display:flex;flex-direction:column;align-items:center;justify-content:center;line-height:1}
+.grade-row button small{font:800 10px var(--f-body);margin-top:2px}
+.grade-row button.on{background:var(--red);color:#fff}
+.su-quick{display:flex;flex-wrap:wrap;gap:6px}
+.su-quick button,.term-head button{border:2px solid var(--ink);border-radius:999px;padding:6px 12px;background:#fff;font-size:13px}
+.su-quick button.on{background:var(--yellow)}
+.term{display:flex;flex-direction:column;gap:6px;padding-top:8px;border-top:2px dashed var(--line)}
+.term-head{display:flex;align-items:center;justify-content:space-between;gap:8px;font-size:15px}
+.term-head .now{font-size:11px;background:var(--red);color:#fff;border-radius:999px;padding:2px 8px;margin-left:6px}
+.chips{display:flex;flex-wrap:wrap;gap:5px}
+.chip{width:40px;height:40px;border:2px solid #B9CBEA;border-radius:10px;background:#fff;font:600 22px/1 var(--f-kanji);color:#8A9BBF;display:flex;align-items:center;justify-content:center}
+.chip.on{border-color:var(--ink);background:var(--yellow);color:var(--ink)}
+.su-add{display:flex;gap:8px}
+.su-add input{flex:1;min-width:0;border:3px solid var(--ink);border-radius:12px;padding:8px 10px;font:600 18px var(--f-body);color:var(--ink);background:#fff}
+.su-add .btn{font-size:15px;padding:8px 12px;box-shadow:0 4px 0 var(--line)}
+.su-foot{position:sticky;bottom:0;margin-left:calc(-1*max(16px,env(safe-area-inset-left,0px)));margin-right:calc(-1*max(16px,env(safe-area-inset-right,0px)));
+  padding:12px max(16px,env(safe-area-inset-right,0px)) calc(12px + env(safe-area-inset-bottom,0px)) max(16px,env(safe-area-inset-left,0px));background:var(--ink);display:flex;align-items:center;gap:12px}
+.su-count{flex:1;color:#fff;font-size:13px;line-height:1.4}
+.su-count b{color:var(--yellow);font-size:18px}
+.su-foot .btn{font-size:18px;padding:12px 16px}
+/* ---- れんしゅう前 ---- */
+#learn{padding-block:16px;gap:14px}
+.learn-head{padding:14px 18px;display:flex;flex-direction:column;gap:4px}
+.learn-head .sub{margin:0}
+.learn-list{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:10px}
+.learn-card{padding:10px 12px;display:flex;flex-direction:column;align-items:center;gap:6px;text-align:center}
+.learn-card .k{font:600 64px/1.1 var(--f-kanji);color:var(--ink)}
+.learn-card .q{font-size:12px;font-weight:500;line-height:1.5}
+.learn-card .q b{background:var(--yellow);border-radius:4px;padding:0 3px}
 /* ---- まるつけ ---- */
 #grading{justify-content:center;padding-block:24px}
 .grading-box{display:flex;flex-direction:column;align-items:center;gap:18px;text-align:center}
@@ -214,7 +249,7 @@ button:focus-visible{outline:4px solid var(--ink);outline-offset:3px}
 <main id="home" class="screen">
   <div class="cloud c1"></div><div class="cloud c2"></div>
   <div class="top">
-    <div class="logo">かんじクエスト<small>4ねんせい</small></div>
+    <div class="logo">かんじクエスト<small id="gradeLabel">4ねんせい</small></div>
     <div class="wallet"><span class="coin"></span><span class="num" id="pts">0</span><span class="unit">pt</span></div>
   </div>
 
@@ -229,17 +264,18 @@ button:focus-visible{outline:4px solid var(--ink);outline-offset:3px}
   <section class="panel goal">
     <div class="goal-head"><span>500 Robux まで</span><span class="pixel" id="goalLeft"></span></div>
     <div class="bar"><i id="goalBar" style="width:0%"></i><span id="goalTxt"></span></div>
-    <div class="goal-note">10もん中 8もん（80てん）いじょうで合格。毎日1かい目で合格すると、15日で1000ptになるよ。</div>
+    <div class="goal-note">80てんいじょうで一発合格。まちがえた漢字は、書けるようになるまで れんしゅうして合格。クリアのあと じしゅれんしゅうで 80てんいじょうなら +10pt（1日4回まで）。ゲームチケット1じかん＝50pt。</div>
   </section>
 
   <section class="panel stamps">
     <h3><span>15日カレンダー</span><span id="streak"></span></h3>
     <div class="stamp-row" id="stampRow"></div>
-    <div class="legend"><span><i class="st gold"></i>1かい目で合格</span><span><i class="st silver"></i>2かい目いこうで合格</span></div>
+    <div class="legend"><span><i class="st gold"></i>一発合格</span><span><i class="st silver"></i>書き直して合格</span></div>
   </section>
 
   <div class="foot-row">
     <button class="btn violet" id="shopBtn">ごほうびショップ</button>
+    <button class="btn white" id="setupBtn" style="flex:0 0 auto">はんい</button>
   </div>
   <p class="ai-note">※AIまるつけは、回数や利用の上限によって使えないことがあります。そのときは、こたえを見て じぶんで ○×をつけてね。</p>
   <div class="ground"></div>
@@ -263,6 +299,17 @@ button:focus-visible{outline:4px solid var(--ink);outline-offset:3px}
     <button class="btn white small" id="clearBtn">けす</button>
     <button class="btn grow" id="nextBtn">つぎへ</button>
   </div>
+</main>
+
+<!-- ============ れんしゅう前 ============ -->
+<main id="learn" class="screen" hidden>
+  <section class="panel learn-head">
+    <div class="pixel" style="font-size:26px">まちがえた漢字を れんしゅう</div>
+    <p class="sub" id="learnNote"></p>
+  </section>
+  <div class="learn-list" id="learnList"></div>
+  <button class="btn" id="learnGo" style="font-size:22px">おぼえた！ かいてみる</button>
+  <button class="btn white" id="learnHome">あとで やる</button>
 </main>
 
 <!-- ============ まるつけ中 ============ -->
@@ -291,6 +338,29 @@ button:focus-visible{outline:4px solid var(--ink);outline-offset:3px}
   <div style="display:flex;flex-direction:column;gap:14px" id="resultBtns"></div>
 </main>
 
+<!-- ============ せってい ============ -->
+<main id="setup" class="screen" hidden>
+  <section class="panel su-sec">
+    <h2>なんねんせい？</h2>
+    <div class="grade-row" id="gradeRow"></div>
+  </section>
+  <section class="panel su-sec">
+    <h2>テストに 出す漢字</h2>
+    <p class="su-note" id="suNote"></p>
+    <div class="su-quick" id="suQuick"></div>
+    <div id="suTerms"></div>
+    <div class="su-add">
+      <input id="suAddInput" type="text" placeholder="ほかの漢字を くわえる（れい：桜）" autocomplete="off">
+      <button class="btn white" id="suAddBtn">くわえる</button>
+    </div>
+    <div class="chips" id="suExtra"></div>
+  </section>
+  <div class="su-foot">
+    <div class="su-count" id="suCount"></div>
+    <button class="btn green" id="suSave">これで はじめる</button>
+  </div>
+</main>
+
 <!-- ============ ショップ ============ -->
 <main id="shop" class="screen" hidden>
   <div class="shop-head">
@@ -299,13 +369,7 @@ button:focus-visible{outline:4px solid var(--ink);outline-offset:3px}
   </div>
   <div class="items" id="items"></div>
   <section class="panel tickets"><h3>もっているチケット</h3><div id="ticketList" style="display:flex;flex-direction:column;gap:8px"></div></section>
-  <details class="panel tickets" id="focusBox">
-    <summary style="font-size:17px;cursor:pointer">おうちの人：テストのはんい</summary>
-    <p class="empty" style="margin:0">いま学校でやっている漢字を入れてください。この漢字の問題から先に出ます（まちがえた漢字は べつに出ます）。空にすると4年生ぜんぶから出ます。</p>
-    <textarea id="focusInput" rows="4" style="width:100%;box-sizing:border-box;font:600 22px var(--f-kanji);letter-spacing:.15em;border:3px solid var(--ink);border-radius:12px;padding:10px;color:var(--ink);background:#fff"></textarea>
-    <div class="empty" id="focusInfo"></div>
-    <button class="btn green" id="focusSave">ほぞん</button>
-  </details>
+  <button class="btn white" id="setupBtn2">おうちの人：がくねん・テストのはんい</button>
   <button class="btn white" id="backBtn">もどる</button>
   <div class="parent">おうちの人へ：チケットはお子さんが見せたら「つかった」を押してください。<br><button id="resetBtn">データをリセット</button></div>
 </main>
@@ -559,28 +623,852 @@ const BANK_SRC = `ペットを[あい]する気もち|愛
 図書室で[しょうせつ]を読む|小説
 サッカーの[しあい]に勝つ|試合
 新しいやり方を[ため]す|試
-しょうらいは[せんしゅ]になりたい|選手`;
+しょうらいは[せんしゅ]になりたい|選手
+[いち]ばんに なる|一
+[みぎ]手を あげる|右
+[あめ]が ふる|雨
+百[えん]で かう|円
+[おう]さまの かんむり|王
+[おと]が きこえる|音
+つくえの [した]|下
+[ひ]が もえる|火
+[はな]が さく|花
+[かい]を ひろう|貝
+[がっこう]へ いく|学校
+くるまに [き]を つける|気
+[きゅう]ばんめに ならぶ|九
+つかれたので [やす]む|休
+[たま]いれを する|玉
+[きん]メダルを もらう|金
+あおい [そら]|空
+[つき]が でる|月
+[いぬ]が ほえる|犬
+えを [み]る|見
+りんごが [いつ]つ|五
+おおきな [くち]を あける|口
+[ひだり]に まがる|左
+[さん]にんで あそぶ|三
+[やま]に のぼる|山
+[こ]ねこが なく|子
+[よん]ほんの えんぴつ|四
+[いと]で ぬう|糸
+[じ]を かく|字
+[みみ]を すます|耳
+[なな]つの ほし|七
+[くるま]に のる|車
+[て]を あらう|手
+[じゅう]えんだま|十
+そとに [で]る|出
+[おんな]のこ|女
+[ちい]さい いし|小
+やまの [うえ]|上
+[もり]の なか|森
+[ひと]が あつまる|人
+[みず]を のむ|水
+[ただ]しい こたえ|正
+[せんせい]に きく|先生
+いきものが [い]きる|生
+[あお]い うみ|青
+[ゆう]やけが きれい|夕
+[いし]を なげる|石
+[あか]い りんご|赤
+[せん]えんさつ|千
+[かわ]で あそぶ|川
+[はや]く おきる|早
+[くさ]を むしる|草
+[あし]が はやい|足
+[むら]の まつり|村
+[おお]きな き|大
+[おとこ]のこ|男
+[たけ]うまで あそぶ|竹
+はこの [なか]|中
+[むし]を つかまえる|虫
+[まち]を あるく|町
+[てんき]が いい|天気
+[た]うえを する|田
+[つち]を ほる|土
+[ふた]つの くつ|二
+あさ [ひ]が のぼる|日
+へやに [はい]る|入
+あたらしい [とし]|年
+[しろ]い くも|白
+[やっ]つの いちご|八
+[ひゃく]てんを とる|百
+[ぶん]を よむ|文
+[き]に のぼる|木
+[ほん]を よむ|本
+[な]まえを かく|名
+[め]を とじる|目
+[た]って あいさつする|立
+[ちから]もち|力
+[はやし]の なか|林
+[むっ]つの たまご|六
+つなを [ひ]く|引
+とりの [はね]|羽
+[くも]が うかぶ|雲
+[こうえん]で あそぶ|公園
+[とお]くを 見る|遠
+[なに]を して いるの|何
+[りか]で 花を そだてる|理科
+[なつ]休み|夏
+[いえ]に かえる|家
+[うた]を うたう|歌
+[ずが]の じかん|図画
+くるくる [まわ]る|回
+友だちに [あ]う|会
+[うみ]で およぐ|海
+[え]を かく|絵
+[そと]で あそぶ|外
+つくえの [かど]|角
+[たの]しい 日|楽
+[せいかつ]かの じかん|生活
+二人の [あいだ]に 入る|間
+[まる]い ボール|丸
+大きな [いわ]|岩
+[かお]を あらう|顔
+[きしゃ]が はしる|汽車
+[にっき]を 書く|日記
+いえに [かえ]る|帰
+[ゆみ]を ひく|弓
+[うし]が なく|牛
+[さかな]を つる|魚
+[とうきょう]に 行く|東京
+[つよ]い 風|強
+ともだちに 字を [おし]える|教
+[ちか]くの 店|近
+[あに]と あそぶ|兄
+ほしの [かたち]|形
+[とけい]を 見る|時計
+[げんき]に あいさつ|元気
+ありがとうと [い]う|言
+[のはら]を 走る|野原
+[と]を しめる|戸
+[ふる]い 本|古
+[ごご]から あそぶ|午後
+[うし]ろを 見る|後
+[こくご]の 本|国語
+[こうさく]を する|工作
+[ひろ]い 公園|広
+[こうばん]の おまわりさん|交番
+[ひか]る ほし|光
+よく [かんが]える|考
+がっこうへ [い]く|行
+[たか]い 山|高
+[き]いろい 花|黄
+こたえが [あ]う|合
+ふかい [たに]|谷
+[くに]の 名前|国
+[くろ]い ねこ|黒
+[いま] なんじ|今
+七[さい]の たんじょう日|才
+[ほそ]い ひも|細
+りょうりを [つく]る|作
+[さんすう]の しゅくだい|算数
+車が [と]まる|止
+[いちば]で かう|市場
+[や]が とぶ|矢
+[あね]と あそぶ|姉
+[おも]い出|思
+[かみ]を おる|紙
+[てら]の かね|寺
+[じぶん]で やる|自分
+あさ七[じ]に おきる|時
+[きょうしつ]に 入る|教室
+[かいしゃ]に 行く|会社
+[よわ]い 風|弱
+[くび]を かしげる|首
+[あき]の 空|秋
+[こんしゅう]の 当番|今週
+[はる]が 来る|春
+字を [か]く|書
+[すこ]し 休む|少
+[ひろば]で あそぶ|広場
+[いろ]を ぬる|色
+ごはんを [た]べる|食
+[こころ]を こめる|心
+[あたら]しい くつ|新
+[おや]子で あそぶ|親
+[ずこう]の じかん|図工
+[かず]を かぞえる|数
+[にし]の 空|西
+大きな [こえ]|声
+[ほし]が 光る|星
+[は]れの 日|晴
+紙を [き]る|切
+[ゆき]が ふる|雪
+[ふね]に のる|船
+[せん]を ひく|線
+[まえ]に すすむ|前
+二年一[くみ]|組
+[はし]って 行く|走
+人が [おお]い|多
+[ふと]い 木|太
+[からだ]を うごかす|体
+大きな [だい]に のる|台
+[ちず]を 見る|地図
+[いけ]の こい|池
+[し]って いる|知
+お[ちゃ]を のむ|茶
+[ひる]ごはん|昼
+[なが]い ひも|長
+[とり]が なく|鳥
+[あさ]ごはん|朝
+こわれた おもちゃを [なお]す|直
+学校に [かよ]う|通
+[おとうと]と あそぶ|弟
+[みせ]で かう|店
+百[てん]を とる|点
+[でんしゃ]に のる|電車
+[かたな]の おもちゃ|刀
+[ふゆ]休み|冬
+[とうばん]を する|当番
+[ひがし]の 空|東
+[こた]えを 書く|答
+[あたま]を なでる|頭
+[おな]じ クラス|同
+[みち]を あるく|道
+本を [よ]む|読
+へやの [うち]と 外|内
+[みなみ]の 国|南
+[にく]を やく|肉
+[うま]に のる|馬
+お店で [う]る|売
+[か]いものに 行く|買
+[むぎ]ちゃを のむ|麦
+[はんぶん]に 切る|半分
+わたしの [ばん]だ|番
+[ちち]の 日|父
+[かぜ]が ふく|風
+おかしを [わ]ける|分
+おとを [き]く|聞
+[こめ]を たく|米
+[ある]いて 行く|歩
+[はは]の 日|母
+作り[かた]を 知る|方
+[きた]の 国|北
+[まいにち] 本を 読む|毎日
+[いもうと]と あそぶ|妹
+一[まん]円|万
+[あか]るい 光|明
+とりが [な]く|鳴
+[け]が のびる|毛
+学校の [もん]|門
+[よる]の 空|夜
+[の]いちごを つむ|野
+[とも]だち|友
+[よう]が ある|用
+月[よう]日|曜
+春が [く]る|来
+[さと]に かえる|里
+[はなし]を 聞く|話
+[わる]い ことを しない|悪
+[やす]い 店|安
+[くら]い 夜道|暗
+[いしゃ]に 行く|医者
+[いいん]を きめる|委員
+ことばの [いみ]を しらべる|意味
+花を [そだ]てる|育
+[てんいん]さん|店員
+[びょういん]に 行く|病院
+水を [の]む|飲
+[うんどう]会|運動
+プールで [およ]ぐ|泳
+[えき]まで 歩く|駅
+町の [ちゅうおう]|中央
+[よこ]に ならぶ|横
+[やね]の 上|屋根
+[おんど]を はかる|温度
+きつねが [ば]ける|化
+[にもつ]を はこぶ|荷物
+[せかい]の 国|世界
+ドアを [あ]ける|開
+二[かい]に 上がる|階
+[さむ]い 冬|寒
+[かんそう]文を 書く|感想
+[かんじ]を 書く|漢字
+[としょかん]で 本を かりる|図書館
+川の [きし]|岸
+朝早く [お]きる|起
+二[がっき]が 始まる|学期
+お[きゃく]さん|客
+こん虫を [けんきゅう]する|研究
+[いそ]いで 帰る|急
+[どうきゅう]生|同級
+お[みや]に 行く|宮
+[やきゅう]を する|野球
+[きょねん]の 夏|去年
+[はし]を わたる|橋
+[さぎょう]を する|作業
+すきな [きょく]を 歌う|曲
+テレビ[きょく]|局
+[ぎんこう]に 行く|銀行
+[く]切りを 入れる|区
+[にが]い くすり|苦
+[どうぐ]を 使う|道具
+[きみ]の 名前|君
+[かかり]の 仕事|係
+[かる]い にもつ|軽
+[ち]が 出る|血
+しあいの日を [き]める|決
+[けん]の 名前|県
+[しゃこ]に 車を 入れる|車庫
+[みずうみ]で ボートに 乗る|湖
+前を [む]く|向
+[しあわ]せな 気もち|幸
+[みなと]に 船が つく|港
+[ばんごう]を よぶ|番号
+木の [ね]|根
+夏[まつ]りに 行く|祭
+お[さら]を あらう|皿
+[しごと]を する|仕事
+[し]んで しまった 金魚|死
+はさみを [つか]う|使
+じゅぎょうが [はじ]まる|始
+[ゆび]を おる|指
+[は]を みがく|歯
+[し]を 読む|詩
+[つぎ]の 人|次
+[かじ]を 手つだう|家事
+かばんを [も]つ|持
+入学[しき]|式
+木の [み]|実
+[しゃしん]を とる|写真
+けんきゅう[しゃ]|者
+[しゅじん]こう|主人
+やくそくを [まも]る|守
+ボールを [と]る|取
+お[さけ]を 飲む 大人|酒
+テストを [う]ける|受
+[きゅうしゅう]に 行く|九州
+ごみを [ひろ]う|拾
+[お]わりの 会|終
+ピアノを [なら]う|習
+切手を [あつ]める|集
+町に [す]む|住
+[おも]い にもつ|重
+[しゅくだい]を する|宿題
+[ばしょ]を きめる|場所
+[あつ]い 夏|暑
+[たす]け合う|助
+[しょうわ]の 時代|昭和
+けしゴムで [け]す|消
+[しょうてん]がい|商店
+[ぶんしょう]を 書く|文章
+しあいに [か]つ|勝
+バスに [の]る|乗
+花を [う]える|植
+クラブに [もう]しこむ|申
+[しんちょう]を はかる|身長
+[じんじゃ]に おまいり|神社
+[ま]ん中|真
+[ふか]い 海|深
+前に [すす]む|進
+[せいり]する|整理
+[むかし]話|昔
+[ぜんぶ] 食べる|全部
+[あいて]チーム|相手
+手紙を [おく]る|送
+[いき]を すう|息
+[はや]い 車|速
+[かぞく]で 出かける|家族
+[た]の 人|他
+ボールを [う]つ|打
+[はんたい]の いけん|反対
+バスを [ま]つ|待
+[こうたい]で する|交代
+[だい]一回|第
+[だい]名を 書く|題
+[すみ]火で やく|炭
+[みじか]い えんぴつ|短
+先生に [そうだん]する|相談
+ふくを [き]る|着
+車に [ちゅうい]する|注意
+[はしら]の きず|柱
+一[ちょう]目|丁
+[てちょう]に 書く|手帳
+本で [しら]べる|調
+[お]いかける|追
+[よてい]を 立てる|予定
+[にわ]で あそぶ|庭
+[ふえ]を ふく|笛
+[てつぼう]で あそぶ|鉄
+石に つまずいて [ころ]ぶ|転
+[と]会の 町|都
+もう一[ど]|度
+ボールを [な]げる|投
+[まめ]まき|豆
+[しま]に わたる|島
+お[ゆ]を わかす|湯
+山に [のぼ]る|登
+一[とう]しょう|等
+車が [うご]く|動
+[どうわ]を 読む|童話
+[のうか]の 人|農家
+[なみ]が 高い|波
+プリントを [くば]る|配
+二[ばい]に なる|倍
+[はこ]に 入れる|箱
+[はたけ]を たがやす|畑
+[はっぴょう]する|発表
+[さか]道を 上る|坂
+[いた]を 切る|板
+みかんの [かわ]|皮
+[かな]しい 話|悲
+[うつく]しい 花|美
+[はな]が 高い|鼻
+[ふで]で 書く|筆
+[こおり]が とける|氷
+うらと [おもて]|表
+十[びょう]で 走る|秒
+[びょうき]に なる|病気
+[しなもの]を えらぶ|品物
+しあいに [ま]ける|負
+サッカー[ぶ]|部
+[ふく]を きる|服
+[ふく]ぶくろ|福
+[もの]を 大切に|物
+[たい]らな 道|平
+本を [かえ]す|返
+[べんきょう]する|勉強
+鳥を [はな]す|放
+[あじ]を みる|味
+[いのち]を 大切に|命
+お[めん]を かぶる|面
+[もんだい]を とく|問題
+[やく]に 立つ|役
+[くすり]を 飲む|薬
+[じゆう]に えらぶ|自由
+[あぶら]で あげる|油
+[ゆうめい]な 人|有名
+公園で [あそ]ぶ|遊
+[よしゅう]する|予習
+[ひつじ]の 毛|羊
+[ようふく]を 買う|洋服
+[は]っぱが おちる|葉
+[たいよう]が 光る|太陽
+おきゃく[さま]|様
+木の葉が [お]ちる|落
+川が [なが]れる|流
+[たび]に 出る|旅
+[りょう]手を あげる|両
+[みどり]の 木|緑
+お[れい]を 言う|礼
+[れつ]に ならぶ|列
+[れんしゅう]する|練習
+[どうろ]を わたる|道路
+[わしょく]を 食べる|和食
+空気の [あつりょく]|圧力
+まわりを [かこ]む|囲
+となりの 席に [うつ]る|移
+[げんいん]を 調べる|原因
+[えいえん]の ちかい|永遠
+[えいぎょう]時間|営業
+[えいせい]的な 台所|衛生
+[やさ]しい 問題|易
+[りえき]を 出す|利益
+[えきたい]の 薬|液体
+げきに [しゅつえん]する|出演
+チームを [おうえん]する|応
+[おうふく]の きっぷ|往復
+[さくら]の 花|桜
+[かのう]な こと|可能
+[かり]の 名前|仮
+[かかく]を 調べる|価格
+夜空の [ぎんが]|銀河
+時間が [す]ぎる|過
+[かいてき]な 部屋|快適
+問題を [と]く|解
+試験に [ごうかく]する|合格
+答えを [たし]かめる|確
+[きんがく]を 計算する|金額
+新聞の [ゆうかん]|夕刊
+木の [みき]|幹
+新しい学校に [な]れる|慣
+[めがね]を かける|眼鏡
+二十一世[き]|紀
+[きほん]を 学ぶ|基本
+友だちの家に [よ]る|寄
+[きそく]を 守る|規則
+プレゼントを [よろこ]ぶ|喜
+[わざ]を みがく|技
+[せいぎ]の 味方|正義
+[ぎゃく]の 方向|逆
+[ひさ]しぶりに 会う|久
+道路の [ふっきゅう]工事|復旧
+[きゅうきゅうしゃ]を よぶ|救急車
+[い]間で くつろぐ|居
+[きょか]を もらう|許可
+国[きょう]を こえる|境
+[へいきん]点を 出す|平均
+[きんし]の 立て札|禁止
+文[く]を 言う|句
+ゼリーを [かた]に 入れる|型
+[けいけん]を 生かす|経験
+[せいけつ]な 服|清潔
+[じけん]が おきる|事件
+[けわ]しい 山道|険
+[けんさ]を 受ける|検査
+[かぎ]られた 時間|限
+[げんざい]の 様子|現在
+体重が [へ]る|減
+[じこ]に あう|事故
+一[こ]ずつ 配る|個
+動物を [ほご]する|保護
+[こうか]が ある|効果
+[あつ]い 本|厚
+畑を [たがや]す|耕
+[こうくうき]に 乗る|航空機
+[こうぶつ]を 集める|鉱物
+建物の [こうぞう]を 調べる|構造
+[きょうみ]が ある|興味
+[こうどう]に 集まる|講堂
+先生に [ほうこく]する|報告
+絵の具を [ま]ぜる|混
+川の 水を [ちょうさ]する|調査
+旧友と [さいかい]する|再会
+[さいがい]に そなえる|災害
+[つま]と 夫|妻
+虫を [さいしゅう]する|採集
+[こくさい]交流|国際
+[ざい]学する 生徒|在
+[さいふ]を 落とす|財布
+[つみ]を つぐなう|罪
+虫を [ころ]さない|殺
+[ざつ]な 字|雑
+[さんそ]を すう|酸素
+その 意見に [さんせい]する|賛成
+[べんごし]に なる|弁護士
+家族を [ささ]える|支
+[れきし]の 勉強|歴史
+[こころざし]を 持つ|志
+木の [えだ]|枝
+[きょうし]に なる|教師
+[しりょう]を 集める|資料
+犬を [か]う|飼
+道を [しめ]す|示
+母に [に]て いる|似
+[ちしき]を ふやす|知識
+先生に [しつもん]する|質問
+[こうしゃ]を そうじする|校舎
+[かんしゃ]の 気持ち|感謝
+[じゅぎょう]を 受ける|授業
+自転車を [しゅうり]する|修理
+意見を [の]べる|述
+[びじゅつ]館に 行く|美術
+[じゅんび]する|準備
+[じゅんじょ]よく 話す|順序
+友だちを [まね]く|招
+[しょうめい]する|証明
+[ぞう]の 鼻|象
+[しょう]を もらう|賞
+[じょうけん]を 決める|条件
+年が[じょう]を 書く|状
+[ひじょう]口|非常
+[じょうほう]を 集める|情報
+ぬのを [お]る|織
+[しょくいん]室|職員
+[せいふく]を 着る|制服
+[せいかく]が いい|性格
+[せいじ]の 話|政治
+[おおぜい]の 人|大勢
+[せい]いっぱい がんばる|精
+工場で [せいひん]を 作る|製品
+[ぜいきん]を はらう|税金
+[せきにん]を もつ|責任
+[せいせき]が 上がる|成績
+[ちょくせつ] 話す|直接
+[せっけい]図を かく|設計
+[ぜったい]に 守る|絶対
+[そふ]の 家|祖父
+[す]なおな 心|素直
+[そうごう]の 時間|総合
+船を [つく]る|造
+未来を [そうぞう]する|想像
+人口が [ふ]える|増
+長さを [そくてい]する|測定
+サッカー部に [しょぞく]する|所属
+チームを [ひき]いる|率
+[そん]を する|損
+本を [か]す|貸
+[たいど]が 大きい|態度
+[だんたい]で 行動する|団体
+さそいを [ことわ]る|断
+おしろを [きず]く|築
+[ちょきん]する|貯金
+テントを [は]る|張
+バス[てい]で 待つ|停
+宿題を [ていしゅつ]する|提出
+日[てい]を 決める|程
+[てきとう]な 大きさ|適当
+[でんとう]行事|伝統
+[しょくどう]で 食べる|食堂
+[どう]メダル|銅
+コーチが [しどう]する|指導
+[とく]意な 科目|得
+[どく]きのこ|毒
+[どくりつ]する|独立
+仕事を [まか]せる|任
+火が [も]える|燃
+[のうりょく]を 生かす|能力
+紙を [やぶ]る|破
+[はんにん]を つかまえる|犯人
+自分で [はんだん]する|判断
+本を [しゅっぱん]する|出版
+せの高さを [くら]べる|比
+畑に [ひりょう]を まく|肥料
+[ひよう]が かかる|費用
+[ひょうばん]の 店|評判
+[ひんけつ]で たおれる|貧血
+[ぬの]を 切る|布
+[ふうふ]で 出かける|夫婦
+[ぶし]の 時代|武士
+[ふくしゅう]する|復習
+[ふくざつ]な 問題|複雑
+[ほとけ]さま|仏
+[こな]ぐすり|粉
+セーターを [あ]む|編
+[べんとう]を 食べる|弁当
+[ほけん]室|保健
+お[はか]まいり|墓
+[ゆた]かな 自然|豊
+かぜの [よぼう]|予防
+[ぼうえき]の 仕事|貿易
+馬が [あば]れる|暴
+[みゃく]を はかる|脈
+[じむ]所|事務
+[ゆめ]を 見る|夢
+道に [まよ]う|迷
+[わた]あめ|綿
+車を [ゆしゅつ]する|輸出
+おかしが [あま]る|余
+本の [ないよう]を まとめる|内容
+説明を [しょうりゃく]する|省略
+[るす]番を する|留守
+[だいとうりょう]|大統領
+[い]が いたい|胃
+意見が [こと]なる|異
+世界[いさん]|遺産
+[ちいき]の 行事|地域
+[うちゅう]ひこうし|宇宙
+[えいが]を 見る|映画
+[えんちょう]戦|延長
+川に [そ]って 歩く|沿
+[おん]がえし|恩
+[われ]を わすれる|我
+[はいいろ]の 雲|灰色
+写真を [かくだい]する|拡大
+[かわ]の くつ|革
+おしろの [てんしゅかく]|天守閣
+たまごを [わ]る|割
+木の [かぶ]|株
+せんたく物を [ほ]す|干
+のりで [ま]く|巻
+[かんご]師|看護
+[かんたん]な 問題|簡単
+[あぶ]ない 道|危
+[つくえ]の 上|机
+音楽の [しき]者|指揮
+[きちょう]な 体験|貴重
+話を [うたが]う|疑
+息を [す]う|吸
+情報を [ていきょう]する|提供
+[むね]を はる|胸
+[こきょう]に 帰る|故郷
+会社に [つと]める|勤
+[きんにく]を きたえる|筋肉
+[たいようけい]の わく星|太陽系
+[けいご]を 使う|敬語
+[けいさつ]官|警察
+[げき]を 見る|劇
+[はげ]しい 雨|激
+[あな]を ほる|穴
+[じょうしゃけん]を 買う|乗車券
+[きぬ]の 布|絹
+[けんり]を 守る|権利
+[けんぽう]記念日|憲法
+川の [みなもと]|源
+[きび]しい 先生|厳
+[じこ]しょうかい|自己
+名前を [よ]ぶ|呼
+[ご]字を 直す|誤
+[こうごう]さま|皇后
+親[こう]こう|孝
+[てんのう]|天皇
+山の [こうよう]|紅葉
+雨が [ふ]る|降
+[こうてつ]の 橋|鋼鉄
+[じこく]表|時刻
+[こくもつ]を 育てる|穀物
+[ほね]を おる|骨
+道が 分からず [こま]る|困
+[すな]場で あそぶ|砂
+いすに [すわ]る|座
+用事が [す]む|済
+[さいばん]所|裁判
+[たいさく]を 考える|対策
+本を 三[さつ] 読む|冊
+[かいこ]を 育てる|蚕
+[し]急 来てください|至
+[わたし]の 夢|私
+[すがた]を 見せる|姿
+[しりょく]けんさ|視力
+[かし]を 書く|歌詞
+[ざっし]を 読む|雑誌
+[じしゃく]を 使う|磁石
+日[しゃ]しが 強い|射
+ごみを [す]てる|捨
+[しゃく]度を 合わせる|尺
+[わか]い 人|若
+[がいろじゅ]|街路樹
+空きかんを [かいしゅう]する|回収
+[しゅうきょう]の れきし|宗教
+[しゅうしょく]する|就職
+[かんしゅう]が わく|観衆
+ルールに [したが]う|従
+[たて]に ならぶ|縦
+セーターが [ちぢ]む|縮
+[じゅく]した かき|熟
+[たんじゅん]な 話|単純
+ごみを [しょり]する|処理
+[しょうぼうしょ]|消防署
+[しょこく]を 旅する|諸国
+[じょせつ]車|除雪
+[しょうち]する|承知
+[しょうらい]の 夢|将来
+[きず]が いたむ|傷
+[しょうがい]物 競走|障害
+まんじゅうを [む]す|蒸
+[はり]と 糸|針
+[じんあい]の 心|仁愛
+[すいちょく]な 線|垂直
+[すいり]小説|推理
+[すんぽう]を はかる|寸法
+ごはんを [も]る|盛
+[せいか]リレー|聖火
+[せいい]を 見せる|誠意
+[した]を 出す|舌
+開会を [せんげん]する|宣言
+[せんもん]家|専門
+[いずみ]の 水|泉
+手を [あら]う|洗
+布を [そ]める|染
+[せんとう]に 行く|銭湯
+くらしを [かいぜん]する|改善
+[えんそう]会|演奏
+[まど]を 開ける|窓
+[どくそう]的な 作品|独創
+[ふくそう]を 整える|服装
+[ちそう]を 調べる|地層
+[たいそう]を する|体操
+[れいぞうこ]|冷蔵庫
+[しんぞう]が 動く|心臓
+写真を [ほぞん]する|保存
+父を [そんけい]する|尊敬
+[たいいん]する|退院
+[じたく]に 帰る|自宅
+[たんにん]の 先生|担任
+落とし物を [さが]す|探
+[たんじょうび]|誕生日
+[かいだん]を 上る|階段
+[あたた]かい 部屋|暖
+[ねだん]を 見る|値段
+[ちゅうじつ]な 犬|忠実
+本の [ちょしゃ]|著者
+[けんちょう]所在地|県庁
+山の [ちょうじょう]|頂上
+[だいちょう]の はたらき|大腸
+[しお]が 満ちる|潮
+[うんちん]を はらう|運賃
+頭が [いた]い|痛
+[てき]チーム|敵
+[てんらん]会|展覧
+計画を [けんとう]する|検討
+[せいとう]の 代表|政党
+[さとう]を 入れる|砂糖
+手紙が [とど]く|届
+[むずか]しい 問題|難
+[ぎゅうにゅう]を 飲む|牛乳
+まちがいを [みと]める|認
+[なっとく]する|納得
+[のう]を 使う|脳
+[りっぱ]な 家|立派
+お手紙を [はいけん]する|拝見
+[せ]が 高い|背
+[はい]で 息を する|肺
+[はいく]を 作る|俳句
+[はん]で 話し合う|班
+[ばん]ごはん|晩
+うわさを [ひてい]する|否定
+作品を [ひひょう]する|批評
+[ひみつ]の 話|秘密
+米[だわら]を はこぶ|俵
+[はら]が へる|腹
+[こうふん]する|興奮
+一列に [なら]ぶ|並
+天皇[へいか]|陛下
+戸を [し]める|閉
+部屋を [かたづ]ける|片付
+足りない分を [おぎな]う|補
+家族と [く]らす|暮
+[たからもの]|宝物
+古い町を [おとず]れる|訪
+祖父が [な]くなる|亡
+[わす]れ物|忘
+[ぼう]で たたく|棒
+紙を 一[まい] とる|枚
+[まく]が 上がる|幕
+同じ グループに [かめい]する|加盟
+船の [もけい]を 作る|模型
+英語を [やく]す|訳
+[ゆうびんきょく]|郵便局
+[やさ]しい 人|優
+荷物を [あず]ける|預
+[ようちえん]に 通う|幼
+[ほ]しい 物|欲
+[よくじつ]の 朝|翌日
+列が [みだ]れる|乱
+[たまご]を わる|卵
+[うら]がわ|裏
+[ほうりつ]を 守る|法律
+[りんじ]休校|臨時
+教科書を [ろうどく]する|朗読
+[ぎろん]する|議論`;
 const DEFAULT_FOCUS='飛席機菜司順辞成訓印景群府岐季包帯付静城茨必要富井岡伝信建例法類典愛昨初栃奈埼潟梨量阜説試選';
+// 学年別漢字配当表（2020年度〜）と、光村図書の教科書で習う順・学期（5・6年の学期わけは目安）
+const GRADE_KANJI=["一右雨円王音下火花貝学気九休玉金空月犬見五口校左三山子四糸字耳七車手十出女小上森人水正生青夕石赤千川先早草足村大男竹中虫町天田土二日入年白八百文木本名目立力林六", "引羽雲園遠何科夏家歌画回会海絵外角楽活間丸岩顔汽記帰弓牛魚京強教近兄形計元言原戸古午後語工公広交光考行高黄合谷国黒今才細作算止市矢姉思紙寺自時室社弱首秋週春書少場色食心新親図数西声星晴切雪船線前組走多太体台地池知茶昼長鳥朝直通弟店点電刀冬当東答頭同道読内南肉馬売買麦半番父風分聞米歩母方北毎妹万明鳴毛門夜野友用曜来里理話", "悪安暗医委意育員院飲運泳駅央横屋温化荷界開階寒感漢館岸起期客究急級宮球去橋業曲局銀区苦具君係軽血決研県庫湖向幸港号根祭皿仕死使始指歯詩次事持式実写者主守取酒受州拾終習集住重宿所暑助昭消商章勝乗植申身神真深進世整昔全相送想息速族他打対待代第題炭短談着注柱丁帳調追定庭笛鉄転都度投豆島湯登等動童農波配倍箱畑発反坂板皮悲美鼻筆氷表秒病品負部服福物平返勉放味命面問役薬由油有遊予羊洋葉陽様落流旅両緑礼列練路和", "愛案以衣位茨印英栄媛塩岡億加果貨課芽賀改械害街各覚潟完官管関観願岐希季旗器機議求泣給挙漁共協鏡競極熊訓軍郡群径景芸欠結建健験固功好香候康佐差菜最埼材崎昨札刷察参産散残氏司試児治滋辞鹿失借種周祝順初松笑唱焼照城縄臣信井成省清静席積折節説浅戦選然争倉巣束側続卒孫帯隊達単置仲沖兆低底的典伝徒努灯働特徳栃奈梨熱念敗梅博阪飯飛必票標不夫付府阜富副兵別辺変便包法望牧末満未民無約勇要養浴利陸良料量輪類令冷例連老労録", "圧囲移因永営衛易益液演応往桜可仮価河過快解格確額刊幹慣眼紀基寄規喜技義逆久旧救居許境均禁句型経潔件険検限現減故個護効厚耕航鉱構興講告混査再災妻採際在財罪殺雑酸賛士支史志枝師資飼示似識質舎謝授修述術準序招証象賞条状常情織職制性政勢精製税責績接設絶祖素総造像増則測属率損貸態団断築貯張停提程適統堂銅導得毒独任燃能破犯判版比肥非費備評貧布婦武復複仏粉編弁保墓報豊防貿暴脈務夢迷綿輸余容略留領歴", "胃異遺域宇映延沿恩我灰拡革閣割株干巻看簡危机揮貴疑吸供胸郷勤筋系敬警劇激穴券絹権憲源厳己呼誤后孝皇紅降鋼刻穀骨困砂座済裁策冊蚕至私姿視詞誌磁射捨尺若樹収宗就衆従縦縮熟純処署諸除承将傷障蒸針仁垂推寸盛聖誠舌宣専泉洗染銭善奏窓創装層操蔵臓存尊退宅担探誕段暖値宙忠著庁頂腸潮賃痛敵展討党糖届難乳認納脳派拝背肺俳班晩否批秘俵腹奮並陛閉片補暮宝訪亡忘棒枚幕密盟模訳郵優預幼欲翌乱卵覧裏律臨朗論"];
+const TERMS={"1": ["", "大小一二三四五六七八九十子空男女手天青見学校虫文字正山水雨上下日木田川林森月車人中力竹出火休金土本犬早目", "名夕町百円千糸気玉村白音赤生耳王口年草貝入右足石左立花先"], "2": ["読雪言行南書絵図分方春思記曜肉話聞黄色黒太毛高風晴多形長数体近同今会社刀切内店姉妹線汽海回歩魚広前元岩教光知考室組後丸点買友羽雲夏公園通万頭鳥", "朝顔毎家当間昼半電外声楽親父母兄弟午夜国語算紙来時帰何里食明池週番東京古寺西止道場台新船米秋合活理作馬画用首細角工科鳴戸麦茶地市自歌心答野原冬", "星少走交遠強才門弓矢谷北牛引売弱計直"], "3": ["詩習商動物開族葉実所面登事館使深意味漢調由温酒問題章平次昔表発県有氷秒農球局決整相落着洋服遊全短世界横指鉄安定様運予返緑送住感想具悪拾持向坂悲岸路区陽泳練助童申仕身品客終銀去筆式植集化死都", "両負対屋員写真祭部係板柱油港起列乗急追血暗橋暑寒軽命第主州根流荷君守進役他豆者育消取期畑福苦倍談鼻歯階央旅委級昭和駅業皮皿息美転病医薬飲重配度幸始島待受号", "代曲投炭庫羊勝宿丁帳宮院笛礼研究庭等湖注反波勉放打速神箱湯"], "4": ["信達飛席建菜例料良照熱府児関辞典成訓類順愛昨城覚伝説好印要的必初案街試選観静旗材栃群埼潟井梨岡茨奈富岐阜季節別郡戦争最給機包帯泣勇軍兵隊輪特夫衣氏祝徒競約清完法滋阪徳香佐賀崎熊沖縄媛鹿未希望民働健康", "散令位置欠満栄養卒単結果漁径副臣梅灯貨変種続折積飯松不議差念連景末司録参加挙協験極芸無械以博管便孫量借仲底浅焼利笑省残周課然浴芽改", "共願失辺低敗老束票陸各産求付固塩側労標官巣候察兆億鏡害刷治努倉札功器英牧冷唱"], "5": ["像経情象絶厚賞状喜解容技術適許可複構桜銅破修復眼停祖準備貿易際潔質報告属確識因造似限留現接応勢河歴史幹招句常序武士資査性非総測舎往演刊肥製謝罪暴防鉱績志航夢編険断境態逆判圧得比政興示張個支迷", "在独弁検提寄余仏貸効条件保評価賛妻混雑略採禁能過程豊布減護再増証責任統酸素設授紀財脈織築旧規則貯型液基額故婦救格職移墓義殺", "貧版述仮飼綿居永久毒営犯講師精慣囲益災枝費税制衛耕損粉均輸団務快燃率領導堂"], "6": ["視蔵吸染模痛欲骨忘補砂訪存宣窓批株巻暖担腹我刻暮延傷善宝詞姿段承激探論若班郷朗討並蒸簡座樹閉危敬胸専降処机幼覧遺割秘片潮認就難著値翌否聖劇針洗臨疑権源縦至絹将穴異従券尊退頂宅拝皇灰純恩障庁", "厳忠糖鋼后奮射裁派装優誠紅亡陛済背律警届推敵卵干憲捨脳署沿貴蚕乳衆党舌臓銭冊策己創郵閣乱腸勤宇縮除奏賃革域肺諸宙棒仁誕孝宗", "誌胃供俳熟泉困預垂映私収誤尺裏看穀層拡密納幕寸系筋俵磁展呼枚晩揮盟盛訳操"]};
+const KG={};GRADE_KANJI.forEach((s,i)=>{for(const c of s)KG[c]=i+1});
+const TERM_NAME=['1がっき','2がっき','3がっき'];
+function nowTerm(){const m=new Date().getMonth()+1;return m>=4&&m<=8?0:m>=9?1:2}
+function defaultFocus(g){const t=TERMS[g];let k=nowTerm();while(k<3&&!t[k])k++;return t[Math.min(k,2)]||GRADE_KANJI[g-1]}
 const BANK = BANK_SRC.split('\n').map((l,id)=>{const [s,a]=l.split('|');const m=s.match(/^(.*?)\[(.+?)\](.*)$/);return {id,pre:m[1],yomi:m[2],post:m[3],ans:a.trim()}});
 
 /* ===== ルール ===== */
-const PER_DAY=10, PASS=80, PTS=[70,40,20,10], GOAL=1000;
+const PER_DAY=10, PASS=80, GOAL=1000;
+// 合格までの書き直し回数 → もらえるポイント（0=一発合格、5回以上は最低）
+const PTS=[70,50,40,30,20,10];
+const PTS_LABEL=['一発合格','書き直し1回','2回','3回','4回','5回〜'];
+const BONUS_PT=10, BONUS_MAX=4; // クリア後の じしゅれんしゅう：80てんいじょうで+10pt、1日4回まで
 const SHOP=[
   {key:'snack',name:'おやつチケット',desc:'すきなおやつ 1つ',cost:50,color:'#FF8FB8'},
-  {key:'game',name:'ゲームチケット',desc:'ゲーム 30分',cost:100,color:'#33B84A'},
+  {key:'game',name:'ゲームチケット',desc:'ゲーム 1じかん',cost:50,color:'#33B84A'},
   {key:'robux',name:'500 Robux',desc:'さいこうのごほうび',cost:1000,color:'#7A4DFF'}];
 
 /* ===== 保存 ===== */
 const KEY='kanjiQuest4.v1';
 function fresh(){const order=BANK.map(b=>b.id);for(let i=order.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[order[i],order[j]]=[order[j],order[i]]}
-  return {v:1,points:0,total:0,days:{},today:null,weak:[],order,cursor:0,tickets:[],focus:DEFAULT_FOCUS,forder:[],fkey:''}}
+  return {v:1,points:0,total:0,days:{},today:null,weak:[],order,cursor:0,tickets:[],grade:null,focus:'',forder:[],fkey:''}}
 function load(){try{const s=JSON.parse(localStorage.getItem(KEY));if(s&&s.v===1){
   BANK.forEach(b=>{if(!s.order.includes(b.id))s.order.push(b.id)});
   if(s.focus===undefined){s.focus=DEFAULT_FOCUS;s.forder=[];s.fkey='';
     if(s.today&&!(s.days[s.today.date]||{}).tries)s.today=null}
+  if(s.grade===undefined)s.grade=4;
   return s}}catch(e){}return fresh()}
 const focusChars=()=>[...new Set([...(S.focus||'')].filter(c=>/[一-鿿]/.test(c)))];
-function focusIds(){const fc=focusChars();if(!fc.length)return [];return BANK.filter(b=>[...b.ans].some(c=>fc.includes(c))).map(b=>b.id)}
+// その学年まで（または えらんだ漢字）だけで答えられる問題か
+function eligible(b,fc){return [...b.ans].every(c=>!KG[c]||KG[c]<=S.grade||fc.includes(c))}
+function idsFor(kanji,fc){return BANK.filter(b=>eligible(b,fc)&&[...b.ans].some(c=>kanji.includes(c))).map(b=>b.id)}
+function focusIds(){const fc=focusChars();if(!fc.length)return [];return idsFor(fc,fc)}
 function shuffle(a){for(let i=a.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[a[i],a[j]]=[a[j],a[i]]}return a}
 function save(){try{localStorage.setItem(KEY,JSON.stringify(S))}catch(e){}}
 let S=load();
@@ -592,7 +1480,7 @@ const todayKey=()=>dkey(new Date());
 function ensureToday(){
   const t=todayKey(); if(S.today&&S.today.date===t)return;
   const ids=[];
-  for(const w of S.weak){if(ids.length>=3)break; if(!ids.includes(w))ids.push(w)}
+  {const fc=focusChars();for(const w of S.weak){if(ids.length>=3)break; if(BANK[w]&&eligible(BANK[w],fc)&&!ids.includes(w))ids.push(w)}}
   const pool=focusIds();
   if(pool.length){
     if(S.fkey!==S.focus){S.forder=shuffle(pool.slice());S.fkey=S.focus}
@@ -601,39 +1489,52 @@ function ensureToday(){
       if(!S.forder.length)S.forder=shuffle(pool.slice());
       const id=S.forder.shift();g++;if(!ids.includes(id))ids.push(id)}
   }
-  let guard=0;
-  while(ids.length<PER_DAY&&guard<1000){const id=S.order[S.cursor%S.order.length];S.cursor++;guard++;if(!ids.includes(id))ids.push(id)}
+  // たりなければ、その学年の いまの学期までの漢字から（なければ学年ぜんぶ）
+  if(ids.length<PER_DAY){const fc=focusChars(),t=TERMS[S.grade]||['','',''];
+    let rv=idsFor(t.slice(0,nowTerm()+1).join(''),fc).filter(id=>!ids.includes(id));
+    if(rv.length<PER_DAY-ids.length)rv=idsFor(GRADE_KANJI[S.grade-1],fc).filter(id=>!ids.includes(id));
+    for(const id of shuffle(rv)){if(ids.length>=PER_DAY)break;ids.push(id)}}
   for(let i=ids.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[ids[i],ids[j]]=[ids[j],ids[i]]}
   S.today={date:t,ids}; save();
 }
-const day=()=>S.days[todayKey()]||{tries:0,passed:false,best:0,earned:0};
+function dayRec(){const t=todayKey();const d=S.days[t]||(S.days[t]={tries:0,passed:false,best:0,earned:0});
+  if(d.testDone===undefined)d.testDone=d.tries>0;if(!Array.isArray(d.pending))d.pending=[];if(d.rewrites===undefined)d.rewrites=0;return d}
+const day=()=>dayRec();
 
 /* ===== 画面切りかえ ===== */
 const $=id=>document.getElementById(id);
-function show(id){['home','quiz','grading','review','result','shop'].forEach(s=>$(s).hidden=s!==id);window.scrollTo(0,0);if(id==='quiz')requestAnimationFrame(layout)}
+function show(id){['home','quiz','learn','grading','review','result','shop','setup'].forEach(s=>$(s).hidden=s!==id);window.scrollTo(0,0);if(id==='quiz')requestAnimationFrame(layout)}
 
 /* ===== ホーム ===== */
 function renderHome(){
+  if(!S.grade){openSetup();return}
   ensureToday();
+  $('gradeLabel').textContent=`${S.grade}ねんせい`;
   const d=day();
   $('pts').textContent=S.points;
-  const nextPt=PTS[Math.min(d.tries,3)];
-  if(d.passed){
-    $('qTitle').textContent='きょうのクエスト クリア！';
-    $('status').innerHTML=`${d.tries}かい目で合格！ <b>+${d.earned}pt</b> ゲット。<br>もういちど やるのは れんしゅう（ポイントなし）だよ。`;
-    $('startBtn').textContent='れんしゅうする';$('startBtn').className='btn white bigstart';
-  }else if(d.tries>0){
+  const n=d.pending.length,nextRw=Math.min(d.rewrites+1,5);
+  let cur=-1;
+  if(!d.testDone){
     $('qTitle').textContent='きょうのクエスト';
-    $('status').innerHTML=`${d.tries}かい ちょうせんしたよ（さいこう ${d.best}てん）。<br>つぎで合格すると <b>+${nextPt}pt</b>`;
-    $('startBtn').textContent=`${d.tries+1}かい目に ちょうせん`;$('startBtn').className='btn bigstart';
+    $('status').innerHTML=`漢字10もん。80てんいじょうなら 一発合格で <b>+${PTS[0]}pt</b>`;
+    $('startBtn').textContent='テスト スタート';$('startBtn').className='btn bigstart';cur=0;
+  }else if(n){
+    $('qTitle').textContent=d.passed?'あと すこし！':'きょうのクエスト';
+    $('status').innerHTML=d.passed
+      ?`合格して <b>+${d.earned}pt</b> ゲット！<br>まちがえた漢字 ${n}こを 書けるようにして おわろう。`
+      :`まちがえた漢字が ぜんぶ書けたら 合格！<br>つぎで ぜんぶ書けたら <b>+${PTS[nextRw]}pt</b>`;
+    $('startBtn').textContent=`まちがえた漢字を れんしゅう（のこり ${n}こ）`;$('startBtn').className='btn bigstart';
+    if(!d.passed)cur=nextRw;
   }else{
-    $('qTitle').textContent='きょうのクエスト';
-    $('status').innerHTML=`漢字10もん。1かい目で合格すると <b>+${PTS[0]}pt</b>`;
-    $('startBtn').textContent='スタート';$('startBtn').className='btn bigstart';
+    const bl=BONUS_MAX-(d.bonus||0);
+    $('qTitle').textContent='きょうのクエスト クリア！';
+    $('status').innerHTML=`${d.passRw?`書き直し${d.passRw}回で`:'一発'}合格！ <b>+${d.earned+(d.bonus||0)*BONUS_PT}pt</b> ゲット。<br>`
+      +(bl>0?`おなじ もんだいを じしゅれんしゅうして 80てんいじょうなら <b>+${BONUS_PT}pt</b>（きょう あと${bl}回）`:'じしゅれんしゅうの ポイントは きょうは おしまい。れんしゅうは つづけられるよ。');
+    $('startBtn').textContent=bl>0?`じしゅれんしゅう（+${BONUS_PT}pt）`:'もういちど テスト';$('startBtn').className=bl>0?'btn yellow bigstart':'btn white bigstart';
   }
-  $('rule').innerHTML=PTS.map((p,i)=>`<div class="${!d.passed&&Math.min(d.tries,3)===i?'on':''}">${i<3?i+1+'かい目':'4かい目〜'}<strong>+${p}</strong></div>`).join('');
+  $('rule').innerHTML=PTS.map((p,i)=>`<div class="${cur===i?'on':''}">${PTS_LABEL[i]}<strong>+${p}</strong></div>`).join('');
   const fc=focusChars();
-  $('range').textContent=fc.length?`いまのはんい（${fc.length}字）：${fc.join(' ')}`:'はんい：4年生の漢字ぜんぶ';
+  $('range').textContent=fc.length?`いまのはんい（${fc.length}字）：${fc.join(' ')}`:`はんい：${S.grade}年生の漢字ぜんぶ`;
   const left=Math.max(0,GOAL-S.points);
   $('goalLeft').textContent=left?`あと ${left}pt`:'こうかんできる！';
   $('goalBar').style.width=Math.min(100,S.points/GOAL*100)+'%';
@@ -641,7 +1542,7 @@ function renderHome(){
   // カレンダー
   const row=[];const now=new Date();
   for(let i=14;i>=0;i--){const dt=new Date(now);dt.setDate(now.getDate()-i);const k=dkey(dt);const r=S.days[k];
-    const cls=r&&r.passed?(r.tries===1?'gold':'silver'):'';row.push(`<div class="st ${cls} ${i===0?'today':''}" title="${k}">${dt.getDate()}</div>`)}
+    const cls=r&&r.passed?((r.passRw??(r.tries-1))===0?'gold':'silver'):'';row.push(`<div class="st ${cls} ${i===0?'today':''}" title="${k}">${dt.getDate()}</div>`)}
   $('stampRow').innerHTML=row.join('');
   let st=0;const dt=new Date();if(!(S.days[todayKey()]||{}).passed)dt.setDate(dt.getDate()-1);
   while((S.days[dkey(dt)]||{}).passed){st++;dt.setDate(dt.getDate()-1)}
@@ -653,7 +1554,17 @@ let qs=[],qi=0,results=[],written=[],strokes=[],cur=null,box=0,horiz=true,dpr=1;
 const guide=$('guide'),ink=$('ink'),board=$('board'),stage=$('stage');
 const gctx=guide.getContext('2d'),ictx=ink.getContext('2d');
 
-function startQuiz(){ensureToday();qs=S.today.ids.map(id=>BANK[id]).filter(Boolean);qi=0;results=[];written=[];show('quiz');showQ()}
+let mode='test';
+function startQuiz(m){ensureToday();mode=m;const d=dayRec();
+  const ids=m==='practice'?d.pending:S.today.ids;
+  qs=ids.map(id=>BANK[id]).filter(Boolean);if(!qs.length){renderHome();show('home');return}
+  qi=0;results=[];written=[];show('quiz');showQ()}
+function home(){const d=dayRec();
+  if(!d.testDone)startQuiz('test');else if(d.pending.length)openLearn();else startQuiz('free')}
+function openLearn(){const d=dayRec();
+  $('learnNote').textContent=`${d.pending.length}こ あるよ。よく見て おぼえたら、こたえを見ないで 書いてみよう。`+(d.passed?'':` ぜんぶ書けたら 合格（+${PTS[Math.min(d.rewrites+1,5)]}pt）！`);
+  $('learnList').innerHTML=d.pending.map(id=>{const q=BANK[id];return `<div class="panel learn-card"><div class="k">${esc(q.ans)}</div><div class="q">${esc(q.pre)}<b>${esc(q.yomi)}</b>${esc(q.post)}</div></div>`}).join('');
+  show('learn')}
 function showQ(){
   cur=qs[qi];strokes=written[qi]?written[qi].strokes:[];
   $('sentence').innerHTML=`${esc(cur.pre)}<span class="blank">${esc(cur.yomi)}</span>${esc(cur.post)}`;
@@ -717,7 +1628,7 @@ function nextQ(){
 /* ===== AIまるつけ ===== */
 // GitHub版：Cloudflare Workers のURLをここに入れる（例 'https://kanji-grader.あなたの名前.workers.dev'）
 const AI_URL='/api/kanji';
-const AI_PER_DAY=5; // AIまるつけは1日この回数まで（使いすぎ防止）
+const AI_PER_DAY=15; // AIまるつけは1日この回数まで（テスト＋れんしゅう。使いすぎ防止）
 let sampleFn=null,aiMax=0,aiCtl=null;
 (async()=>{try{sampleFn=await window.claude?.use?.('sample');if(sampleFn){const l=await sampleFn.limits().catch(()=>null);aiMax=l?.images?.maxCount||0}}catch(e){sampleFn=null}})();
 const aiMode=()=>(sampleFn&&aiMax>0)?'claude':(AI_URL?'worker':'');
@@ -806,30 +1717,80 @@ $('rvList').addEventListener('click',e=>{const b=e.target.closest('[data-mark]')
 $('decideBtn').onclick=()=>{results=written.map((w,i)=>({id:w.id,ok:marks[i]===true}));finish()};
 
 /* ===== 結果 ===== */
+function award(d,rw){const e=PTS[Math.min(rw,5)];d.passed=true;d.earned=e;d.passRw=rw;S.points+=e;S.total+=e;return e}
 function finish(){
-  const t=todayKey();const d=S.days[t]||{tries:0,passed:false,best:0,earned:0};
-  const correct=results.filter(r=>r.ok).length;const score=correct*10;
-  d.tries++;d.best=Math.max(d.best,score);
-  let earned=0,first=false;const pass=score>=PASS;
-  if(pass&&!d.passed){earned=PTS[Math.min(d.tries-1,3)];d.passed=true;d.earned=earned;S.points+=earned;S.total+=earned;first=true}
-  S.days[t]=d;
-  for(const r of results){if(r.ok)S.weak=S.weak.filter(w=>w!==r.id);else if(!S.weak.includes(r.id))S.weak.push(r.id)}
+  const d=dayRec();
+  const correct=results.filter(r=>r.ok).length,wrong=results.filter(r=>!r.ok).map(r=>r.id),total=results.length;
+  let earned=0,head='',body='';const wasPassed=d.passed;
+  // にがてリスト：テストで書けたら外す、まちがえたら入れる（れんしゅうで書けても、あしたもう一度出す）
+  for(const r of results){if(!r.ok){if(!S.weak.includes(r.id))S.weak.push(r.id)}else if(mode!=='practice')S.weak=S.weak.filter(w=>w!==r.id)}
+  if(mode==='test'){
+    const score=correct*10;d.tries++;d.best=Math.max(d.best,score);d.testDone=true;d.pending=wrong;d.rewrites=0;
+    if(score>=PASS)earned=award(d,0);
+    head=`<div class="badge ${earned?'':'ng'}">${earned?'一発合格！':'もうすこし！'}</div><div class="big">${score}<small>てん</small></div>`;
+    body=earned?`<div class="earn"><span class="coin"></span><span class="pixel">+${earned}</span>pt</div>`
+      +(wrong.length?`<div class="sub">まちがえた漢字 ${wrong.length}こを 書けるようにしたら おわり！</div>`:`<div class="sub">ぜんもん せいかい！ いまのポイント ${S.points}pt</div>`)
+      :`<div class="sub">まちがえた漢字 ${wrong.length}こが ぜんぶ書けたら 合格！<br>書き直しが すくないほど ポイントが おおいよ。</div>`;
+  }else if(mode==='practice'){
+    d.rewrites++;d.pending=wrong;
+    if(!wasPassed&&!wrong.length)earned=award(d,d.rewrites);
+    head=`<div class="badge ${wrong.length?'ng':''}">${wrong.length?`あと ${wrong.length}こ！`:(earned?'合格！':'ぜんぶ書けた！')}</div><div class="big">${correct}<small>/${total}</small></div>`;
+    body=earned?`<div class="earn"><span class="coin"></span><span class="pixel">+${earned}</span>pt</div><div class="sub">書き直し ${d.rewrites}回で 合格。いまのポイント ${S.points}pt</div>`
+      :!wrong.length?`<div class="sub">きょうのクエスト クリア！</div>`
+      :`<div class="sub">もういちど おぼえて 書いてみよう。${wasPassed?'':`<br>つぎで ぜんぶ書けたら +${PTS[Math.min(d.rewrites+1,5)]}pt`}</div>`;
+  }else{
+    const sc=correct*10;
+    if(sc>=PASS&&(d.bonus||0)<BONUS_MAX){d.bonus=(d.bonus||0)+1;earned=BONUS_PT;S.points+=earned;S.total+=earned}
+    head=`<div class="badge ${earned?'':'ng'}">じしゅれんしゅう</div><div class="big">${sc}<small>てん</small></div>`;
+    body=earned?`<div class="earn"><span class="coin"></span><span class="pixel">+${earned}</span>pt</div><div class="sub">えらい！ ${BONUS_MAX-d.bonus?`きょう あと${BONUS_MAX-d.bonus}回 もらえるよ。`:'きょうの ぶんは これで おしまい。'}</div>`
+      :(d.bonus||0)>=BONUS_MAX?`<div class="sub">れんしゅう おつかれさま。きょうの じしゅれんしゅうポイントは おしまい。</div>`
+      :`<div class="sub">80てんいじょうで +${BONUS_PT}pt。もういちど やってみよう！</div>`;
+  }
   save();
-  const sb=$('scoreBox');
-  sb.innerHTML=`<div class="badge ${pass?'':'ng'}">${pass?'合格！':'もうすこし！'}</div>
-   <div class="big">${score}<small>てん</small></div>
-   ${first?`<div class="earn"><span class="coin"></span><span class="pixel">+${earned}</span>pt</div><div class="sub">${d.tries}かい目で合格。いまのポイント ${S.points}pt</div>`
-    :pass?`<div class="sub">れんしゅう おつかれさま。きょうのポイントは もうもらってるよ。</div>`
-    :`<div class="sub">あと ${Math.ceil((PASS-score)/10)}もん で合格だったよ。<br>つぎで合格すると +${PTS[Math.min(d.tries,3)]}pt</div>`}`;
+  $('scoreBox').innerHTML=head+body;
   const miss=results.filter(r=>!r.ok);
   $('missBox').hidden=!miss.length;
-  $('missBox').innerHTML=`<h3>まちがえた漢字（あしたも出るよ）</h3>`+miss.map(r=>{const b=BANK[r.id];return `<div class="miss"><span class="t">${esc(b.pre)}<b>［${esc(b.yomi)}］</b>${esc(b.post)}</span><span class="k">${esc(b.ans)}</span></div>`}).join('');
-  $('resultBtns').innerHTML=(!d.passed?`<button class="btn" id="retryBtn">もういちど ちょうせん</button>`:'')+`<button class="btn ${d.passed?'green':'white'}" id="homeBtn">ホームへ</button>`;
+  $('missBox').innerHTML=`<h3>まちがえた漢字</h3>`+miss.map(r=>{const b=BANK[r.id];return `<div class="miss"><span class="t">${esc(b.pre)}<b>［${esc(b.yomi)}］</b>${esc(b.post)}</span><span class="k">${esc(b.ans)}</span></div>`}).join('');
+  const more=mode!=='free'&&d.pending.length;
+  $('resultBtns').innerHTML=(more?`<button class="btn" id="practiceBtn">まちがえた漢字を れんしゅう</button>`:'')+`<button class="btn ${more?'white':'green'}" id="homeBtn">${more?'あとで やる':'ホームへ'}</button>`;
   $('homeBtn').onclick=()=>{renderHome();show('home')};
-  if($('retryBtn'))$('retryBtn').onclick=startQuiz;
+  if($('practiceBtn'))$('practiceBtn').onclick=openLearn;
   show('result');
-  if(pass){sfx('clear');rain()}
+  if(earned||(mode==='practice'&&!wrong.length)){sfx('clear');rain()}
 }
+
+/* ===== せってい（学年・はんい） ===== */
+let suGrade=4,suSel=new Set();
+function openSetup(){suGrade=S.grade||4;suSel=new Set(S.grade?focusChars():[...defaultFocus(suGrade)]);renderSetup();show('setup')}
+function renderSetup(){
+  $('gradeRow').innerHTML=[1,2,3,4,5,6].map(g=>`<button class="${g===suGrade?'on':''}" data-grade="${g}">${g}<small>ねん</small></button>`).join('');
+  const t=TERMS[suGrade],nt=nowTerm();
+  $('suNote').textContent=`いまは ${TERM_NAME[nt]}。学校で ならっている漢字を えらんでね（タップで えらぶ・はずす）。教科書は 光村図書の じゅんばん${suGrade>=5?'（5・6年の学期わけは めやす）':''}。`;
+  $('suQuick').innerHTML=`<button data-q="now">いまの学期を えらぶ</button><button data-q="upto">いまの学期まで ぜんぶ</button><button data-q="all">${suGrade}年 ぜんぶ</button><button data-q="none">ぜんぶ はずす</button>`;
+  $('suTerms').innerHTML=t.map((ks,i)=>!ks?'':`<div class="term"><div class="term-head"><span>${TERM_NAME[i]}（${ks.length}字）${i===nt?'<span class="now">いま</span>':''}</span><button data-term="${i}">${[...ks].every(c=>suSel.has(c))?'はずす':'ぜんぶ えらぶ'}</button></div>
+    <div class="chips">${[...ks].map(c=>`<button class="chip ${suSel.has(c)?'on':''}" data-k="${c}">${c}</button>`).join('')}</div></div>`).join('');
+  const gset=new Set(GRADE_KANJI[suGrade-1]);const extra=[...suSel].filter(c=>!gset.has(c));
+  $('suExtra').innerHTML=extra.map(c=>`<button class="chip on" data-k="${c}" title="${KG[c]||'?'}年">${c}</button>`).join('');
+  const sel=[...suSel],save=S.grade;S.grade=suGrade;const n=sel.length?idsFor(sel,sel).length:0;S.grade=save;
+  $('suCount').innerHTML=sel.length?`えらんだ漢字 <b>${sel.length}</b>字<br>もんだい ${n}もん`:`えらんでいない ときは<br>${suGrade}年の いまの学期までから 出るよ`;
+}
+$('setup').addEventListener('click',e=>{const b=e.target.closest('button');if(!b)return;
+  if(b.dataset.grade){const g=+b.dataset.grade;if(g!==suGrade){suGrade=g;suSel=new Set([...defaultFocus(g)])}}
+  else if(b.dataset.k){const c=b.dataset.k;suSel.has(c)?suSel.delete(c):suSel.add(c)}
+  else if(b.dataset.term){const ks=[...TERMS[suGrade][+b.dataset.term]];const all=ks.every(c=>suSel.has(c));ks.forEach(c=>all?suSel.delete(c):suSel.add(c))}
+  else if(b.dataset.q){const t=TERMS[suGrade],nt=nowTerm();
+    if(b.dataset.q==='now')suSel=new Set([...defaultFocus(suGrade)]);
+    else if(b.dataset.q==='upto')suSel=new Set([...t.slice(0,nt+1).join('')]);
+    else if(b.dataset.q==='all')suSel=new Set([...GRADE_KANJI[suGrade-1]]);
+    else suSel=new Set()}
+  else return;
+  renderSetup()});
+$('suAddBtn').onclick=()=>{const v=[...$('suAddInput').value].filter(c=>KG[c]);v.forEach(c=>suSel.add(c));$('suAddInput').value='';
+  if(!v.length)$('suAddInput').placeholder='小学校で ならう漢字を 入れてね';renderSetup()};
+$('suSave').onclick=()=>{S.grade=suGrade;S.focus=[...suSel].join('');S.fkey='';S.forder=[];
+  if(!(S.days[todayKey()]||{}).tries)S.today=null;save();sfx('reveal');renderHome();show('home')};
+$('setupBtn').onclick=openSetup;
+$('setupBtn2').onclick=openSetup;
 
 /* ===== ショップ ===== */
 function icon(k,c){
@@ -839,7 +1800,6 @@ function icon(k,c){
 }
 function renderShop(){
   $('pts2').textContent=S.points;
-  if(document.activeElement!==$('focusInput'))$('focusInput').value=S.focus||'';focusInfo();
   $('items').innerHTML=SHOP.map(it=>`<div class="panel item">${icon(it.key,it.color)}<div><h3>${it.name}</h3><p>${it.desc}</p><div class="cost"><span class="coin"></span>${it.cost}pt</div></div>
     <button class="btn ${S.points>=it.cost?'yellow':'white'}" data-buy="${it.key}" ${S.points>=it.cost?'':'disabled'}>こうかん</button></div>`).join('');
   const own=S.tickets.slice().reverse();
@@ -850,13 +1810,7 @@ $('items').addEventListener('click',e=>{const b=e.target.closest('[data-buy]');i
   ask(`${it.name}と ${it.cost}pt を こうかんする？`,'こうかん',()=>{if(S.points<it.cost)return;S.points-=it.cost;S.tickets.push({id:Date.now(),key:it.key,date:todayKey(),used:false});save();sfx('clear');renderShop()})});
 $('ticketList').addEventListener('click',e=>{const b=e.target.closest('[data-use]');if(!b)return;const t=S.tickets.find(x=>String(x.id)===b.dataset.use);
   ask('おうちの人：このチケットを つかったことにしますか？','つかった',()=>{t.used=true;save();renderShop()})});
-function focusInfo(){const fc=focusChars();const n=focusIds().length;
-  $('focusInfo').textContent=fc.length?`${fc.length}字 ・ 問題 ${n}もん`:'はんいなし（4年生ぜんぶ）'}
-$('focusSave').onclick=()=>{S.focus=$('focusInput').value.replace(/\s/g,'');S.fkey='';
-  if(!(S.days[todayKey()]||{}).tries)S.today=null; save();focusInfo();sfx('reveal');
-  $('focusSave').textContent='ほぞんしました';setTimeout(()=>$('focusSave').textContent='ほぞん',1500)};
-$('focusInput').addEventListener('input',()=>{const fc=[...new Set([...$('focusInput').value].filter(c=>/[一-鿿]/.test(c)))];$('focusInfo').textContent=`${fc.length}字（ほぞんで はんえい）`});
-$('resetBtn').onclick=()=>ask('ポイント・きろく・チケットを ぜんぶ けします。もとにもどせません。','けす',()=>ask('ほんとうに けしますか？','ぜんぶけす',()=>{S=fresh();save();renderShop()}));
+$('resetBtn').onclick=()=>ask('ポイント・きろく・チケットを ぜんぶ けします。もとにもどせません。','けす',()=>ask('ほんとうに けしますか？','ぜんぶけす',()=>{S=fresh();save();openSetup()}));
 
 /* ===== モーダル ===== */
 let mCb=null;
@@ -872,7 +1826,9 @@ function popText(t){const d=document.createElement('div');d.className='pop';d.te
 function rain(){for(let i=0;i<26;i++){const c=document.createElement('span');c.className='coin fall';c.style.left=Math.random()*100+'vw';c.style.animationDuration=(1.4+Math.random()*1.4)+'s';c.style.animationDelay=Math.random()*.6+'s';document.body.appendChild(c);setTimeout(()=>c.remove(),3400)}}
 
 /* ===== ボタン ===== */
-$('startBtn').onclick=startQuiz;
+$('startBtn').onclick=home;
+$('learnGo').onclick=()=>startQuiz('practice');
+$('learnHome').onclick=()=>{renderHome();show('home')};
 $('shopBtn').onclick=()=>{renderShop();show('shop')};
 $('backBtn').onclick=()=>{renderHome();show('home')};
 $('undoBtn').onclick=()=>{strokes.pop();redraw();updateBtns()};
