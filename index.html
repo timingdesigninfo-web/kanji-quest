@@ -463,7 +463,11 @@ button:focus-visible{outline:4px solid var(--ink);outline-offset:3px}
 .amz-links{display:grid;grid-template-columns:1fr 1fr;gap:8px}
 .amz-links a.rw{background:#FFF4CC;flex-direction:column;gap:2px}
 .news{padding:12px 16px}
-.news summary{list-style:none;cursor:pointer;display:flex;align-items:center;gap:8px}
+.news summary{list-style:none;cursor:pointer;display:flex;align-items:center;gap:4px 8px;flex-wrap:wrap}
+.news-l{flex-basis:100%;font-size:14px;font-weight:800;padding-left:19px}
+.news-l small{display:block;font-size:11px;font-weight:500;opacity:.65}
+.news details[open] .news-l small{display:none}
+.news-s{font-weight:800;margin:8px 0 2px}
 .news summary::-webkit-details-marker{display:none}
 .news summary::before{content:'▶';font-size:11px;transition:transform .15s}
 .news details[open] summary::before{transform:rotate(90deg)}
@@ -597,16 +601,24 @@ button:focus-visible{outline:4px solid var(--ink);outline-offset:3px}
   </section>
   <section class="panel news" id="news">
     <details>
-      <summary><span class="news-h">アップデートのお知らせ</span><span class="news-v">ベータ版 1.0</span></summary>
+      <summary><span class="news-h">アップデートのお知らせ</span><span class="news-v">ベータ版 1.0</span>
+        <span class="news-l">もらえるポイントを調整しました。<small>タップでくわしく</small></span></summary>
       <div class="news-body">
         <div class="news-d">ベータ版 1.0（2026年10月15日）</div>
+        <div class="news-s">もらえるポイント</div>
         <ul>
-          <li><b>きろく</b>：前にといた問題と自分の字を、日付ごとに見返せます。「まちがえた字だけ」も。</li>
-          <li><b>家族と共有</b>：「きろく」→「共有する」でQRを出すと、おうちの人のスマホから記録が見られます。</li>
-          <li><b>ごほうびのOK</b>：PINを決めると、交換はおうちの人のOKで決まります。共有先の「管理する人」のスマホからもOK・ごほうびの編集ができます。</li>
-          <li><b>問題数</b>：1回 5・10・20問から選べます（「学年」の画面）。</li>
-          <li><b>ポイント</b>：一発合格 +50、書き直し1回 +40・2回 +30・3回 +20・4回以上 +10。自主練は80点以上で +10（1日4回）。</li>
-          <li><b>ごほうびをさがす</b>：ごほうびに合わせたAmazonのリンクが出ます（広告）。</li>
+          <li>一発合格 +50</li>
+          <li>書き直し1回で合格 +40・2回 +30・3回 +20・4回以上 +10</li>
+          <li>合格のあとの自主練：80点以上で +10（1日4回まで）</li>
+          <li>15日連続で +100（今までどおり）</li>
+        </ul>
+        <div class="news-s">そのほかの新しいこと</div>
+        <ul>
+          <li>きろく：前にといた問題と自分の字を、日付ごとに見返せます。「まちがえた字だけ」も。</li>
+          <li>家族と共有：「きろく」→「共有する」でQRを出すと、おうちの人のスマホから記録が見られます。</li>
+          <li>ごほうびのOK：PINを決めると、交換はおうちの人のOKで決まります。共有先の「管理する人」のスマホからもOK・ごほうびの編集ができます。</li>
+          <li>問題数：1回 5・10・20問から選べます（「学年」の画面）。</li>
+          <li>ごほうびをさがす：ごほうびに合わせたAmazonのリンクが出ます（広告）。</li>
           <li>キャラクターをタップすると、びっくりします。</li>
         </ul>
       </div>
