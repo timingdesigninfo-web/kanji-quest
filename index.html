@@ -789,7 +789,7 @@ button:focus-visible{outline:4px solid var(--ink);outline-offset:3px}
     <h3>9. 規約の変更</h3>
     <p>この規約は変更することがあります。大きな変更は、アプリの中でお知らせします。</p>
     <h3>10. お問い合わせ</h3>
-    <p><a href="mailto:info@timing.jp">info@timing.jp</a></p>
+    <p><a class="ml" data-u="info" data-d="timing.jp">（表示中…）</a></p>
     <p class="doc-date">2026年10月16日 制定</p>
   </section>
   <section class="panel doc" id="tmPp" hidden>
@@ -816,7 +816,7 @@ button:focus-visible{outline:4px solid var(--ink);outline-offset:3px}
     <h3>6. 変更</h3>
     <p>この内容は変更することがあります。大きな変更は、アプリの中でお知らせします。</p>
     <h3>7. お問い合わせ</h3>
-    <p>データの取り扱いについてのご質問は、こちらへ。<br><a href="mailto:info@timing.jp">info@timing.jp</a></p>
+    <p>データの取り扱いについてのご質問は、こちらへ。<br><a class="ml" data-u="info" data-d="timing.jp">（表示中…）</a></p>
     <p class="doc-date">2026年10月16日 制定</p>
   </section>
   <section class="panel agree" id="tmAgree" hidden>
@@ -2595,6 +2595,8 @@ function openSetup(g){suQn=qn();if(g){suGrade=g;suSel=new Set(g===S.grade&&S.foc
 /* はじめに（学年えらび）→ つかいかた → 範囲 */
 let obGrade=4,obStep=0,obFromHome=false;
 /* ===== 利用規約・プライバシー ===== */
+// メールアドレスは ソースに書かず、表示するときに組み立てる（迷惑メール対策）
+document.querySelectorAll('a.ml').forEach(a=>{const m=a.dataset.u+String.fromCharCode(64)+a.dataset.d;a.textContent=m;a.href='mai'+'lto:'+m});
 const TERMS_V='2026-10-16';
 const agreed=()=>S.agreed===TERMS_V;
 let tmNext=null; // 同意したあとに すること（null＝読むだけ）
