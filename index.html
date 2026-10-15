@@ -301,6 +301,12 @@ button:focus-visible{outline:4px solid var(--ink);outline-offset:3px}
 .ob-board span{position:relative;z-index:1}
 .ob-mark{flex:none;box-sizing:border-box;width:140px;height:140px;border-radius:50%;border:12px solid var(--red);display:flex;align-items:center;justify-content:center;font:800 34px var(--f-pixel);color:var(--ink);background:#fff}
 .ob-btns{display:flex;gap:12px}.ob-btns .btn{flex:1;font-size:20px}
+.ob-admin{align-self:center;font:800 16px var(--f-body);color:var(--ink);background:rgba(255,255,255,.7);border:3px solid var(--ink);border-radius:999px;padding:8px 18px}
+.ob-steps{margin:0;padding:0;list-style:none;display:flex;flex-direction:column;gap:10px;text-align:left;max-width:32ch;counter-reset:s}
+.ob-steps li{display:flex;gap:10px;font-size:15px;font-weight:500;line-height:1.6;counter-increment:s}
+.ob-steps li::before{content:counter(s);flex:none;width:26px;height:26px;border-radius:50%;background:var(--ink);color:#fff;font:800 14px/26px var(--f-body);text-align:center;margin-top:1px}
+.ob-steps b{font-weight:800}
+.ob-card p.small{font-size:13px;opacity:.75;max-width:34ch;text-wrap:pretty}
 .howto{align-self:center;font-size:13px;text-decoration:underline;color:var(--ink)}
 /* ---- せってい ---- */
 #setup{padding-block:16px 0;gap:14px}
@@ -464,6 +470,7 @@ button:focus-visible{outline:4px solid var(--ink);outline-offset:3px}
   <div class="ob-top"><span class="ob-dots" id="obDots"></span><button class="ob-skip" id="obSkip">スキップ</button></div>
   <section class="panel ob-card" id="obCard"></section>
   <div class="ob-btns"><button class="btn white" id="obBack">もどる</button><button class="btn" id="obNext">つぎへ</button></div>
+  <button class="ob-admin" id="obAdmin" hidden>管理する人へ ›</button>
 </main>
 
 <!-- ============ ホーム ============ -->
@@ -2320,24 +2327,35 @@ function openSetup(g){if(g){suGrade=g;suSel=new Set(g===S.grade&&S.focus?focusCh
 /* はじめに（学年えらび）→ つかいかた → 範囲 */
 let obGrade=4,obStep=0,obFromHome=false;
 function openWelcome(){$('wlGrades').innerHTML=[1,2,3,4,5,6].map(g=>`<button data-wg="${g}">${g}<small>年</small></button>`).join('');show('welcome')}
-$('wlGrades').addEventListener('click',e=>{const b=e.target.closest('[data-wg]');if(!b)return;sfx('reveal');obGrade=+b.dataset.wg;obFromHome=false;obStep=0;renderOb();show('onboard')});
+$('wlGrades').addEventListener('click',e=>{const b=e.target.closest('[data-wg]');if(!b)return;sfx('reveal');obGrade=+b.dataset.wg;obFromHome=false;obStep=0;obAdmin=false;renderOb();show('onboard')});
 const OB=[
   {pic:()=>`<div class="ob-board"><span>漢</span></div>`,h:'毎日10問、指で書く',p:'文の中の［よみがな］を漢字で書きます。書く場所は大きく、ほかには何も置いていません。'},
   {pic:()=>`<div class="ob-mark">80点</div>`,h:'AIが採点',p:'10問書いたら、AIがまとめて丸つけ。80点以上で一発合格です。使えないときは自分で○×をつけます。'},
   {pic:()=>icon('star'),h:'書けるまで練習！',p:'まちがえた漢字は、答えを見て覚えて、書けるまでくり返します。書き直しが少ないほどポイントアップ。'},
   {pic:()=>icon('gem'),h:'ポイントでごほうび',p:'ためたポイントで、自分で決めたごほうびと交換。合格のあとの自主練でも+10pt（1日4回）。'},
 ];
-function renderOb(){const o=OB[obStep];
-  $('obCard').innerHTML=`<div class="ob-pic">${o.pic()}</div><h2>${o.h}</h2><p>${o.p}</p>`;
-  $('obDots').innerHTML=OB.map((_,i)=>`<i class="${i===obStep?'on':''}"></i>`).join('');
-  $('obBack').hidden=obStep===0;
-  $('obNext').textContent=obStep<OB.length-1?'つぎへ':(obFromHome?'閉じる':'範囲を選ぶ');
-  $('obSkip').hidden=obStep===OB.length-1}
+let obAdmin=false;
+const OB_PHONE=`<svg viewBox="0 0 120 120"><rect x="34" y="8" width="52" height="104" rx="10" fill="#fff" stroke="#1C2A5C" stroke-width="5"/><rect x="44" y="30" width="32" height="32" fill="#fff" stroke="#1C2A5C" stroke-width="3"/><rect x="48" y="34" width="9" height="9" fill="#1C2A5C"/><rect x="63" y="34" width="9" height="9" fill="#1C2A5C"/><rect x="48" y="49" width="9" height="9" fill="#1C2A5C"/><rect x="63" y="51" width="5" height="5" fill="#1C2A5C"/><rect x="68" y="56" width="4" height="4" fill="#1C2A5C"/><rect x="44" y="72" width="32" height="8" rx="4" fill="#FFCF1F"/><rect x="44" y="86" width="22" height="8" rx="4" fill="#C9DAF5"/></svg>`;
+function renderOb(){const last=obStep===OB.length-1;
+  if(obAdmin){
+    $('obCard').innerHTML=`<div class="ob-pic">${OB_PHONE}</div><h2>管理する人へ</h2>
+      <p>テストの結果は、あなたのスマホなどからも確認できます。</p>
+      <ol class="ob-steps"><li><span>この端末で<b>「きろく」→「共有をはじめる」</b>を押す</span></li>
+      <li><span>出てきたQRを、<b>自分のスマホのカメラ</b>で読みとる</span></li>
+      <li><span>ポイント・カレンダー・まちがえた字が、いつでも見られます</span></li></ol>
+      <p class="small">見るだけで、書きかえはできません。名前やメールアドレスは使いません。</p>`;
+  }else{const o=OB[obStep];$('obCard').innerHTML=`<div class="ob-pic">${o.pic()}</div><h2>${o.h}</h2><p>${o.p}</p>`}
+  $('obDots').innerHTML=OB.map((_,i)=>`<i class="${i===obStep&&!obAdmin?'on':''}"></i>`).join('');
+  $('obBack').hidden=obStep===0&&!obAdmin;
+  $('obNext').textContent=!last&&!obAdmin?'つぎへ':(obFromHome?'閉じる':'はじめる');
+  $('obAdmin').hidden=!last||obAdmin;
+  $('obSkip').hidden=last}
 function obDone(){if(obFromHome){renderHome();show('home')}else openSetup(obGrade)}
-$('obNext').onclick=()=>{if(obStep<OB.length-1){obStep++;renderOb()}else obDone()};
-$('obBack').onclick=()=>{if(obStep>0){obStep--;renderOb()}};
+$('obNext').onclick=()=>{if(!obAdmin&&obStep<OB.length-1){obStep++;renderOb()}else{obAdmin=false;obDone()}};
+$('obBack').onclick=()=>{if(obAdmin){obAdmin=false;renderOb()}else if(obStep>0){obStep--;renderOb()}};
+$('obAdmin').onclick=()=>{obAdmin=true;sfx('reveal');renderOb()};
 $('obSkip').onclick=obDone;
-$('howtoBtn').onclick=()=>{obFromHome=true;obStep=0;renderOb();show('onboard')};
+$('howtoBtn').onclick=()=>{obFromHome=true;obStep=0;obAdmin=false;renderOb();show('onboard')};
 function renderSetup(){
   $('gradeRow').innerHTML=[1,2,3,4,5,6].map(g=>`<button class="${g===suGrade?'on':''}" data-grade="${g}">${g}<small>年</small></button>`).join('');
   const t=TERMS[suGrade],nt=nowTerm();
