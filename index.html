@@ -1831,7 +1831,7 @@ function drawGuide(n,cw,ch){
 // 線は「横ならび」の座標（1マス=1）で保存し、向きがかわってもずれないようにする
 function toUnit(x,y){if(horiz)return [x/box,y/box];const k=Math.min(cur.ans.length-1,Math.max(0,Math.floor(y/box)));return [k+x/box,y/box-k]}
 function toPx(u,v){if(horiz)return [u*box,v*box];const k=Math.min(cur.ans.length-1,Math.max(0,Math.floor(u)));return [(u-k)*box,(v+k)*box]}
-function penStyle(){ictx.strokeStyle='#1C2A5C';ictx.lineWidth=Math.max(5,box*.05);ictx.lineCap='round';ictx.lineJoin='round'}
+function penStyle(){ictx.strokeStyle='#1C2A5C';ictx.lineWidth=Math.max(3.5,box*.034);ictx.lineCap='round';ictx.lineJoin='round'}
 function redraw(){ictx.clearRect(0,0,ink.width,ink.height);penStyle();for(const s of strokes)drawStroke(s)}
 function drawStroke(s){ictx.beginPath();const [x0,y0]=toPx(...s[0]);ictx.moveTo(x0,y0);if(s.length===1){ictx.lineTo(x0+.1,y0+.1)}
   for(let i=1;i<s.length;i++){const [x,y]=toPx(...s[i]);ictx.lineTo(x,y)}ictx.stroke()}
@@ -1848,7 +1848,7 @@ function snapshot(q,st){
   const S2=200,n=q.ans.length,c=document.createElement('canvas');c.width=S2*n;c.height=S2;const x=c.getContext('2d');
   x.fillStyle='#fff';x.fillRect(0,0,c.width,c.height);
   x.strokeStyle='#D5DEEC';x.lineWidth=2;for(let i=1;i<n;i++){x.beginPath();x.moveTo(i*S2,0);x.lineTo(i*S2,S2);x.stroke()}
-  x.strokeStyle='#1C2A5C';x.lineWidth=10;x.lineCap='round';x.lineJoin='round';
+  x.strokeStyle='#1C2A5C';x.lineWidth=7;x.lineCap='round';x.lineJoin='round';
   for(const s of st){x.beginPath();x.moveTo(s[0][0]*S2,s[0][1]*S2);if(s.length===1)x.lineTo(s[0][0]*S2+.1,s[0][1]*S2+.1);for(const p of s.slice(1))x.lineTo(p[0]*S2,p[1]*S2);x.stroke()}
   return {url:c.toDataURL('image/png'),blob:new Promise(r=>c.toBlob(r,'image/png'))};
 }
