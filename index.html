@@ -208,6 +208,7 @@ button:focus-visible{outline:4px solid var(--ink);outline-offset:3px}
 .wv details.tk>summary::before{content:'▶';font-size:11px;transition:transform .15s}
 .wv details.tk[open]>summary::before{transform:rotate(90deg)}
 .tkl{display:flex;flex-direction:column;gap:6px;padding-top:4px}
+.tk-h{font-size:15px;font-weight:800;margin-top:4px}
 .tkr{display:flex;align-items:center;gap:8px;border-top:2px dashed var(--line);padding-top:6px;font-size:14px}
 .tkr .n{flex:1;min-width:0;font-weight:800}.tkr .d{font-size:12px;font-weight:500;opacity:.7;white-space:nowrap}
 .tkr .u{font-size:12px;font-weight:800;white-space:nowrap;padding:2px 8px;border-radius:999px;background:#E8F7EA;color:var(--green)}
@@ -2297,11 +2298,18 @@ function stampsHTML(days){const row=[],now=new Date();
   return row.join('')}
 // 交換したごほうび（チケット）と、ことわったおねがい
 function tkHTML(h){const md=k=>{const [,m,d]=String(k||'').split('-');return m?`${+m}/${+d}`:''};
-  const rows=[...(h.tickets||[]).map(t=>({d:t.date,n:t.name,c:t.cost,u:t.used?'used':'no',ud:t.usedAt})),
-    ...(h.reqs||[]).filter(q=>q.st==='ng'||(h.dec&&h.dec[q.rid]==='0'&&q.st==='wait')).map(q=>({d:dkey(new Date(q.at)),n:q.name,c:q.cost,u:'ng'}))]
-    .sort((a,b)=>a.d<b.d?1:a.d>b.d?-1:0).slice(0,40);
-  if(!rows.length)return `<div class="meta">交換したごほうびは、まだありません。</div>`;
-  return `<details class="tk"><summary>交換したごほうび（${(h.tickets||[]).length}）</summary><div class="tkl">${rows.map(r=>`<div class="tkr"><span class="d">${md(r.d)}</span><span class="n">${esc(r.n||'ごほうび')}${r.c?`<small style="font-weight:500;opacity:.7"> ${r.c}pt</small>`:''}${(()=>{if(r.u==='ng')return '';const kw=amzKw({name:r.n,amz:((h.shop||[]).find(x=>x.name===r.n)||{}).amz});return kw?`<br><a class="amz-mini" href="${amzURL(kw)}" target="_blank" rel="sponsored noopener">Amazonで見る（広告）</a>`:''})()}</span><span class="u ${r.u==='used'?'':r.u}">${r.u==='used'?`使った${r.ud?' '+md(r.ud):''}`:r.u==='ng'?'ことわった':'まだ使ってない'}</span></div>`).join('')}</div></details>`}
+  const dec=h.dec||{},old=!Array.isArray(h.tickets);
+  const rows=[...(h.tickets||[]).map(t=>({d:t.date,n:t.name,c:t.cost,u:t.used?'used':'no',ud:t.usedAt,t:+t.id||0})),
+    // 子どもの端末が古いときは、おねがいの結果から作る
+    ...(h.reqs||[]).filter(q=>old&&(q.st==='ok'||dec[q.rid]==='1')).map(q=>({d:dkey(new Date(q.at)),n:q.name,c:q.cost,u:'ok',t:q.at})),
+    ...(h.reqs||[]).filter(q=>q.st==='ng'||(dec[q.rid]==='0'&&q.st==='wait')).map(q=>({d:dkey(new Date(q.at)),n:q.name,c:q.cost,u:'ng',t:q.at}))]
+    .sort((a,b)=>(b.d+String(b.t).padStart(15,'0'))<(a.d+String(a.t).padStart(15,'0'))?-1:1).slice(0,40);
+  const lab={used:r=>`使った${r.ud?' '+md(r.ud):''}`,no:()=>'まだ使ってない',ok:()=>'OKした',ng:()=>'ことわった'};
+  const row=r=>`<div class="tkr"><span class="d">${md(r.d)}</span><span class="n">${esc(r.n||'ごほうび')}${r.c?`<small style="font-weight:500;opacity:.7"> ${r.c}pt</small>`:''}${(()=>{if(r.u==='ng')return '';const kw=amzKw({name:r.n,amz:((h.shop||[]).find(x=>x.name===r.n)||{}).amz});return kw?`<br><a class="amz-mini" href="${amzURL(kw)}" target="_blank" rel="sponsored noopener">Amazonで見る（広告）</a>`:''})()}</span><span class="u ${r.u==='used'||r.u==='ok'?'':r.u}">${lab[r.u](r)}</span></div>`;
+  return `<div class="tk-h">交換したごほうび</div>`+(rows.length?`<div class="tkl">${rows.slice(0,5).map(row).join('')}</div>`
+      +(rows.length>5?`<details class="tk"><summary>もっと見る（あと${rows.length-5}件）</summary><div class="tkl">${rows.slice(5).map(row).join('')}</div></details>`:'')
+    :`<div class="meta">まだありません。</div>`)
+    +(old?`<div class="meta">※${esc(h.name||'')}${h.name?'さんの':''}端末のアプリを開き直すと、くわしく表示されます。</div>`:'')}
 function renderWatchHead(){const h=HS,el=$('wvHead');
   const g=h.goal,left=g?Math.max(0,g.cost-h.points):0;
   const pend=pendingOf(h,h.dec||{}),w=S.watch.find(w=>w.id===h.id)||{},isAdm=!!w.admin;
