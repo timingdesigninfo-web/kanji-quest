@@ -263,6 +263,7 @@ button:focus-visible{outline:4px solid var(--ink);outline-offset:3px}
   #home .amz{grid-column:1;grid-row:4;align-self:start}
   #home .share-home{grid-column:2;grid-row:3/span 2;align-self:start}
   #home>.info{grid-column:1/-1;grid-row:5}
+  #home>.news{grid-column:1/-1;grid-row:6;align-self:start}
   #home>.walk-space{grid-column:1/-1;grid-row:7}
   #home>.ground{grid-column:1/-1;grid-row:8}
   .bigstart{font-size:32px;padding:26px}
@@ -461,6 +462,16 @@ button:focus-visible{outline:4px solid var(--ink);outline-offset:3px}
 .amz h3{font-size:16px}
 .amz-links{display:grid;grid-template-columns:1fr 1fr;gap:8px}
 .amz-links a.rw{background:#FFF4CC;flex-direction:column;gap:2px}
+.news{padding:12px 16px}
+.news summary{list-style:none;cursor:pointer;display:flex;align-items:center;gap:8px}
+.news summary::-webkit-details-marker{display:none}
+.news summary::before{content:'▶';font-size:11px;transition:transform .15s}
+.news details[open] summary::before{transform:rotate(90deg)}
+.news-h{font-size:15px;font-weight:800}
+.news-v{margin-left:auto;font-size:12px;font-weight:800;background:var(--yellow);border-radius:999px;padding:2px 10px}
+.news-body{padding-top:8px;font-size:13px;font-weight:500;line-height:1.65}
+.news-d{font-weight:800;margin-bottom:4px}
+.news ul{margin:0;padding-left:1.2em;display:flex;flex-direction:column;gap:4px}
 .amz-rw{display:flex;flex-direction:column;gap:8px}.amz-rw:empty{display:none}
 .amz-links a.rw small{display:block;font-size:11px;font-weight:500;opacity:.75}
 .amz-sub{font-size:12px;font-weight:800;margin:2px 0 -2px}
@@ -583,6 +594,23 @@ button:focus-visible{outline:4px solid var(--ink);outline-offset:3px}
     <p class="info-p">まちがえた漢字は書けるまで練習！ クリア後の自主練は80点以上で+10pt（1日4回）。15日連続で+100pt。</p>
     <p class="info-p">※AI採点は、回数や利用の上限で使えないことがあります。そのときは自分で○×をつけます。</p>
     <button class="howto" id="howtoBtn">使い方</button>
+  </section>
+  <section class="panel news" id="news">
+    <details>
+      <summary><span class="news-h">アップデートのお知らせ</span><span class="news-v">ベータ版 1.0</span></summary>
+      <div class="news-body">
+        <div class="news-d">ベータ版 1.0（2026年10月15日）</div>
+        <ul>
+          <li><b>きろく</b>：前にといた問題と自分の字を、日付ごとに見返せます。「まちがえた字だけ」も。</li>
+          <li><b>家族と共有</b>：「きろく」→「共有する」でQRを出すと、おうちの人のスマホから記録が見られます。</li>
+          <li><b>ごほうびのOK</b>：PINを決めると、交換はおうちの人のOKで決まります。共有先の「管理する人」のスマホからもOK・ごほうびの編集ができます。</li>
+          <li><b>問題数</b>：1回 5・10・20問から選べます（「学年」の画面）。</li>
+          <li><b>ポイント</b>：一発合格 +50、書き直し1回 +40・2回 +30・3回 +20・4回以上 +10。自主練は80点以上で +10（1日4回）。</li>
+          <li><b>ごほうびをさがす</b>：ごほうびに合わせたAmazonのリンクが出ます（広告）。</li>
+          <li>キャラクターをタップすると、びっくりします。</li>
+        </ul>
+      </div>
+    </details>
   </section>
   <div class="walk-space"></div>
   <div class="ground"><canvas class="walk"></canvas></div>
@@ -1814,8 +1842,9 @@ const PASS=80, QN_OPTS=[5,10,20]; // 1回の問題数は 100を割りきれる�
 const qn=()=>QN_OPTS.includes(S.qn)?S.qn:10;
 const toScore=(c,n)=>n?Math.round(c*100/n):0;
 // 合格までの書き直し回数 → もらえるポイント（0=一発合格、5回以上は最低）
-const PTS=[50,40,30,20,15,10]; // 一発合格・書き直し1回・2回・3回・4回・5回以上
-const PTS_LABEL=['一発合格','書き直し1回で合格','2回で合格','3回で合格','4回で合格','5回以上で合格'];
+const PTS=[50,40,30,20,10]; // 一発合格・書き直し1回・2回・3回・4回以上
+const RW_MAX=PTS.length-1;
+const PTS_LABEL=['一発合格','書き直し1回で合格','2回で合格','3回で合格','4回以上で合格'];
 const BONUS_MAX=4; // クリア後の 自主練：80点以上で 1回目+20pt、2回目から+10pt（1日4回まで）
 const bonusPt=n=>10; // 自主練は いつも+10（1日の最大＝50＋10×4＝90pt）
 const bonusSum=n=>{let t=0;for(let i=0;i<n;i++)t+=bonusPt(i);return t};
@@ -1891,7 +1920,7 @@ function renderHome(){
   $('gradeLabel').textContent=`${S.grade}年生の漢字`;renderWatchPills();refreshPending();checkDecisions();renderAmzRw();
   const d=day();
   $('pts').textContent=S.points;$('ptsBig').textContent=S.points;updateHomeShare();
-  const n=d.pending.length,nextRw=Math.min(d.rewrites+1,5);
+  const n=d.pending.length,nextRw=Math.min(d.rewrites+1,RW_MAX);
   let cur=-1;
   if(!d.testDone){
     $('qTitle').textContent='今日のクエスト';
@@ -1940,7 +1969,7 @@ function startQuiz(m){ensureToday();mode=m;const d=dayRec();
 function home(){const d=dayRec();
   if(!d.testDone)startQuiz('test');else if(d.pending.length)openLearn();else startQuiz('free')}
 function openLearn(){const d=dayRec();
-  $('learnNote').textContent=`${d.pending.length}字。よく見て覚えたら、見ないで書こう。`+(d.passed?'':` 全部書けたら合格（+${PTS[Math.min(d.rewrites+1,5)]}pt）！`);
+  $('learnNote').textContent=`${d.pending.length}字。よく見て覚えたら、見ないで書こう。`+(d.passed?'':` 全部書けたら合格（+${PTS[Math.min(d.rewrites+1,RW_MAX)]}pt）！`);
   $('learnList').innerHTML=d.pending.map(id=>{const q=BANK[id];return `<div class="panel learn-card"><div class="k">${esc(q.ans)}</div><div class="q">${esc(q.pre)}<b>${esc(q.yomi)}</b>${esc(q.post)}</div></div>`}).join('');
   show('learn')}
 function showQ(){
@@ -2108,7 +2137,7 @@ const STREAK_DAYS=15,STREAK_PT=100; // 15日連続で +100pt
 function streakNow(){let st=0;const dt=new Date();if(!(S.days[todayKey()]||{}).passed)dt.setDate(dt.getDate()-1);
   while((S.days[dkey(dt)]||{}).passed){st++;dt.setDate(dt.getDate()-1)}return st}
 let streakGot=0;
-function award(d,rw){const e=PTS[Math.min(rw,5)];d.passed=true;d.earned=e;d.passRw=rw;S.points+=e;S.total+=e;
+function award(d,rw){const e=PTS[Math.min(rw,RW_MAX)];d.passed=true;d.earned=e;d.passRw=rw;S.points+=e;S.total+=e;
   streakGot=0;const st=streakNow();if(st>0&&st%STREAK_DAYS===0&&!d.streakBonus){d.streakBonus=STREAK_PT;S.points+=STREAK_PT;S.total+=STREAK_PT;streakGot=STREAK_PT}
   return e}
 function finish(){
@@ -2130,7 +2159,7 @@ function finish(){
     head=`<div class="badge ${wrong.length?'ng':''}">${wrong.length?`あと${wrong.length}字！`:(earned?'合格！':'全部書けた！')}</div><div class="big">${correct}<small>/${total}</small></div>`;
     body=earned?`<div class="earn"><span class="coin"></span><span class="pixel">+${earned}</span>pt</div><div class="sub">書き直し${d.rewrites}回で合格。合計 ${S.points}pt</div>`
       :!wrong.length?`<div class="sub">今日のクエスト クリア！</div>`
-      :`<div class="sub">もう一度覚えて書こう。${wasPassed?'':`<br>次で書ければ +${PTS[Math.min(d.rewrites+1,5)]}pt`}</div>`;
+      :`<div class="sub">もう一度覚えて書こう。${wasPassed?'':`<br>次で書ければ +${PTS[Math.min(d.rewrites+1,RW_MAX)]}pt`}</div>`;
   }else{
     const sc=toScore(correct,total);
     if(sc>=PASS&&(d.bonus||0)<BONUS_MAX){earned=bonusPt(d.bonus||0);d.bonus=(d.bonus||0)+1;S.points+=earned;S.total+=earned}
