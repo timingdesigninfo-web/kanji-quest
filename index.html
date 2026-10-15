@@ -359,6 +359,10 @@ button:focus-visible{outline:4px solid var(--ink);outline-offset:3px}
 .ed-row{display:grid;grid-template-columns:1fr 1fr;gap:6px;padding:10px;border:2px dashed var(--line);border-radius:12px}
 .ed-row input,.ed-row select{min-width:0;border:2px solid var(--ink);border-radius:10px;padding:7px 8px;font:800 15px var(--f-body);color:var(--ink);background:#fff}
 .ed-row .full{grid-column:1/-1}
+.ed-icons{display:flex;gap:6px;flex-wrap:wrap}
+.ed-ic{width:44px;height:44px;border:2px solid #C9D6EE;border-radius:10px;background:#fff;padding:4px;display:flex;align-items:center;justify-content:center;opacity:.55}
+.ed-ic svg{width:32px;height:32px}
+.ed-ic.on{border:3px solid var(--ink);background:var(--yellow);opacity:1}
 .ed-f{display:flex;flex-direction:column;gap:3px;min-width:0;font-size:11px;font-weight:800}
 .ed-pt{display:flex;align-items:center;gap:4px;font-size:15px}
 .ed-pt input{flex:1;min-width:0;width:100%}
@@ -2163,15 +2167,24 @@ let edDraft=[];
 function renderEd(){$('edList').innerHTML=edDraft.map((it,i)=>`<div class="ed-row">
   <input class="full" data-f="name" data-i="${i}" value="${esc(it.name)}" placeholder="名前（例：ゲーム 1時間）" maxlength="20">
   <input class="full" data-f="desc" data-i="${i}" value="${esc(it.desc||'')}" placeholder="説明（なくてもOK）" maxlength="30">
-  <label class="ed-f"><span>必要なポイント</span><span class="ed-pt"><input type="number" inputmode="numeric" min="1" max="99999" data-f="cost" data-i="${i}" value="${it.cost}">pt</span></label>
-  <label class="ed-f"><span>アイコン</span><select data-f="icon" data-i="${i}">${Object.entries(ICONS).map(([k,v])=>`<option value="${k}" ${k===it.icon?'selected':''}>${v[0]}</option>`).join('')}</select></label>
+  <div class="ed-icons full" role="radiogroup" aria-label="アイコン">${Object.keys(ICONS).map(k=>`<button type="button" class="ed-ic ${k===it.icon?'on':''}" data-ic="${k}" data-i="${i}" aria-label="${ICONS[k][0]}">${icon(k)}</button>`).join('')}</div>
+  <label class="ed-f full"><span>必要なポイント</span><input type="number" inputmode="numeric" min="1" max="99999" data-f="cost" data-i="${i}" value="${it.cost}"></label>
   <button class="del full" data-del="${i}">消す</button></div>`).join('')}
 $('editShopBtn').onclick=()=>{edDraft=S.shop.map(x=>({...x}));renderEd();$('shopEdit').hidden=false;$('editShopBtn').hidden=true};
 $('edList').addEventListener('input',e=>{const el=e.target,i=+el.dataset.i,f=el.dataset.f;if(!f)return;edDraft[i][f]=f==='cost'?Math.max(1,Math.round(+el.value||1)):el.value});
-$('edList').addEventListener('click',e=>{const b=e.target.closest('[data-del]');if(!b)return;edDraft.splice(+b.dataset.del,1);renderEd()});
+$('edList').addEventListener('click',e=>{const ic=e.target.closest('[data-ic]');if(ic){const i=+ic.dataset.i;edDraft[i].icon=ic.dataset.ic;ic.parentNode.querySelectorAll('.ed-ic').forEach(x=>x.classList.toggle('on',x===ic));return}
+  const b=e.target.closest('[data-del]');if(!b)return;edDraft.splice(+b.dataset.del,1);renderEd()});
 $('edAdd').onclick=()=>{edDraft.push({id:'s'+Date.now(),icon:'star',name:'',desc:'',cost:100});renderEd()};
 $('edCancel').onclick=()=>{$('shopEdit').hidden=true;$('editShopBtn').hidden=false};
-$('edSave').onclick=()=>{S.shop=edDraft.filter(x=>x.name.trim()).map(x=>({...x,name:x.name.trim(),desc:(x.desc||'').trim()}));save();$('shopEdit').hidden=true;$('editShopBtn').hidden=false;sfx('reveal');renderShop()};
+// アイコンは 名前から 自動で えらぶ
+function autoIcon(name,cost,max){const n=name||'';
+  if(/コーヒー|お茶|ジュース|飲|カフェ|ドリンク|ビール/.test(n))return 'cup';
+  if(/ゲーム|Robux|ロブロックス|スイッチ|動画|YouTube|テレビ/i.test(n))return 'game';
+  if(/おやつ|お菓子|おかし|スイーツ|ケーキ|アイス|チョコ/.test(n))return 'snack';
+  if(/本|マンガ|漫画|まんが/.test(n))return 'book';
+  return cost>=max?'gem':'star'}
+$('edSave').onclick=()=>{const list=edDraft.filter(x=>x.name.trim());
+  S.shop=list.map(x=>({...x,name:x.name.trim(),desc:(x.desc||'').trim(),icon:x.icon||'star'}));save();$('shopEdit').hidden=true;$('editShopBtn').hidden=false;sfx('reveal');renderShop()};
 
 /* ===== ショップ ===== */
 function icon(k){const c=(ICONS[k]||ICONS.star)[1];
