@@ -173,6 +173,30 @@ button:focus-visible{outline:4px solid var(--ink);outline-offset:3px}
 .hi-it .m.ok{color:var(--red)}.hi-it .m.ng{color:#2F8CFF}
 .hi-empty{padding:18px;text-align:center;font-size:15px;font-weight:500}
 .hi-old{font-size:13px;font-weight:500;opacity:.75}
+/* ---- 家族と共有 ---- */
+.fam{padding:14px 16px;display:flex;flex-direction:column;gap:10px}
+.fam h3{margin:0;font-size:16px}
+.fam p{margin:0;font-size:13px;font-weight:500;line-height:1.6}
+.fam .qr{align-self:center;background:#fff;border:3px solid var(--ink);border-radius:14px;padding:8px;line-height:0}
+.fam .qr svg{width:200px;height:200px;display:block}
+.fam .lnk{display:flex;gap:8px;align-items:center}
+.fam .lnk input{flex:1;min-width:0;border:3px solid var(--ink);border-radius:10px;padding:8px;font:500 13px var(--f-body);color:var(--ink);background:#fff}
+.fam .row{display:flex;gap:8px;flex-wrap:wrap}
+.fam .row .btn{flex:1;font-size:15px;padding:10px}
+.fam .nm{border:3px solid var(--ink);border-radius:10px;padding:8px 10px;font:500 15px var(--f-body);color:var(--ink);background:#fff;width:100%;box-sizing:border-box}
+.fam .meta{font-size:12px;font-weight:500;opacity:.7}
+.fam .btn.small,.wv .btn.small{padding:8px 14px;font-size:14px;width:auto;flex:none}
+.fam .err{color:var(--red);font-size:13px;font-weight:800}
+.watch-list{display:flex;flex-direction:column;gap:8px}
+.watch-list .w{display:flex;gap:8px;align-items:center}
+.watch-list .w .btn{flex:1;font-size:15px;padding:10px;text-align:left}
+.watch-list .w .x{flex:none;width:40px;height:40px;border-radius:10px;border:3px solid var(--ink);background:#fff;font-size:18px;color:var(--ink)}
+.wv{padding:14px 16px;display:flex;flex-direction:column;gap:10px}
+.wv .wv-top{display:flex;align-items:center;justify-content:space-between;gap:8px}
+.wv .wv-top b{font-size:18px}
+.wv .meta{font-size:12px;font-weight:500;opacity:.7}
+.wv .stamp-row{margin:0}
+
 
 
 /* ---- テスト ---- */
@@ -609,8 +633,10 @@ button:focus-visible{outline:4px solid var(--ink);outline-offset:3px}
 <!-- ============ きろく ============ -->
 <main id="history" class="screen" hidden>
   <div class="shop-head"><h2>きろく</h2><button class="btn white small" id="hiBack">もどる</button></div>
+  <section class="panel wv" id="wvHead" hidden></section>
   <div class="hi-tabs" id="hiTabs"><button class="on" data-f="all">ぜんぶ</button><button data-f="ng">まちがえた字だけ</button></div>
   <div class="hi-list" id="hiList"></div>
+  <section class="panel fam" id="famBox"></section>
   <button class="btn white" id="hiHome">ホームへ</button>
 </main>
 
@@ -1735,12 +1761,13 @@ const OLD_SHOP={snack:'おやつチケット',game:'ゲームチケット',robux
 /* ===== 保存 ===== */
 const KEY='kanjiQuest4.v1';
 function fresh(){const order=BANK.map(b=>b.id);for(let i=order.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[order[i],order[j]]=[order[j],order[i]]}
-  return {v:1,points:0,total:0,days:{},today:null,weak:[],order,cursor:0,tickets:[],grade:null,onboarded:false,focus:'',forder:[],fkey:'',shop:DEFAULT_SHOP.map(x=>({...x}))}}
+  return {v:1,points:0,total:0,days:{},today:null,weak:[],order,cursor:0,tickets:[],grade:null,onboarded:false,focus:'',forder:[],fkey:'',shop:DEFAULT_SHOP.map(x=>({...x})),share:null,watch:[]}}
 function load(){try{const s=JSON.parse(localStorage.getItem(KEY));if(s&&s.v===1){
   BANK.forEach(b=>{if(!s.order.includes(b.id))s.order.push(b.id)});
   if(s.focus===undefined){s.focus=DEFAULT_FOCUS;s.forder=[];s.fkey='';
     if(s.today&&!(s.days[s.today.date]||{}).tries)s.today=null}
   if(s.grade===undefined)s.grade=4;
+  if(!Array.isArray(s.watch))s.watch=[];if(s.share===undefined)s.share=null;
   if(!Array.isArray(s.shop))s.shop=[ // 前のバージョンの ごほうびを ひきつぐ
     {id:'s1',icon:'snack',name:'おやつチケット',desc:'すきなおやつ 1つ',cost:50},
     {id:'s2',icon:'game',name:'ゲームチケット',desc:'ゲーム 1じかん',cost:50},
@@ -2043,6 +2070,7 @@ function finish(){
   save();
   addLog({t:Date.now(),date:todayKey(),mode,rw:mode==='practice'?d.rewrites:0,ai:aiState==='ai'||aiState==='partial',earned,
     items:results.map((r,i)=>{const b=BANK[r.id]||{};return {p:b.pre,y:b.yomi,o:b.post,a:b.ans,ok:r.ok,img:thumb(b.ans||'',(written[i]||{}).strokes||[])}})});
+  syncSoon();
   $('scoreBox').innerHTML=head+body;
   const miss=results.filter(r=>!r.ok);
   $('missBox').hidden=!miss.length;
@@ -2079,29 +2107,34 @@ const hhmm=t=>{const d=new Date(t);return `${d.getHours()}:${pad(d.getMinutes())
 let hiFilter='all';
 function sTitle(s){const c=s.items.filter(i=>i.ok).length,n=s.items.length;
   return s.mode==='test'?`テスト ${c*10}点`:s.mode==='practice'?`書けるまで練習${s.rw?`（${s.rw}回目）`:''} ${c}/${n}`:`自主練 ${c*10}点`}
+let HS=null; // ほかの端末の記録を見ているとき
+const hsrc=()=>HS?{log:HS.log||[],days:HS.days||{}}:{log:LOG,days:S.days};
 function dayTag(r){if(!r||!r.tries)return '';if(!r.passed)return '<span class="hi-tag">練習中</span>';
   const rw=r.passRw??(r.tries-1);return rw===0?'<span class="hi-tag gold">一発合格</span>':`<span class="hi-tag silver">書き直し${rw}回で合格</span>`}
-function openHistory(focus){renderHistory();show('history');
+function openHistory(focus){HS=null;renderHistory();show('history');
   if(focus){const el=document.querySelector(`.hi-day[data-d="${focus}"]`);if(el){el.scrollIntoView({block:'start'});const s=el.querySelector('details');if(s)s.open=true}}}
 function renderHistory(){
-  const byDay={};LOG.forEach((s,i)=>{(byDay[s.date]=byDay[s.date]||[]).push(i)});
-  Object.keys(S.days).forEach(k=>{if(S.days[k].tries&&!byDay[k])byDay[k]=[]});
+  const {log:LG,days:DY}=hsrc();
+  document.querySelector('#history .shop-head h2').textContent=HS?`${HS.name||(HS.grade?HS.grade+'年生':'')}のきろく`:'きろく';
+  $('famBox').hidden=!!HS;$('wvHead').hidden=!HS;if(HS)renderWatchHead();else renderFam();
+  const byDay={};LG.forEach((s,i)=>{(byDay[s.date]=byDay[s.date]||[]).push(i)});
+  Object.keys(DY).forEach(k=>{if(DY[k].tries&&!byDay[k])byDay[k]=[]});
   const keys=Object.keys(byDay).sort().reverse();
   let html='';
   for(const k of keys){
     let ss=byDay[k].slice().reverse();
-    if(hiFilter==='ng')ss=ss.filter(i=>LOG[i].items.some(it=>!it.ok));
+    if(hiFilter==='ng')ss=ss.filter(i=>LG[i].items.some(it=>!it.ok));
     if(hiFilter==='ng'&&!ss.length)continue;
-    const r=S.days[k];
+    const r=DY[k];
     html+=`<section class="panel hi-day" data-d="${k}"><div class="hi-dh"><b>${dLabel(k)}</b>${dayTag(r)}</div>`
-      +(byDay[k].length?ss.map(i=>{const s=LOG[i],ng=s.items.filter(it=>!it.ok).length;
+      +(byDay[k].length?ss.map(i=>{const s=LG[i],ng=s.items.filter(it=>!it.ok).length;
         return `<details class="hi-s" data-i="${i}"><summary>${sTitle(s)}${ng?`<span class="ng">×${ng}</span>`:''}<span class="r">${hhmm(s.t)}・${s.ai?'AI':'自分'}</span></summary><div class="hi-items"></div></details>`}).join('')
       :`<div class="hi-old">${r.best||0}点（くわしい記録はありません）</div>`)
       +`</section>`;
   }
-  $('hiList').innerHTML=html||`<div class="panel hi-empty">${hiFilter==='ng'?'まちがえた字はありません。':'まだ記録がありません。<br>テストをすると、ここに残ります。'}</div>`;
+  $('hiList').innerHTML=html||`<div class="panel hi-empty">${hiFilter==='ng'?'まちがえた字はありません。':HS?'まだ記録がありません。':'まだ記録がありません。<br>テストをすると、ここに残ります。'}</div>`;
 }
-function renderSession(det){const s=LOG[+det.dataset.i];if(!s)return;
+function renderSession(det){const s=hsrc().log[+det.dataset.i];if(!s)return;
   const its=hiFilter==='ng'?s.items.filter(it=>!it.ok):s.items;
   det.querySelector('.hi-items').innerHTML=its.map(it=>`<div class="hi-it">
     <div class="q">${esc(it.p||'')}<b>${esc(it.y||'')}</b>${esc(it.o||'')}</div>
@@ -2111,9 +2144,80 @@ $('hiList').addEventListener('toggle',e=>{const d=e.target;if(d.matches&&d.match
 $('hiTabs').onclick=e=>{const b=e.target.closest('button');if(!b)return;hiFilter=b.dataset.f;
   $('hiTabs').querySelectorAll('button').forEach(x=>x.classList.toggle('on',x===b));sfx('reveal');renderHistory()};
 $('historyBtn').onclick=()=>{sfx('reveal');openHistory()};
-$('hiBack').onclick=$('hiHome').onclick=()=>{renderHome();show('home')};
+$('hiBack').onclick=$('hiHome').onclick=()=>{HS=null;renderHome();show('home')};
 $('stampRow').addEventListener('click',e=>{const st=e.target.closest('.st');if(!st||!st.title)return;
   const k=st.title;if(LOG.some(s=>s.date===k)||(S.days[k]||{}).tries){sfx('reveal');openHistory(k)}});
+
+/* ===== 家族と共有（ほかの端末から記録を見る） ===== */
+const SYNC_URL='/api/sync';
+const rid=n=>{const c='ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnpqrstuvwxyz23456789',a=crypto.getRandomValues(new Uint8Array(n));return [...a].map(x=>c[x%c.length]).join('')};
+const viewURL=id=>`${SHARE_URL}/#view=${id}`;
+function syncPayload(){
+  const cut=dkey(new Date(Date.now()-90*864e5)),days={};
+  for(const k in S.days)if(k>=cut){const d=S.days[k];days[k]={tries:d.tries,passed:d.passed,passRw:d.passRw,best:d.best,earned:d.earned,bonus:d.bonus,streakBonus:d.streakBonus}}
+  const log=LOG.filter(s=>s.date>=cut).map(s=>({...s,items:s.items.map(it=>({...it}))}));
+  const g=goalItem();
+  const out={v:1,at:Date.now(),name:S.share.name||'',grade:S.grade,points:S.points,streak:streakNow(),goal:g?{name:g.name,cost:g.cost}:null,days,log};
+  let j=JSON.stringify(out);
+  for(let i=0;j.length>800000&&i<log.length;i+=5){log.slice(i,i+5).forEach(s=>s.items.forEach(it=>delete it.img));j=JSON.stringify(out)}
+  while(j.length>800000&&log.length){log.splice(0,10);j=JSON.stringify(out)}
+  return j}
+let syncT=0,syncErr='';
+function syncSoon(){if(!S.share)return;clearTimeout(syncT);syncT=setTimeout(syncNow,800)}
+async function syncNow(){if(!S.share)return false;
+  try{const r=await fetch(SYNC_URL,{method:'POST',headers:{'Content-Type':'application/json'},body:`{"id":"${S.share.id}","key":"${S.share.key}","data":${syncPayload()}}`});
+    if(r.ok){S.share.at=Date.now();syncErr='';save();if(!$('history').hidden&&!HS)renderFam();return true}
+    syncErr=r.status===503?'共有の準備がまだできていません。':'うまく送れませんでした。';}catch(e){syncErr='つながりませんでした。'}
+  if(!$('history').hidden&&!HS)renderFam();return false}
+let qrLib=null;
+function loadQR(){return qrLib||(qrLib=new Promise((ok,ng)=>{const sc=document.createElement('script');sc.src='qr.js';sc.onload=()=>ok(window.qrcode);sc.onerror=ng;document.head.appendChild(sc)}))}
+async function drawQR(el,text){try{const q=(await loadQR())(0,'M');q.addData(text);q.make();el.innerHTML=q.createSvgTag({cellSize:4,margin:2,scalable:true})}catch(e){el.textContent='QRを表示できませんでした'}}
+function renderFam(){const b=$('famBox'),sh=S.share;
+  const wl=S.watch.length?`<h3>見ている記録</h3><div class="watch-list">${S.watch.map((w,i)=>`<div class="w"><button class="btn white" data-watch="${i}">${esc(w.name||(w.grade?w.grade+'年生':'記録'))}のきろく</button><button class="x" data-unwatch="${i}" aria-label="外す">×</button></div>`).join('')}</div>`:'';
+  if(!sh){b.innerHTML=`<h3>家族と共有</h3><p>ほかのスマホやタブレットから、この記録を見られるようにします。名前やメールアドレスは使いません。</p>${syncErr?`<div class="err">${syncErr}</div>`:''}<button class="btn" id="famStart">共有をはじめる</button>${wl}`;
+    $('famStart').onclick=startShare;}
+  else{const url=viewURL(sh.id);
+    b.innerHTML=`<h3>家族と共有中</h3><p>見る人のスマホでQRを読みとってください。テストのたびに、自動で最新になります。</p>
+      <div class="qr" id="famQR"></div>
+      <input class="nm" id="famName" maxlength="12" placeholder="表示名（例：たろう）" value="${esc(sh.name||'')}">
+      <div class="lnk"><input readonly value="${url}" id="famURL"><button class="btn white small" id="famCopy">コピー</button></div>
+      ${syncErr?`<div class="err">${syncErr}</div>`:`<div class="meta">${sh.at?`最終更新 ${dLabel(dkey(new Date(sh.at)))} ${hhmm(sh.at)}`:''}</div>`}
+      <div class="row"><button class="btn white" id="famSync">今すぐ更新</button><button class="btn white" id="famStop">共有をやめる</button></div>
+      <p class="meta">QRやリンクを知っている人は誰でも見られます。家族だけに教えてください。</p>${wl}`;
+    drawQR($('famQR'),url);
+    $('famName').onchange=e=>{sh.name=e.target.value.trim().slice(0,12);save();syncNow()};
+    $('famCopy').onclick=()=>{navigator.clipboard?.writeText(url).then(()=>{$('famCopy').textContent='OK!'}).catch(()=>{$('famURL').select()})};
+    $('famSync').onclick=()=>{$('famSync').textContent='更新中…';syncNow()};
+    $('famStop').onclick=()=>ask('共有をやめる？ ほかの端末からは見られなくなります。','やめる',async()=>{const s0=S.share;S.share=null;save();
+      try{await fetch(SYNC_URL,{method:'DELETE',headers:{'Content-Type':'application/json'},body:JSON.stringify({id:s0.id,key:s0.key})})}catch(e){}renderFam()});}
+  b.querySelectorAll('[data-watch]').forEach(x=>x.onclick=()=>openWatch(S.watch[+x.dataset.watch].id));
+  b.querySelectorAll('[data-unwatch]').forEach(x=>x.onclick=()=>{S.watch.splice(+x.dataset.unwatch,1);save();renderFam()});
+}
+async function startShare(){S.share={id:rid(20),key:rid(40),name:'',at:0};save();
+  const b=$('famStart');if(b)b.textContent='準備中…';
+  if(!await syncNow()){S.share=null;save()}renderFam()}
+function stampsHTML(days){const row=[],now=new Date();
+  for(let i=14;i>=0;i--){const dt=new Date(now);dt.setDate(now.getDate()-i);const k=dkey(dt),r=days[k];
+    const cls=r&&r.passed?((r.passRw??(r.tries-1))===0?'gold':'silver'):'';row.push(`<div class="st ${cls} ${i===0?'today':''}" title="${k}">${dt.getDate()}</div>`)}
+  return row.join('')}
+function renderWatchHead(){const h=HS,el=$('wvHead');
+  const g=h.goal,left=g?Math.max(0,g.cost-h.points):0;
+  el.innerHTML=`<div class="wv-top"><b>${esc(h.name||'')}${h.grade?` ${h.grade}年生`:''}</b><button class="btn white small" id="wvReload">最新にする</button></div>
+    <div class="now-pt"><span class="now-l">今のポイント</span><span class="now-v"><span class="coin"></span><span class="pixel">${h.points||0}</span><small>pt</small></span></div>
+    ${g?`<div class="goal-head"><span>${esc(g.name)} まで</span><span class="pixel">${left?`あと ${left}pt`:'交換できる！'}</span></div><div class="bar"><i style="width:${Math.min(100,(h.points||0)/g.cost*100)}%"></i><span>${h.points||0} / ${g.cost}</span></div>`:''}
+    <div class="cal-head"><span>15日カレンダー</span><span>${h.streak?`${h.streak}日連続！`:''}</span></div>
+    <div class="stamp-row">${stampsHTML(h.days||{})}</div>
+    <div class="meta">${h.at?`${dLabel(dkey(new Date(h.at)))} ${hhmm(h.at)} の記録`:''}</div>`;
+  $('wvReload').onclick=()=>openWatch(h.id)}
+async function openWatch(id){
+  hiFilter='all';$('hiTabs').querySelectorAll('button').forEach(x=>x.classList.toggle('on',x.dataset.f==='all'));
+  HS={id,log:[],days:{},loading:true};renderHistory();show('history');$('hiList').innerHTML='<div class="panel hi-empty">読みこみ中…</div>';
+  try{const r=await fetch(SYNC_URL+'?id='+encodeURIComponent(id),{cache:'no-store'});
+    if(r.status===404){$('hiList').innerHTML='<div class="panel hi-empty">この共有は終了しています。</div>';$('wvHead').hidden=true;return}
+    if(!r.ok)throw 0;const d=await r.json();HS={...d,id};
+    const w=S.watch.find(w=>w.id===id);if(w){w.name=d.name||'';w.grade=d.grade}else S.watch.push({id,name:d.name||'',grade:d.grade});save();
+    renderHistory();
+  }catch(e){$('hiList').innerHTML='<div class="panel hi-empty">読みこめませんでした。<br>電波のよいところで「最新にする」を押してください。</div>'}}
 
 /* ===== SNSシェア ===== */
 const SHARE_URL=/^https?:/.test(location.protocol)&&!/claude|usercontent/.test(location.host)?location.origin:'https://kanji-quest-black.vercel.app';
@@ -2307,10 +2411,10 @@ function renderShop(){
     :`<div class="empty">まだありません。ポイントをためて交換しよう！</div>`;
 }
 $('items').addEventListener('click',e=>{const b=e.target.closest('[data-buy]');if(!b)return;const it=S.shop.find(s=>s.id===b.dataset.buy);if(!it)return;
-  ask(`${it.name}と${it.cost}ptを交換する？`,'交換',()=>{if(S.points<it.cost)return;S.points-=it.cost;S.tickets.push({id:Date.now(),name:it.name,date:todayKey(),used:false});save();sfx('clear');renderShop()})});
+  ask(`${it.name}と${it.cost}ptを交換する？`,'交換',()=>{if(S.points<it.cost)return;S.points-=it.cost;S.tickets.push({id:Date.now(),name:it.name,date:todayKey(),used:false});save();syncSoon();sfx('clear');renderShop()})});
 $('ticketList').addEventListener('click',e=>{const b=e.target.closest('[data-use]');if(!b)return;const t=S.tickets.find(x=>String(x.id)===b.dataset.use);
   ask('このチケットを使った？','使った',()=>{t.used=true;save();renderShop()})});
-$('resetBtn').onclick=()=>ask('ポイント・記録・チケットを全部消します。元に戻せません。','消す',()=>ask('本当に消しますか？','全部消す',()=>{S=fresh();save();openWelcome()}));
+$('resetBtn').onclick=()=>ask('ポイント・記録・チケットを全部消します。元に戻せません。','消す',()=>ask('本当に消しますか？','全部消す',()=>{if(S.share)fetch(SYNC_URL,{method:'DELETE',headers:{'Content-Type':'application/json'},body:JSON.stringify({id:S.share.id,key:S.share.key})}).catch(()=>{});S=fresh();save();openWelcome()}));
 
 /* ===== モーダル ===== */
 let mCb=null;
@@ -2465,7 +2569,9 @@ document.fonts.load('600 40px "Klee One"','漢').catch(()=>{});
     ctx.globalAlpha=1;fl=fl.filter(f=>f.x>-120&&f.x<W+120)}
   requestAnimationFrame(step);
 })();
-renderHome();
+{const m=/view=([A-Za-z0-9]{16,32})/.exec(location.hash);
+  if(m){history.replaceState(null,'',location.pathname+location.search);openWatch(m[1])}else renderHome();
+  if(S.share)syncSoon();}
 </script>
 
 </body>
