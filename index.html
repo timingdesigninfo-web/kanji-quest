@@ -294,7 +294,7 @@ button:focus-visible{outline:4px solid var(--ink);outline-offset:3px}
   <div class="cloud c1"></div><div class="cloud c2"></div>
   <div class="wl-hero">
     <div class="logo wl-logo">かんじクエスト</div>
-    <p class="wl-tag">小学校の漢字に、もう一度。</p>
+    <p class="wl-tag">小学生の漢字。書けますか？</p>
   </div>
   <section class="panel su-sec">
     <h2>何年生にする？</h2>
@@ -341,7 +341,7 @@ button:focus-visible{outline:4px solid var(--ink);outline-offset:3px}
 
   <div class="foot-row">
     <button class="btn violet" id="shopBtn">ごほうび</button>
-    <button class="btn white" id="setupBtn" style="flex:0 0 auto">学年・範囲</button>
+    <button class="btn white" id="setupBtn" style="flex:0 0 auto">学年</button>
   </div>
   <button class="howto" id="howtoBtn">使い方</button>
   <p class="ai-note">※AI採点は、回数や利用の上限で使えないことがあります。そのときは自分で○×をつけます。</p>
@@ -444,7 +444,7 @@ button:focus-visible{outline:4px solid var(--ink);outline-offset:3px}
     <button class="btn white" id="edAdd">＋ 追加</button>
     <div class="ed-btns"><button class="btn white" id="edCancel">やめる</button><button class="btn green" id="edSave">保存</button></div>
   </section>
-  <button class="btn white" id="setupBtn2">学年・範囲</button>
+  <button class="btn white" id="setupBtn2">学年</button>
   <section class="panel amz">
     <h3>勉強のおともに</h3>
     <div class="amz-links">
@@ -1905,8 +1905,8 @@ $('suAddBtn').onclick=()=>{const v=[...$('suAddInput').value].filter(c=>KG[c]);v
   if(!v.length)$('suAddInput').placeholder='小学校の漢字を入力';renderSetup()};
 $('suSave').onclick=()=>{S.grade=suGrade;S.onboarded=true;S.focus=[...suSel].join('');S.fkey='';S.forder=[];
   if(!(S.days[todayKey()]||{}).tries)S.today=null;save();sfx('reveal');renderHome();show('home')};
-$('setupBtn').onclick=openSetup;
-$('setupBtn2').onclick=openSetup;
+$('setupBtn').onclick=()=>openSetup();
+$('setupBtn2').onclick=()=>openSetup();
 /* ごほうび へんしゅう */
 let edDraft=[];
 function renderEd(){$('edList').innerHTML=edDraft.map((it,i)=>`<div class="ed-row">
