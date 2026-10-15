@@ -25,7 +25,7 @@ const RULES = `判定のしかた:
 - 迷ったときは、その字だと読み取れれば ○。
 
 JSONの配列だけで答えてください。画像1つにつき1つ、順番どおり:
-[{"n":1,"ok":true,"why":"子どもに向けた ひらがな多めの ひとこと（25文字いない）"}]
+[{"n":1,"ok":true,"why":"ひらがな多めの ひとこと（20文字いない）"}]
 ×のときの why には、どこがちがうか（例:「てんが 1つ たりないよ」）を書いてください。`;
 
 function send(res, code, body) {
@@ -98,7 +98,7 @@ ${RULES}`,
       headers: { 'x-api-key': key, 'anthropic-version': '2023-06-01', 'content-type': 'application/json' },
       body: JSON.stringify({
         model: process.env.KANJI_MODEL || 'claude-sonnet-5-5',
-        max_tokens: 1500,
+        max_tokens: 4000,
         messages: [{ role: 'user', content }],
       }),
     });
@@ -108,9 +108,16 @@ ${RULES}`,
     }
     const data = await r.json();
     const text = (data.content || []).filter(c => c.type === 'text').map(c => c.text).join('');
+    // ふつうは JSON の配列。途中で切れていても、読める {…} だけ使う
+    let results = null;
     const a = text.indexOf('['), b = text.lastIndexOf(']');
-    const results = JSON.parse(text.slice(a, b + 1));
-    if (!Array.isArray(results)) throw new Error('not array');
+    if (a >= 0 && b > a) { try { results = JSON.parse(text.slice(a, b + 1)); } catch {} }
+    if (!Array.isArray(results)) {
+      results = [];
+      for (const m of text.matchAll(/\{[^{}]*\}/g)) { try { results.push(JSON.parse(m[0])); } catch {} }
+    }
+    if (!results.length) { console.error('parse_failed', data.stop_reason, text.slice(0, 300)); throw new Error('no results'); }
+    if (data.stop_reason === 'max_tokens') console.warn('truncated', results.length);
     return send(res, 200, {
       results: results.map(x => ({ n: Number(x && x.n) || 0, ok: !!x && x.ok === true, why: String((x && x.why) || '').slice(0, 60) })),
     });

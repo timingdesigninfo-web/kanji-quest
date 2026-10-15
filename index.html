@@ -1873,7 +1873,7 @@ const RULES=`判定のしかた:
 - 迷ったときは、その字だと読み取れれば ○。
 
 JSONの配列だけで答えてください。画像1つにつき1つ、順番どおり:
-[{"n":1,"ok":true,"why":"子どもに向けた ひらがな多めの ひとこと（25文字いない）"}]
+[{"n":1,"ok":true,"why":"ひらがな多めの ひとこと（20文字いない）"}]
 ×のときの why には、どこがちがうか（例:「てんが 1つ たりないよ」）を書いてください。`;
 function applyResults(res,idxs){
   if(!Array.isArray(res))throw {code:'invalid_json'};
