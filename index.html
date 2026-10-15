@@ -1992,8 +1992,13 @@ async function shareCard(o){const N=1080,c=document.createElement('canvas');c.wi
       if(im){const sc=Math.min((cw-12)/im.width,(ch-12)/im.height),w=im.width*sc,h=im.height*sc;x.drawImage(im,cx+(cw-w)/2,cy+(ch-h)/2,w,h)}
       const ok=o.thumbs[i].ok;x.lineWidth=7;x.strokeStyle=ok?'rgba(240,64,47,.9)':'rgba(47,140,255,.9)';x.beginPath();
       if(ok){x.arc(cx+cw-26,cy+26,17,0,7)}else{x.moveTo(cx+cw-42,cy+10);x.lineTo(cx+cw-10,cy+42);x.moveTo(cx+cw-10,cy+10);x.lineTo(cx+cw-42,cy+42)}x.stroke()})}
-  x.font=F('800 44px');x.fillStyle='#fff';x.lineWidth=10;x.strokeStyle='#1C2A5C';x.strokeText('#かんじクエスト',N/2,o.thumbs?N-140:800);x.fillText('#かんじクエスト',N/2,o.thumbs?N-140:800);
-  if(!o.thumbs){x.font=F('500 34px');x.fillStyle='#1C2A5C';x.fillText(SHARE_URL.replace(/^https?:\/\//,''),N/2,870)}
+  // 漢字キャラ（地面と空）
+  try{if(window.kanjiSprite){const gy=N-90,sz=o.thumbs?118:150,put=(ch,cx,dir)=>{const im=kanjiSprite(ch,dir);x.drawImage(im,cx-sz/2,gy-sz*64/60+6,sz,sz*64/60)};
+      if(o.thumbs){put('山',90,1);put('花',210,1);put('鬼',N-210,-1);put('王',N-90,-1)}
+      else{put('山',100,1);put('花',240,1);put('鬼',N-240,-1);put('王',N-100,-1)}}
+    if(window.skySprite){const b=skySprite('bird',1),c=skySprite('cloud');x.drawImage(c,N-210,20,170,136);x.drawImage(b,40,30,130,104)}}catch(e){}
+  x.font=F('800 44px');x.fillStyle='#fff';x.lineWidth=10;x.strokeStyle='#1C2A5C';x.strokeText('#かんじクエスト',N/2,o.thumbs?N-140:775);x.fillText('#かんじクエスト',N/2,o.thumbs?N-140:775);
+  if(!o.thumbs){x.font=F('500 34px');x.fillStyle='#1C2A5C';x.fillText(SHARE_URL.replace(/^https?:\/\//,''),N/2,835)}
   return new Promise(r=>c.toBlob(b=>r(b),'image/png'))}
 let shareBlob=null,hsBlob=null;
 async function shareWith(text,blob,name){
@@ -2214,6 +2219,7 @@ document.fonts.load('600 40px "Klee One"','漢').catch(()=>{});
     x.lineJoin='round';x.strokeStyle=INK;x.lineWidth=7;x.strokeText(c.ch,30,33);x.fillStyle=c.col;x.fillText(c.ch,30,33);
     deco(x,c.deco,dir,true);face(x,c.foe,dir);
     return cache[key]=cv}
+  window.kanjiSprite=(ch,dir=1,fi=0)=>sprite(CHARS.find(c=>c.ch===ch)||CHARS[0],fi,dir);
   const reduce=matchMedia('(prefers-reduced-motion: reduce)').matches;
   document.fonts&&document.fonts.load('800 44px "M PLUS Rounded 1c"','山川木花星犬王火鬼毒悪敵').then(()=>{for(const k in cache)delete cache[k]}).catch(()=>{});
   const friends=CHARS.filter(c=>!c.foe),foes=CHARS.filter(c=>c.foe),pick=a=>a[Math.floor(Math.random()*a.length)];
@@ -2267,6 +2273,7 @@ document.fonts.load('600 40px "Klee One"','漢').catch(()=>{});
     x.strokeStyle=INK;x.lineWidth=2.2;x.lineCap='round';[33,47].forEach(ex=>{x.beginPath();x.arc(ex,30,3.5,.1*Math.PI,.9*Math.PI);x.stroke()});
     ell(x,27,37,2.6,1.6,'rgba(255,111,168,.55)');ell(x,53,37,2.6,1.6,'rgba(255,111,168,.55)');
     return cache[key]=c}
+  window.skySprite=(k,dir=1)=>k==='bird'?bird(1,dir):cloud(0);
   document.fonts&&document.fonts.load('800 44px "M PLUS Rounded 1c"','鳥雲').then(()=>{for(const k in cache)delete cache[k]}).catch(()=>{});
   let W=0,H=0,dpr=1,fl=[],last=0,spawnT=1;
   function size(){dpr=Math.min(devicePixelRatio||1,2);W=innerWidth;H=innerHeight;cv.width=W*dpr;cv.height=H*dpr;ctx.setTransform(dpr,0,0,dpr,0,0)}
