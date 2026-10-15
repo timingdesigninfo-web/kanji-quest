@@ -93,6 +93,7 @@ module.exports = async (req, res) => {
         id: String(x.id || '').slice(0, 24), icon: String(x.icon || 'star').slice(0, 12),
         name: String(x.name || '').slice(0, 20), desc: String(x.desc || '').slice(0, 30),
         cost: Math.max(1, Math.min(99999, Math.round(Number(x.cost) || 1))),
+        amz: String(x.amz || '').slice(0, 30),
       })).filter(x => x.name.trim());
       const v = Date.now();
       await db([['SET', 'kq:shop:' + id, JSON.stringify({ v, list }), 'EX', TTL]]);

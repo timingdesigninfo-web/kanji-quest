@@ -456,6 +456,11 @@ button:focus-visible{outline:4px solid var(--ink);outline-offset:3px}
 .amz{padding:12px 16px;display:flex;flex-direction:column;gap:8px;box-shadow:none;border-width:2px}
 .amz h3{font-size:16px}
 .amz-links{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.amz-links a.rw{background:#FFF4CC;flex-direction:column;gap:2px}
+.amz-rw{display:flex;flex-direction:column;gap:8px}.amz-rw:empty{display:none}
+.amz-links a.rw small{display:block;font-size:11px;font-weight:500;opacity:.75}
+.amz-sub{font-size:12px;font-weight:800;margin:2px 0 -2px}
+.amz-mini{display:inline-block;margin-top:4px;font-size:12px;font-weight:800;color:var(--ink);text-decoration:underline}
 .amz-links a{display:flex;align-items:center;justify-content:center;min-height:48px;padding:8px;border:3px solid var(--ink);border-radius:12px;font-size:15px;font-weight:800;color:var(--ink);text-decoration:none;background:var(--sky-lite);box-shadow:0 3px 0 var(--ink);text-align:center}
 .amz-links a:active{transform:translateY(2px);box-shadow:0 1px 0 var(--ink)}
 .amz-note{margin:0;font-size:10px;font-weight:500;opacity:.7}
@@ -539,6 +544,7 @@ button:focus-visible{outline:4px solid var(--ink);outline-offset:3px}
     <button class="btn white" id="setupBtn" style="flex:0 0 auto">学年</button>
   </div>
   <section class="panel amz">
+    <div class="amz-rw"></div>
     <h3>おすすめ勉強ツール</h3>
     <div class="amz-links">
       <a href="https://www.amazon.co.jp/s?k=%E6%BC%A2%E5%AD%97%E3%83%89%E3%83%AA%E3%83%AB+%E5%B0%8F%E5%AD%A6%E7%94%9F&tag=timing-22" target="_blank" rel="sponsored noopener">漢字ドリル</a>
@@ -703,6 +709,7 @@ button:focus-visible{outline:4px solid var(--ink);outline-offset:3px}
   <section class="panel parent" id="parentBox"></section>
   <button class="btn white" id="setupBtn2">学年</button>
   <section class="panel amz">
+    <div class="amz-rw"></div>
     <h3>おすすめ勉強ツール</h3>
     <div class="amz-links">
       <a href="https://www.amazon.co.jp/s?k=%E6%BC%A2%E5%AD%97%E3%83%89%E3%83%AA%E3%83%AB+%E5%B0%8F%E5%AD%A6%E7%94%9F&tag=timing-22" target="_blank" rel="sponsored noopener">漢字ドリル</a>
@@ -1868,7 +1875,7 @@ function show(id){['home','quiz','learn','grading','review','result','shop','set
 function renderHome(){
   if(!S.onboarded){openWelcome();return}
   ensureToday();
-  $('gradeLabel').textContent=`${S.grade}年生の漢字`;renderWatchPills();refreshPending();checkDecisions();
+  $('gradeLabel').textContent=`${S.grade}年生の漢字`;renderWatchPills();refreshPending();checkDecisions();renderAmzRw();
   const d=day();
   $('pts').textContent=S.points;$('ptsBig').textContent=S.points;updateHomeShare();
   const n=d.pending.length,nextRw=Math.min(d.rewrites+1,5);
@@ -2294,7 +2301,7 @@ function tkHTML(h){const md=k=>{const [,m,d]=String(k||'').split('-');return m?`
     ...(h.reqs||[]).filter(q=>q.st==='ng'||(h.dec&&h.dec[q.rid]==='0'&&q.st==='wait')).map(q=>({d:dkey(new Date(q.at)),n:q.name,c:q.cost,u:'ng'}))]
     .sort((a,b)=>a.d<b.d?1:a.d>b.d?-1:0).slice(0,40);
   if(!rows.length)return `<div class="meta">交換したごほうびは、まだありません。</div>`;
-  return `<details class="tk"><summary>交換したごほうび（${(h.tickets||[]).length}）</summary><div class="tkl">${rows.map(r=>`<div class="tkr"><span class="d">${md(r.d)}</span><span class="n">${esc(r.n||'ごほうび')}${r.c?`<small style="font-weight:500;opacity:.7"> ${r.c}pt</small>`:''}</span><span class="u ${r.u==='used'?'':r.u}">${r.u==='used'?`使った${r.ud?' '+md(r.ud):''}`:r.u==='ng'?'ことわった':'まだ使ってない'}</span></div>`).join('')}</div></details>`}
+  return `<details class="tk"><summary>交換したごほうび（${(h.tickets||[]).length}）</summary><div class="tkl">${rows.map(r=>`<div class="tkr"><span class="d">${md(r.d)}</span><span class="n">${esc(r.n||'ごほうび')}${r.c?`<small style="font-weight:500;opacity:.7"> ${r.c}pt</small>`:''}${(()=>{if(r.u==='ng')return '';const kw=amzKw({name:r.n,amz:((h.shop||[]).find(x=>x.name===r.n)||{}).amz});return kw?`<br><a class="amz-mini" href="${amzURL(kw)}" target="_blank" rel="sponsored noopener">Amazonで見る（広告）</a>`:''})()}</span><span class="u ${r.u==='used'?'':r.u}">${r.u==='used'?`使った${r.ud?' '+md(r.ud):''}`:r.u==='ng'?'ことわった':'まだ使ってない'}</span></div>`).join('')}</div></details>`}
 function renderWatchHead(){const h=HS,el=$('wvHead');
   const g=h.goal,left=g?Math.max(0,g.cost-h.points):0;
   const pend=pendingOf(h,h.dec||{}),w=S.watch.find(w=>w.id===h.id)||{},isAdm=!!w.admin;
@@ -2494,6 +2501,7 @@ function renderEd(){$('edList').innerHTML=edDraft.map((it,i)=>`<div class="ed-ro
   <input class="full" data-f="desc" data-i="${i}" value="${esc(it.desc||'')}" placeholder="説明（なくてもOK）" maxlength="30">
   <div class="ed-icons full" role="radiogroup" aria-label="アイコン">${Object.keys(ICONS).map(k=>`<button type="button" class="ed-ic ${k===it.icon?'on':''}" data-ic="${k}" data-i="${i}" aria-label="${ICONS[k][0]}">${icon(k)}</button>`).join('')}</div>
   <label class="ed-f full"><span>必要なポイント</span><input type="number" inputmode="numeric" min="1" max="99999" data-f="cost" data-i="${i}" value="${it.cost}"></label>
+  <label class="ed-f full"><span>Amazonで探す言葉（空なら自動：${esc(amzKw({name:it.name})||'なし')}）</span><input data-f="amz" data-i="${i}" value="${esc(it.amz||'')}" placeholder="例：ドリップコーヒー" maxlength="30"></label>
   <button class="del full" data-del="${i}">消す</button></div>`).join('')}
 let edTarget='local';
 function edOpen(target,list){edTarget=target;edDraft=list.map(x=>({...x}));$(target==='remote'?'wvEdHost':'shopEdHost').appendChild($('shopEdit'));renderEd();$('shopEdit').hidden=false;
@@ -2512,7 +2520,7 @@ function autoIcon(name,cost,max){const n=name||'';
   if(/おやつ|お菓子|おかし|スイーツ|ケーキ|アイス|チョコ/.test(n))return 'snack';
   if(/本|マンガ|漫画|まんが/.test(n))return 'book';
   return cost>=max?'gem':'star'}
-$('edSave').onclick=async()=>{const list=edDraft.filter(x=>x.name.trim()).map(x=>({...x,name:x.name.trim(),desc:(x.desc||'').trim(),icon:x.icon||'star'}));
+$('edSave').onclick=async()=>{const list=edDraft.filter(x=>x.name.trim()).map(x=>({...x,name:x.name.trim(),desc:(x.desc||'').trim(),amz:(x.amz||'').trim(),icon:x.icon||'star'}));
   if(edTarget==='remote'){const w=S.watch.find(w=>w.id===HS.id);if(!w||!w.admin)return;$('edSave').textContent='保存中…';
     try{const r=await fetch(SYNC_URL,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({act:'shop',id:HS.id,admin:w.admin,shop:list})});
       if(!r.ok)throw 0;const d=await r.json();HS.shop=list;HS.shopV=d.v;HS.goal=(()=>{const g=list.reduce((a,b)=>!a||b.cost>a.cost?b:a,null);return g?{name:g.name,cost:g.cost}:null})();
@@ -2530,6 +2538,28 @@ function icon(k){const c=(ICONS[k]||ICONS.star)[1];
   return `<svg viewBox="0 0 64 64"><path d="M32 6l20 18-20 34L12 24z" fill="${c}" stroke="#1C2A5C" stroke-width="3" stroke-linejoin="round"/><path d="M12 24h40M24 24l8-18 8 18-8 34z" stroke="#1C2A5C" stroke-width="2.5" fill="none" stroke-linejoin="round"/><path d="M20 22l6-8" stroke="#fff" stroke-width="3" stroke-linecap="round"/></svg>`;
 }
 function goalItem(){return S.shop.reduce((a,b)=>!a||b.cost>a.cost?b:a,null)}
+/* ===== ごほうびに合わせた Amazon リンク ===== */
+const AMZ_TAG='timing-22';
+const amzURL=kw=>`https://www.amazon.co.jp/s?k=${encodeURIComponent(kw)}&tag=${AMZ_TAG}`;
+const AMZ_RULES=[
+  [/robux|ロブロックス|ロブロ/i,'Roblox ギフトカード'],[/コーヒー|カフェ|珈琲/,'ドリップコーヒー'],[/紅茶/,'紅茶 ティーバッグ'],
+  [/ビール/,'ビール'],[/ワイン/,'ワイン'],[/ジュース/,'ジュース'],[/アイス/,'アイス 詰め合わせ'],[/ケーキ|スイーツ/,'スイーツ ギフト'],
+  [/チョコ/,'チョコレート'],[/おやつ|お菓子|おかし|駄菓子/,'お菓子 詰め合わせ'],[/マンガ|漫画|まんが|コミック/,'マンガ 人気'],
+  [/本|小説|図鑑/,'児童書 人気'],[/ポケモン|ポケカ/,'ポケモンカード'],[/レゴ|LEGO/i,'レゴ'],[/プラモ/,'プラモデル'],
+  [/スイッチ|Switch/i,'Nintendo Switch ソフト'],[/ゲーム/,'ゲームソフト'],[/映画館|映画に行/,null],[/映画/,'映画 ブルーレイ'],[/おもちゃ|オモチャ/,'おもちゃ 人気'],
+  [/文房具|文具|ペン|ノート|シール/,'文房具 かわいい'],[/ガチャ|カプセル/,'カプセルトイ'],[/ゲームセンター|ゲーセン/,null],[/お出かけ|外食|旅行|公園/,null]];
+function amzKw(it){if(it.amz&&it.amz.trim())return it.amz.trim();const n=String(it.name||'');
+  for(const [re,kw] of AMZ_RULES)if(re.test(n))return kw;
+  const c=n.replace(/チケット|ごほうび|とっておきの|[0-9０-９]+\s*(杯|個|こ|つ|枚|まい|回|かい|時間|じかん|分|ふん|冊|さつ|本|ほん|箱|袋)?|[・、。！!？?]/g,' ').replace(/\s+/g,' ').trim();
+  return c.length>=2?c:''}
+// ごほうび（もっているチケット→ショップのごほうび）に合わせたリンクを、おすすめの上に出す
+function renderAmzRw(){const seen=new Set(),rows=[];
+  const add=(it,sub)=>{const kw=amzKw(it);if(!kw||seen.has(kw))return;seen.add(kw);rows.push({kw,name:it.name,sub})};
+  S.tickets.filter(t=>!t.used).slice().reverse().forEach(t=>add({name:t.name,amz:(S.shop.find(x=>x.name===t.name)||{}).amz},'交換ずみ'));
+  S.shop.forEach(it=>add(it,`${it.cost}pt`));
+  const h=rows.length?`<h3>ごほうびをさがす</h3><div class="amz-links">${rows.slice(0,6).map(r=>`<a class="rw" href="${amzURL(r.kw)}" target="_blank" rel="sponsored noopener">${esc(r.name)}<small>${esc(r.sub)}</small></a>`).join('')}</div>`:'';
+  document.querySelectorAll('.amz-rw').forEach(el=>el.innerHTML=h)}
+
 /* ===== おうちの人（PIN・おねがい） ===== */
 const pinHash=v=>{let h=5381;for(const c of 'kq:'+v)h=(h*33+c.charCodeAt(0))>>>0;return h.toString(36)};
 let pinCb=null,pinCheck=null;
@@ -2562,12 +2592,12 @@ function renderParent(){const b=$('parentBox'),adm=!!(S.share&&S.share.admin);
   if($('pinChg'))$('pinChg').onclick=()=>withPin('今のPINを入れてください',setNew);
   if($('pinDel'))$('pinDel').onclick=()=>withPin('PINを外すには、今のPINを入れてください',()=>{S.pin='';save();renderShop()});}
 function renderShop(){
-  $('pts2').textContent=S.points;renderReqs();renderParent();checkDecisions();
+  $('pts2').textContent=S.points;renderReqs();renderParent();renderAmzRw();checkDecisions();
   $('items').innerHTML=S.shop.length?S.shop.map(it=>`<div class="panel item">${icon(it.icon)}<div><h3>${esc(it.name)}</h3><p>${esc(it.desc||'')}</p><div class="cost"><span class="coin"></span>${it.cost}pt</div></div>
     <button class="btn ${S.points>=it.cost?'yellow':'white'}" data-buy="${it.id}" ${S.points>=it.cost?'':'disabled'}>${needOK()?'おねがい':'交換'}</button></div>`).join('')
     :`<div class="panel item"><div></div><div><h3>ごほうびがありません</h3><p>「ごほうびを編集」で作れます</p></div><div></div></div>`;
   const own=S.tickets.slice().reverse();
-  $('ticketList').innerHTML=own.length?own.map(t=>{return `<div class="ticket ${t.used?'used':''}"><div class="name">${esc(t.name||'ごほうび')}<small>${t.date}${t.used?' ・ 使った':''}</small></div>${t.used?'':`<button class="btn green" data-use="${t.id}">使った</button>`}</div>`}).join('')
+  $('ticketList').innerHTML=own.length?own.map(t=>{return `<div class="ticket ${t.used?'used':''}"><div class="name">${esc(t.name||'ごほうび')}<small>${t.date}${t.used?' ・ 使った':''}</small>${(()=>{const kw=amzKw({name:t.name,amz:(S.shop.find(x=>x.name===t.name)||{}).amz});return kw&&!t.used?`<a class="amz-mini" href="${amzURL(kw)}" target="_blank" rel="sponsored noopener">Amazonで見る（広告）</a>`:''})()}</div>${t.used?'':`<button class="btn green" data-use="${t.id}">使った</button>`}</div>`}).join('')
     :`<div class="empty">まだありません。ポイントをためて交換しよう！</div>`;
 }
 $('items').addEventListener('click',e=>{const b=e.target.closest('[data-buy]');if(!b)return;const it=S.shop.find(s=>s.id===b.dataset.buy);if(!it)return;
