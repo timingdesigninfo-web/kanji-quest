@@ -41,7 +41,10 @@
   color-scheme:light;
 }
 html,body{height:100%}
-html{font-synthesis:none}
+html{font-synthesis:none;overflow-x:hidden;overflow-x:clip}
+body{overflow-x:hidden;overflow-x:clip}
+/* 地面は いつも画面の左はしから右はしまで */
+.ground{width:100vw!important;margin-left:calc(50% - 50vw)!important;margin-right:0!important;box-sizing:border-box}
 body{background:var(--sky);color:var(--ink);font-family:var(--f-body);font-weight:800;
   padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));
   -webkit-tap-highlight-color:transparent;overflow-x:hidden}
