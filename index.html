@@ -144,6 +144,15 @@ button:focus-visible{outline:4px solid var(--ink);outline-offset:3px}
 .now-v{display:flex;align-items:center;gap:6px;font-size:40px;line-height:1}
 .now-v .pixel{font-variant-numeric:tabular-nums}
 .now-v small{font-size:16px}
+/* ---- シェア ---- */
+.share{padding:14px 16px;display:flex;flex-direction:column;gap:10px}
+.share h3{margin:0;font-size:16px}
+.share textarea{width:100%;box-sizing:border-box;border:3px solid var(--ink);border-radius:12px;padding:10px;font:500 15px/1.6 var(--f-body);color:var(--ink);background:#fff;resize:vertical}
+.share-btns{display:flex;gap:8px}
+.share-btns>*{flex:1}
+.share-btns .btn{font-size:15px;padding:10px 6px;text-decoration:none}
+.btn.sx{background:#111;box-shadow:0 6px 0 #000}
+.btn.sl{background:#06C755;box-shadow:0 6px 0 #04913E}
 /* ---- ホームの下の 説明 ---- */
 .info{padding:12px 16px;display:flex;flex-direction:column;gap:6px;box-shadow:0 4px 0 var(--ink);border-width:3px}
 .info-h{font-size:12px;opacity:.7}
@@ -437,6 +446,16 @@ button:focus-visible{outline:4px solid var(--ink);outline-offset:3px}
   <section class="panel score" id="scoreBox"></section>
   <section class="panel misses" id="missBox"></section>
   <div style="display:flex;flex-direction:column;gap:14px" id="resultBtns"></div>
+  <section class="panel share" id="shareBox">
+    <h3>今日の結果をシェア</h3>
+    <textarea id="shareText" rows="5" maxlength="260"></textarea>
+    <div class="share-btns">
+      <button class="btn" id="shareNative">シェア</button>
+      <a class="btn sx" id="shareX" target="_blank" rel="noopener">X</a>
+      <a class="btn sl" id="shareLine" target="_blank" rel="noopener">LINE</a>
+      <button class="btn white" id="shareCopy">コピー</button>
+    </div>
+  </section>
 </main>
 
 <!-- ============ せってい ============ -->
@@ -1890,9 +1909,32 @@ function finish(){
   $('resultBtns').innerHTML=(more?`<button class="btn" id="practiceBtn">書けるまで練習！</button>`:'')+`<button class="btn ${more?'white':'green'}" id="homeBtn">${more?'あとで':'ホームへ'}</button>`;
   $('homeBtn').onclick=()=>{renderHome();show('home')};
   if($('practiceBtn'))$('practiceBtn').onclick=openLearn;
+  makeShare(d,correct,total);
   show('result');
   if(earned||(mode==='practice'&&!wrong.length)){sfx('clear');rain()}
 }
+
+/* ===== SNSシェア ===== */
+const SHARE_URL=/^https?:/.test(location.protocol)&&!/claude|usercontent/.test(location.host)?location.origin:'https://kanji-quest-black.vercel.app';
+function makeShare(d,correct,total){
+  const st=streakNow(),g=S.grade;let line,comment;
+  if(mode==='test'){const sc=correct*10;line=`${g}年生の漢字テスト：${sc}点`;
+    comment=sc===100?'全問正解！ 今日は完ぺき。':sc>=PASS?'一発合格！':`まちがえた${total-correct}字は、書けるまで練習します。`}
+  else if(mode==='practice'){line=`${g}年生の漢字：書けるまで練習 ${correct}/${total}`;
+    comment=d.pending.length?`あと${d.pending.length}字、がんばります。`:`書き直し${d.rewrites}回で合格！`}
+  else{line=`${g}年生の漢字 自主練：${correct*10}点`;comment='自主練もがんばった！'}
+  const extra=st>=2?` ${st}日連続クリア中！`:'';
+  $('shareText').value=`${line}\n${comment}${extra}\n#かんじクエスト\n${SHARE_URL}`;
+  updateShareLinks()}
+function updateShareLinks(){const t=$('shareText').value;
+  $('shareX').href='https://x.com/intent/post?text='+encodeURIComponent(t);
+  $('shareLine').href='https://social-plugins.line.me/lineit/share?url='+encodeURIComponent(SHARE_URL)+'&text='+encodeURIComponent(t);
+  $('shareNative').hidden=!navigator.share}
+$('shareText').addEventListener('input',updateShareLinks);
+$('shareNative').onclick=async()=>{try{await navigator.share({text:$('shareText').value})}catch(e){}};
+$('shareCopy').onclick=async()=>{const t=$('shareText').value;
+  try{await navigator.clipboard.writeText(t);$('shareCopy').textContent='コピーした'}catch(e){$('shareText').select();$('shareCopy').textContent='選択した'}
+  setTimeout(()=>$('shareCopy').textContent='コピー',1500)};
 
 /* ===== せってい（学年・はんい） ===== */
 let suGrade=4,suSel=new Set();
