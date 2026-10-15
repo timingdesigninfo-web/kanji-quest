@@ -143,6 +143,37 @@ button:focus-visible{outline:4px solid var(--ink);outline-offset:3px}
 .foot-row{display:flex;gap:12px}
 .ai-note{margin:0;font-size:11px;font-weight:500;line-height:1.5;color:var(--ink);opacity:.75;text-align:center}
 .foot-row .btn{flex:1;font-size:18px}
+/* ---- きろく ---- */
+#history{gap:14px}
+.shop-head .btn{padding:8px 16px;font-size:15px;width:auto}
+.hi-tabs{display:flex;gap:8px}
+.hi-tabs button{flex:1;padding:10px;border:3px solid var(--ink);border-radius:999px;background:#fff;font:800 15px var(--f-body);color:var(--ink)}
+.hi-tabs button.on{background:var(--yellow)}
+.hi-list{display:flex;flex-direction:column;gap:12px}
+.hi-day{padding:12px 14px;display:flex;flex-direction:column;gap:8px}
+.hi-dh{display:flex;align-items:center;justify-content:space-between;gap:8px}
+.hi-dh b{font-size:18px}
+.hi-tag{font-size:12px;font-weight:800;padding:3px 10px;border-radius:999px;background:var(--line);color:var(--ink);white-space:nowrap}
+.hi-tag.gold{background:var(--yellow)}.hi-tag.silver{background:#DDE6F2}
+.hi-s{border-top:2px dashed var(--line);padding-top:6px}
+.hi-s>summary{list-style:none;cursor:pointer;display:flex;align-items:center;gap:8px;font-size:15px;font-weight:800;padding:4px 0}
+.hi-s>summary::-webkit-details-marker{display:none}
+.hi-s>summary::before{content:'▶';font-size:11px;transition:transform .15s}
+.hi-s[open]>summary::before{transform:rotate(90deg)}
+.hi-s>summary .r{margin-left:auto;white-space:nowrap;font-size:12px;font-weight:500;opacity:.7}
+.hi-s>summary .ng{color:var(--red)}
+.hi-items{display:flex;flex-direction:column;gap:8px;padding:6px 0 4px}
+.hi-it{display:grid;grid-template-columns:auto 1fr auto;gap:4px 10px;align-items:center;padding:8px;border-radius:12px;background:#F6F9FF}
+.hi-it .q{grid-column:1/-1;font-size:14px;font-weight:500;line-height:1.5}
+.hi-it .q b{background:var(--yellow);border-radius:6px;padding:0 4px}
+.hi-it img{height:64px;width:auto;border:2px solid var(--ink);border-radius:8px;background:#fff;display:block}
+.hi-it .noimg{height:64px;width:64px;border:2px dashed var(--line);border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:11px;opacity:.6}
+.hi-it .a{font:600 44px/1 var(--f-kanji);color:var(--red);white-space:nowrap}
+.hi-it .m{font-size:34px;font-weight:800;-webkit-text-stroke:1.5px currentColor;width:40px;text-align:center}
+.hi-it .m.ok{color:var(--red)}.hi-it .m.ng{color:#2F8CFF}
+.hi-empty{padding:18px;text-align:center;font-size:15px;font-weight:500}
+.hi-old{font-size:13px;font-weight:500;opacity:.75}
+
 
 /* ---- テスト ---- */
 #quiz{height:100%;height:calc(100dvh - env(safe-area-inset-top,0px) - env(safe-area-inset-bottom,0px));min-height:0;box-sizing:border-box;padding-block:8px 20px;gap:8px;background:transparent;overflow:hidden}
@@ -439,6 +470,7 @@ button:focus-visible{outline:4px solid var(--ink);outline-offset:3px}
   <div class="home-side">
   <div class="foot-row">
     <button class="btn violet" id="shopBtn">ごほうび</button>
+    <button class="btn white" id="historyBtn" style="flex:0 0 auto">きろく</button>
     <button class="btn white" id="setupBtn" style="flex:0 0 auto">学年</button>
   </div>
   <section class="panel amz">
@@ -572,6 +604,14 @@ button:focus-visible{outline:4px solid var(--ink);outline-offset:3px}
     <div class="su-count" id="suCount"></div>
     <button class="btn green" id="suSave">はじめる</button>
   </div>
+</main>
+
+<!-- ============ きろく ============ -->
+<main id="history" class="screen" hidden>
+  <div class="shop-head"><h2>きろく</h2><button class="btn white small" id="hiBack">もどる</button></div>
+  <div class="hi-tabs" id="hiTabs"><button class="on" data-f="all">ぜんぶ</button><button data-f="ng">まちがえた字だけ</button></div>
+  <div class="hi-list" id="hiList"></div>
+  <button class="btn white" id="hiHome">ホームへ</button>
 </main>
 
 <!-- ============ ショップ ============ -->
@@ -1746,7 +1786,7 @@ const day=()=>dayRec();
 
 /* ===== 画面切りかえ ===== */
 const $=id=>document.getElementById(id);
-function show(id){['home','quiz','learn','grading','review','result','shop','setup','welcome','onboard'].forEach(s=>$(s).hidden=s!==id);window.scrollTo(0,0);if(id==='quiz')requestAnimationFrame(layout)}
+function show(id){['home','quiz','learn','grading','review','result','shop','setup','welcome','onboard','history'].forEach(s=>$(s).hidden=s!==id);window.scrollTo(0,0);if(id==='quiz')requestAnimationFrame(layout)}
 
 /* ===== ホーム ===== */
 function renderHome(){
@@ -2001,6 +2041,8 @@ function finish(){
   }
   if(streakGot)body+=`<div class="sub" style="color:var(--red)">${STREAK_DAYS}日連続ボーナス +${STREAK_PT}pt！</div>`;
   save();
+  addLog({t:Date.now(),date:todayKey(),mode,rw:mode==='practice'?d.rewrites:0,ai:aiState==='ai'||aiState==='partial',earned,
+    items:results.map((r,i)=>{const b=BANK[r.id]||{};return {p:b.pre,y:b.yomi,o:b.post,a:b.ans,ok:r.ok,img:thumb(b.ans||'',(written[i]||{}).strokes||[])}})});
   $('scoreBox').innerHTML=head+body;
   const miss=results.filter(r=>!r.ok);
   $('missBox').hidden=!miss.length;
@@ -2013,6 +2055,65 @@ function finish(){
   show('result');
   if(earned||(mode==='practice'&&!wrong.length)){sfx('clear');rain()}
 }
+
+/* ===== きろく（過去の問題） ===== */
+const LOGKEY='kanjiQuest.log';
+function loadLog(){try{const a=JSON.parse(localStorage.getItem(LOGKEY));return Array.isArray(a)?a:[]}catch(e){return []}}
+let LOG=loadLog();
+// 書いた字を小さい画像に（1マス96px）
+function thumb(ans,st){const P=96,n=Math.max(1,[...ans].length),c=document.createElement('canvas');c.width=P*n;c.height=P;const x=c.getContext('2d');
+  x.fillStyle='#fff';x.fillRect(0,0,c.width,c.height);
+  x.strokeStyle='#D5DEEC';x.lineWidth=1;for(let i=1;i<n;i++){x.beginPath();x.moveTo(i*P,0);x.lineTo(i*P,P);x.stroke()}
+  if(!st.length)return '';
+  x.strokeStyle='#1C2A5C';x.lineWidth=4;x.lineCap='round';x.lineJoin='round';
+  for(const s of st){x.beginPath();x.moveTo(s[0][0]*P,s[0][1]*P);if(s.length===1)x.lineTo(s[0][0]*P+.1,s[0][1]*P+.1);for(const p of s.slice(1))x.lineTo(p[0]*P,p[1]*P);x.stroke()}
+  const w=c.toDataURL('image/webp',.8);return w.startsWith('data:image/webp')?w:c.toDataURL('image/png')}
+// 保存しきれないときは、古い記録の画像から消していく（問題と○×は残す）
+function saveLog(){if(LOG.length>3000)LOG=LOG.slice(-3000);
+  for(let k=0;k<60;k++){try{localStorage.setItem(LOGKEY,JSON.stringify(LOG));return}catch(e){
+    let n=0;for(const s of LOG){if(s.items.some(it=>it.img)){s.items.forEach(it=>delete it.img);if(++n>=10)break}}if(!n)return}}}
+function addLog(e){LOG.push(e);saveLog()}
+const WD='日月火水木金土';
+function dLabel(k){const [y,m,d]=k.split('-').map(Number);const dt=new Date(y,m-1,d);return `${y!==new Date().getFullYear()?y+'年':''}${m}月${d}日（${WD[dt.getDay()]}）`}
+const hhmm=t=>{const d=new Date(t);return `${d.getHours()}:${pad(d.getMinutes())}`};
+let hiFilter='all';
+function sTitle(s){const c=s.items.filter(i=>i.ok).length,n=s.items.length;
+  return s.mode==='test'?`テスト ${c*10}点`:s.mode==='practice'?`書けるまで練習${s.rw?`（${s.rw}回目）`:''} ${c}/${n}`:`自主練 ${c*10}点`}
+function dayTag(r){if(!r||!r.tries)return '';if(!r.passed)return '<span class="hi-tag">練習中</span>';
+  const rw=r.passRw??(r.tries-1);return rw===0?'<span class="hi-tag gold">一発合格</span>':`<span class="hi-tag silver">書き直し${rw}回で合格</span>`}
+function openHistory(focus){renderHistory();show('history');
+  if(focus){const el=document.querySelector(`.hi-day[data-d="${focus}"]`);if(el){el.scrollIntoView({block:'start'});const s=el.querySelector('details');if(s)s.open=true}}}
+function renderHistory(){
+  const byDay={};LOG.forEach((s,i)=>{(byDay[s.date]=byDay[s.date]||[]).push(i)});
+  Object.keys(S.days).forEach(k=>{if(S.days[k].tries&&!byDay[k])byDay[k]=[]});
+  const keys=Object.keys(byDay).sort().reverse();
+  let html='';
+  for(const k of keys){
+    let ss=byDay[k].slice().reverse();
+    if(hiFilter==='ng')ss=ss.filter(i=>LOG[i].items.some(it=>!it.ok));
+    if(hiFilter==='ng'&&!ss.length)continue;
+    const r=S.days[k];
+    html+=`<section class="panel hi-day" data-d="${k}"><div class="hi-dh"><b>${dLabel(k)}</b>${dayTag(r)}</div>`
+      +(byDay[k].length?ss.map(i=>{const s=LOG[i],ng=s.items.filter(it=>!it.ok).length;
+        return `<details class="hi-s" data-i="${i}"><summary>${sTitle(s)}${ng?`<span class="ng">×${ng}</span>`:''}<span class="r">${hhmm(s.t)}・${s.ai?'AI':'自分'}</span></summary><div class="hi-items"></div></details>`}).join('')
+      :`<div class="hi-old">${r.best||0}点（くわしい記録はありません）</div>`)
+      +`</section>`;
+  }
+  $('hiList').innerHTML=html||`<div class="panel hi-empty">${hiFilter==='ng'?'まちがえた字はありません。':'まだ記録がありません。<br>テストをすると、ここに残ります。'}</div>`;
+}
+function renderSession(det){const s=LOG[+det.dataset.i];if(!s)return;
+  const its=hiFilter==='ng'?s.items.filter(it=>!it.ok):s.items;
+  det.querySelector('.hi-items').innerHTML=its.map(it=>`<div class="hi-it">
+    <div class="q">${esc(it.p||'')}<b>${esc(it.y||'')}</b>${esc(it.o||'')}</div>
+    ${it.img?`<img src="${it.img}" alt="自分の字">`:`<span class="noimg">画像なし</span>`}
+    <span class="a">${esc(it.a||'')}</span><span class="m ${it.ok?'ok':'ng'}">${it.ok?'○':'×'}</span></div>`).join('')}
+$('hiList').addEventListener('toggle',e=>{const d=e.target;if(d.matches&&d.matches('details.hi-s')&&d.open)renderSession(d)},true);
+$('hiTabs').onclick=e=>{const b=e.target.closest('button');if(!b)return;hiFilter=b.dataset.f;
+  $('hiTabs').querySelectorAll('button').forEach(x=>x.classList.toggle('on',x===b));sfx('reveal');renderHistory()};
+$('historyBtn').onclick=()=>{sfx('reveal');openHistory()};
+$('hiBack').onclick=$('hiHome').onclick=()=>{renderHome();show('home')};
+$('stampRow').addEventListener('click',e=>{const st=e.target.closest('.st');if(!st||!st.title)return;
+  const k=st.title;if(LOG.some(s=>s.date===k)||(S.days[k]||{}).tries){sfx('reveal');openHistory(k)}});
 
 /* ===== SNSシェア ===== */
 const SHARE_URL=/^https?:/.test(location.protocol)&&!/claude|usercontent/.test(location.host)?location.origin:'https://kanji-quest-black.vercel.app';
