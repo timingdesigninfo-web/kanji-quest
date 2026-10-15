@@ -80,9 +80,9 @@ button:focus-visible{outline:4px solid var(--ink);outline-offset:3px}
 .c2{width:80px;height:26px;top:300px;left:-10px}.c2::before{width:36px;height:36px;left:12px;top:-18px}.c2::after{width:28px;height:28px;left:40px;top:-12px}
 #home>*{position:relative;z-index:1}
 .top{display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap}
-.logo{font-family:var(--f-pixel);font-size:clamp(28px,8vw,40px);line-height:1.05;color:#fff;
-  text-shadow:3px 3px 0 var(--ink),-2px -2px 0 var(--ink),2px -2px 0 var(--ink),-2px 2px 0 var(--ink),0 3px 0 var(--ink);letter-spacing:.02em}
-.logo small{display:block;font-size:.5em;color:var(--yellow)}
+.logo{font-family:var(--f-body);font-weight:800;font-size:clamp(28px,8vw,40px);line-height:1.1;color:#fff;letter-spacing:.02em;
+  -webkit-text-stroke:.22em var(--ink);paint-order:stroke fill;text-shadow:0 .1em 0 var(--ink)}
+.logo small{display:block;font-size:.5em;color:var(--yellow);-webkit-text-stroke:.24em var(--ink);margin-top:2px}
 .wallet{display:flex;align-items:center;gap:8px;background:var(--ink);color:#fff;border-radius:999px;padding:8px 16px 8px 10px;font-size:22px}
 .wallet .num{font-family:var(--f-pixel);font-variant-numeric:tabular-nums}
 .wallet .unit{font-size:13px;color:var(--yellow)}
@@ -188,7 +188,7 @@ button:focus-visible{outline:4px solid var(--ink);outline-offset:3px}
 #welcome>*{position:relative;z-index:1}
 .wl-hero{text-align:center;padding-top:28px;display:flex;flex-direction:column;gap:10px;align-items:center}
 .wl-logo{font-size:clamp(40px,12vw,60px)}
-.wl-tag{margin:0;font-size:17px;color:#fff;text-shadow:1px 1px 0 var(--ink)}
+.wl-tag{margin:0;font-size:17px;color:#fff;-webkit-text-stroke:4px var(--ink);paint-order:stroke fill}
 #onboard{padding-block:16px;gap:16px}
 .ob-top{display:flex;justify-content:space-between;align-items:center}
 .ob-dots{display:flex;gap:6px}
@@ -1994,9 +1994,7 @@ async function shareCard(o){const N=1080,c=document.createElement('canvas');c.wi
       if(ok){x.arc(cx+cw-26,cy+26,17,0,7)}else{x.moveTo(cx+cw-42,cy+10);x.lineTo(cx+cw-10,cy+42);x.moveTo(cx+cw-10,cy+10);x.lineTo(cx+cw-42,cy+42)}x.stroke()})}
   // 漢字キャラ（地面と空）
   try{if(window.kanjiSprite){const gy=N-90,sz=o.thumbs?118:150,put=(ch,cx,dir)=>{const im=kanjiSprite(ch,dir);x.drawImage(im,cx-sz/2,gy-sz*64/60+6,sz,sz*64/60)};
-      if(o.thumbs){put('山',90,1);put('花',210,1);put('鬼',N-210,-1);put('王',N-90,-1)}
-      else{put('山',100,1);put('花',240,1);put('鬼',N-240,-1);put('王',N-100,-1)}}
-    if(window.skySprite){const b=skySprite('bird',1),c=skySprite('cloud');x.drawImage(c,N-210,20,170,136);x.drawImage(b,40,30,130,104)}}catch(e){}
+      put('山',o.thumbs?100:120,1);put('鬼',N-(o.thumbs?100:120),-1)}}catch(e){}
   x.font=F('800 44px');x.fillStyle='#fff';x.lineWidth=10;x.strokeStyle='#1C2A5C';x.strokeText('#かんじクエスト',N/2,o.thumbs?N-140:775);x.fillText('#かんじクエスト',N/2,o.thumbs?N-140:775);
   if(!o.thumbs){x.font=F('500 34px');x.fillStyle='#1C2A5C';x.fillText(SHARE_URL.replace(/^https?:\/\//,''),N/2,835)}
   return new Promise(r=>c.toBlob(b=>r(b),'image/png'))}
