@@ -138,6 +138,11 @@ button:focus-visible{outline:4px solid var(--ink);outline-offset:3px}
 .tools .btn.small{flex:0 0 auto;min-width:76px}
 .tools .btn.grow{flex:1}
 .walk{position:absolute;left:0;bottom:100%;width:100%;height:60px;overflow:visible;pointer-events:none;image-rendering:pixelated}
+.now-pt{display:flex;align-items:center;justify-content:space-between;gap:8px;padding-bottom:8px;border-bottom:2px dashed var(--line)}
+.now-l{font-size:15px}
+.now-v{display:flex;align-items:center;gap:6px;font-size:40px;line-height:1}
+.now-v .pixel{font-variant-numeric:tabular-nums}
+.now-v small{font-size:16px}
 /* ---- ホームの下の 説明 ---- */
 .info{padding:12px 16px;display:flex;flex-direction:column;gap:6px;box-shadow:0 4px 0 var(--ink);border-width:3px}
 .info-h{font-size:12px;opacity:.7}
@@ -325,7 +330,7 @@ button:focus-visible{outline:4px solid var(--ink);outline-offset:3px}
   <div class="cloud c1"></div><div class="cloud c2"></div>
   <div class="top">
     <div class="logo">かんじクエスト<small id="gradeLabel">4年生の漢字</small></div>
-    <div class="wallet"><span class="coin"></span><span class="num" id="pts">0</span><span class="unit">pt</span></div>
+    <div class="wallet" hidden><span class="coin"></span><span class="num" id="pts">0</span><span class="unit">pt</span></div>
   </div>
 
   <section class="panel quest">
@@ -335,6 +340,7 @@ button:focus-visible{outline:4px solid var(--ink);outline-offset:3px}
   </section>
 
   <section class="panel goal">
+    <div class="now-pt"><span class="now-l">今のポイント</span><span class="now-v"><span class="coin"></span><span class="pixel" id="ptsBig">0</span><small>pt</small></span></div>
     <div class="goal-head"><span id="goalName">ごほうび まで</span><span class="pixel" id="goalLeft"></span></div>
     <div class="bar"><i id="goalBar" style="width:0%"></i><span id="goalTxt"></span></div>
     <div class="cal-head"><span>15日カレンダー</span><span id="streak"></span></div>
@@ -1616,7 +1622,7 @@ function renderHome(){
   ensureToday();
   $('gradeLabel').textContent=`${S.grade}年生の漢字`;
   const d=day();
-  $('pts').textContent=S.points;
+  $('pts').textContent=S.points;$('ptsBig').textContent=S.points;
   const n=d.pending.length,nextRw=Math.min(d.rewrites+1,5);
   let cur=-1;
   if(!d.testDone){
