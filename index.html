@@ -2018,8 +2018,8 @@ function openX(text){const web='https://x.com/intent/post?text='+encodeURICompon
 $('shareX').addEventListener('click',e=>{e.preventDefault();openX($('shareText').value)});
 // トップ用：アプリの紹介と 今の がんばり
 function homeShareText(){const st=streakNow();
-  const me=S.grade?`いま${S.grade}年生の漢字に挑戦中${st>=2?`（${st}日連続クリア！）`:''}。`:'';
-  return `小学生の漢字、書けますか？\n毎日10問、指で書いてAIが採点。ポイントを貯めてごほうびと交換！\n${me}\n#かんじクエスト\n${SHARE_URL}`.replace('\n\n','\n')}
+  const me=S.grade?`\n\nただいま${S.grade}年生の漢字に挑戦中！${st>=2?`（${st}日連続クリア）`:''}`:'';
+  return `小学生の漢字、書けますか？\n毎日10問、指で書いてAIが採点！\n\nご褒美を設定すれば、ポイントを貯めてごほうびと交換できる！（ご褒美は自分で買ってね）${me}\n\n#かんじクエスト\n${SHARE_URL}`}
 function updateHomeShare(){const t=homeShareText();hsBlob=null;
   $('hsX').href='https://x.com/intent/post?text='+encodeURIComponent(t);
   $('hsLine').href='https://line.me/R/share?text='+encodeURIComponent(t);
