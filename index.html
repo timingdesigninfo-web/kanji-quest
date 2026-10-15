@@ -26,7 +26,7 @@
 <title>かんじクエスト</title>
 <meta name="claude:viewport-fit-sides" content="cover">
 <link rel="preconnect" href="https://fonts.googleapis.com">
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=DotGothic16&family=Klee+One:wght@600&family=M+PLUS+Rounded+1c:wght@500;800&display=swap">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Klee+One:wght@600&family=M+PLUS+Rounded+1c:wght@500;800&display=swap">
 <style>
 /* Layout: 横スクロールゲーム風。空 → カード → レンガの地面。テスト画面は「問題文＋大きな書き板」だけ */
 :root{
@@ -34,7 +34,7 @@
   --yellow:#FFCF1F; --yellow-d:#D49500; --green:#33B84A; --green-d:#1E8631;
   --brick:#D9692A; --brick-d:#8C3C10; --ink:#1C2A5C; --paper:#FFFFFF;
   --line:#9DBCEB; --violet:#7A4DFF; --violet-d:#4F25C9;
-  --f-pixel:"DotGothic16","Hiragino Maru Gothic ProN",sans-serif;
+  --f-pixel:"M PLUS Rounded 1c","Hiragino Maru Gothic ProN","Yu Gothic",sans-serif;
   --f-body:"M PLUS Rounded 1c","Hiragino Maru Gothic ProN","Yu Gothic",sans-serif;
   --f-kanji:"Klee One","Hiragino Mincho ProN","Yu Mincho",serif;
   color-scheme:light;
@@ -70,7 +70,7 @@ button:focus-visible{outline:4px solid var(--ink);outline-offset:3px}
 .coin{display:inline-block;width:1em;height:1em;border-radius:50%;background:var(--yellow);
   box-shadow:inset 0 0 0 .12em var(--yellow-d),inset .18em .18em 0 .12em #FFE680;vertical-align:-.12em;flex:none}
 .panel{background:var(--paper);border:4px solid var(--ink);border-radius:20px;box-shadow:0 6px 0 var(--ink)}
-.pixel{font-family:var(--f-pixel);font-weight:400}
+.pixel{font-family:var(--f-pixel);font-weight:800}
 
 /* ---- ホーム ---- */
 #home{padding-block:18px 0;gap:18px;position:relative}
@@ -97,7 +97,7 @@ button:focus-visible{outline:4px solid var(--ink);outline-offset:3px}
 .rule{display:grid;grid-template-columns:1fr 1fr;gap:2px 12px;font-size:12px}
 .rule div{display:flex;justify-content:space-between;gap:6px;padding:3px 6px;border-radius:6px;font-weight:500}
 .rule div.on{background:var(--yellow);font-weight:800}
-.rule strong{font-family:var(--f-pixel);font-weight:400}
+.rule strong{font-family:var(--f-pixel);font-weight:800}
 .bigstart{font-size:26px;padding:18px}
 
 .goal{padding:16px 18px;display:flex;flex-direction:column;gap:10px}
@@ -205,7 +205,7 @@ button:focus-visible{outline:4px solid var(--ink);outline-offset:3px}
 .ob-board::before{left:50%;top:10px;bottom:10px;border-left:2px dashed #C9DAF5}
 .ob-board::after{top:50%;left:10px;right:10px;border-top:2px dashed #C9DAF5}
 .ob-board span{position:relative;z-index:1}
-.ob-mark{flex:none;box-sizing:border-box;width:140px;height:140px;border-radius:50%;border:12px solid var(--red);display:flex;align-items:center;justify-content:center;font:400 34px var(--f-pixel);color:var(--ink);background:#fff}
+.ob-mark{flex:none;box-sizing:border-box;width:140px;height:140px;border-radius:50%;border:12px solid var(--red);display:flex;align-items:center;justify-content:center;font:800 34px var(--f-pixel);color:var(--ink);background:#fff}
 .ob-btns{display:flex;gap:12px}.ob-btns .btn{flex:1;font-size:20px}
 .howto{align-self:center;font-size:13px;text-decoration:underline;color:var(--ink)}
 /* ---- せってい ---- */
@@ -214,7 +214,7 @@ button:focus-visible{outline:4px solid var(--ink);outline-offset:3px}
 .su-sec h2{margin:0;font-size:20px}
 .su-note{margin:0;font-size:13px;font-weight:500;line-height:1.6}
 .grade-row{display:grid;grid-template-columns:repeat(6,1fr);gap:6px}
-.grade-row button{aspect-ratio:1;max-width:100%;border:3px solid var(--ink);border-radius:14px;background:#fff;font:400 22px var(--f-pixel);display:flex;flex-direction:column;align-items:center;justify-content:center;line-height:1}
+.grade-row button{aspect-ratio:1;max-width:100%;border:3px solid var(--ink);border-radius:14px;background:#fff;font:800 22px var(--f-pixel);display:flex;flex-direction:column;align-items:center;justify-content:center;line-height:1}
 .grade-row button small{font:800 10px var(--f-body);margin-top:2px}
 .grade-row button.on{background:var(--red);color:#fff}
 .su-quick{display:flex;flex-wrap:wrap;gap:6px}
@@ -288,7 +288,7 @@ button:focus-visible{outline:4px solid var(--ink);outline-offset:3px}
 /* ---- ショップ ---- */
 #shop{padding-block:18px;gap:16px}
 .shop-head{display:flex;align-items:center;justify-content:space-between;gap:10px}
-.shop-head h2{margin:0;font-family:var(--f-pixel);font-weight:400;font-size:28px;color:#fff;text-shadow:2px 2px 0 var(--ink)}
+.shop-head h2{margin:0;font-family:var(--f-pixel);font-weight:800;font-size:28px;color:#fff;text-shadow:2px 2px 0 var(--ink)}
 .items{display:flex;flex-direction:column;gap:12px}
 .item{display:grid;grid-template-columns:64px 1fr auto;align-items:center;gap:12px;padding:12px 14px}
 .item svg{width:64px;height:64px}
