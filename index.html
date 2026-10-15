@@ -151,6 +151,8 @@ button:focus-visible{outline:4px solid var(--ink);outline-offset:3px}
 .share-btns{display:flex;gap:8px}
 .share-btns>*{flex:1}
 .share-btns .btn{font-size:15px;padding:10px 6px;text-decoration:none}
+.share-home{padding:12px 16px}
+.share-home h3{font-size:15px}
 .btn.sx{background:#111;box-shadow:0 6px 0 #000}
 .btn.sl{background:#06C755;box-shadow:0 6px 0 #04913E}
 /* ---- ホームの下の 説明 ---- */
@@ -376,6 +378,16 @@ button:focus-visible{outline:4px solid var(--ink);outline-offset:3px}
       <a href="https://www.amazon.co.jp/s?k=%E4%B8%8B%E3%81%98%E3%81%8D&tag=timing-22" target="_blank" rel="sponsored noopener">ドリル用 下じき</a>
     </div>
     <p class="amz-note">※広告です。Amazonのアソシエイトとして、かんじクエストは適格販売により収入を得ています。</p>
+  </section>
+
+  <section class="panel share share-home">
+    <h3>かんじクエストをシェア</h3>
+    <div class="share-btns">
+      <button class="btn" id="hsNative">シェア</button>
+      <a class="btn sx" id="hsX" target="_blank" rel="noopener">X</a>
+      <a class="btn sl" id="hsLine" target="_blank" rel="noopener">LINE</a>
+      <button class="btn white" id="hsCopy">コピー</button>
+    </div>
   </section>
 
   <section class="panel info">
@@ -1659,7 +1671,7 @@ function renderHome(){
   ensureToday();
   $('gradeLabel').textContent=`${S.grade}年生の漢字`;
   const d=day();
-  $('pts').textContent=S.points;$('ptsBig').textContent=S.points;
+  $('pts').textContent=S.points;$('ptsBig').textContent=S.points;updateHomeShare();
   const n=d.pending.length,nextRw=Math.min(d.rewrites+1,5);
   let cur=-1;
   if(!d.testDone){
@@ -1931,6 +1943,17 @@ function updateShareLinks(){const t=$('shareText').value;
   $('shareLine').href='https://social-plugins.line.me/lineit/share?url='+encodeURIComponent(SHARE_URL)+'&text='+encodeURIComponent(t);
   $('shareNative').hidden=!navigator.share}
 $('shareText').addEventListener('input',updateShareLinks);
+// トップ用：アプリの紹介と 今の がんばり
+function homeShareText(){const st=streakNow();
+  const me=S.grade?`いま${S.grade}年生の漢字に挑戦中${st>=2?`（${st}日連続クリア！）`:''}。`:'';
+  return `小学生の漢字、書けますか？\n毎日10問、指で書いてAIが採点。${me}\n#かんじクエスト\n${SHARE_URL}`}
+function updateHomeShare(){const t=homeShareText();
+  $('hsX').href='https://x.com/intent/post?text='+encodeURIComponent(t);
+  $('hsLine').href='https://social-plugins.line.me/lineit/share?url='+encodeURIComponent(SHARE_URL)+'&text='+encodeURIComponent(t);
+  $('hsNative').hidden=!navigator.share}
+$('hsNative').onclick=async()=>{try{await navigator.share({text:homeShareText()})}catch(e){}};
+$('hsCopy').onclick=async()=>{try{await navigator.clipboard.writeText(homeShareText());$('hsCopy').textContent='コピーした'}catch(e){$('hsCopy').textContent='できません'}
+  setTimeout(()=>$('hsCopy').textContent='コピー',1500)};
 $('shareNative').onclick=async()=>{try{await navigator.share({text:$('shareText').value})}catch(e){}};
 $('shareCopy').onclick=async()=>{const t=$('shareText').value;
   try{await navigator.clipboard.writeText(t);$('shareCopy').textContent='コピーした'}catch(e){$('shareText').select();$('shareCopy').textContent='選択した'}
