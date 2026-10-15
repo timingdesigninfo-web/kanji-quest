@@ -401,7 +401,7 @@ button:focus-visible{outline:4px solid var(--ink);outline-offset:3px}
 
   <section class="panel share share-home">
     <h3>かんじクエストをシェア</h3>
-    <img id="hsImg" class="share-img" alt="かんじクエストの紹介画像" hidden>
+    <img id="hsImg" class="share-img" alt="かんじクエストの紹介画像">
     <div class="share-btns">
       <button class="btn" id="hsNative">シェア</button>
       <a class="btn sx" id="hsX" target="_blank" rel="noopener">X</a>
@@ -2020,7 +2020,9 @@ $('shareX').addEventListener('click',e=>{e.preventDefault();openX($('shareText')
 function homeShareText(){const st=streakNow();
   const me=S.grade?`\n\nただいま${S.grade}年生の漢字に挑戦中！${st>=2?`（${st}日連続クリア）`:''}`:'';
   return `小学生の漢字、書けますか？\n毎日10問、指で書いてAIが採点！\n\nご褒美を設定すれば、ポイントを貯めてごほうびと交換できる！（ご褒美は自分で買ってね）${me}\n\n#かんじクエスト\n${SHARE_URL}`}
+let hsTimer=0;
 function updateHomeShare(){const t=homeShareText();hsBlob=null;
+  clearTimeout(hsTimer);hsTimer=setTimeout(()=>homeCard().then(b=>{hsBlob=b;if(b)$('hsImg').src=URL.createObjectURL(b)}),300);
   $('hsX').href='https://x.com/intent/post?text='+encodeURIComponent(t);
   $('hsLine').href='https://line.me/R/share?text='+encodeURIComponent(t);
   $('hsNative').hidden=!navigator.share}
