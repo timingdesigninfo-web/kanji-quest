@@ -1947,7 +1947,7 @@ function makeShare(d,correct,total){
     comment=d.pending.length?`あと${d.pending.length}字、がんばります。`:`書き直し${d.rewrites}回で合格！`}
   else{line=`${g}年生の漢字 自主練：${correct*10}点`;comment='自主練もがんばった！'}
   const extra=st>=2?` ${st}日連続クリア中！`:'';
-  $('shareText').value=`${line}\n${comment}${extra}\n#かんじクエスト\n${SHARE_URL}`;
+  $('shareText').value=`${line}\n${comment}${extra}\nポイントを貯めてごほうびと交換中！（いま${S.points}pt）\n#かんじクエスト\n${SHARE_URL}`;
   updateShareLinks();
   const sc=correct*10,isTest=mode!=='practice';
   shareBlob=null;$('shareImg').removeAttribute('src');
@@ -2006,7 +2006,7 @@ $('shareX').addEventListener('click',e=>{e.preventDefault();openX($('shareText')
 // トップ用：アプリの紹介と 今の がんばり
 function homeShareText(){const st=streakNow();
   const me=S.grade?`いま${S.grade}年生の漢字に挑戦中${st>=2?`（${st}日連続クリア！）`:''}。`:'';
-  return `小学生の漢字、書けますか？\n毎日10問、指で書いてAIが採点。${me}\n#かんじクエスト\n${SHARE_URL}`}
+  return `小学生の漢字、書けますか？\n毎日10問、指で書いてAIが採点。ポイントを貯めてごほうびと交換！\n${me}\n#かんじクエスト\n${SHARE_URL}`.replace('\n\n','\n')}
 function updateHomeShare(){const t=homeShareText();hsBlob=null;
   $('hsX').href='https://x.com/intent/post?text='+encodeURIComponent(t);
   $('hsLine').href='https://line.me/R/share?text='+encodeURIComponent(t);
@@ -2015,7 +2015,7 @@ $('hsNative').onclick=async()=>{if(!hsBlob)hsBlob=await homeCard();shareWith(hom
 $('hsSave').onclick=async()=>{if(!hsBlob)hsBlob=await homeCard();saveImage(hsBlob,'kanji-quest.png')};
 function homeCard(){const st=streakNow();
   return shareCard({sub:'小学生の漢字。書けますか？',big:S.grade?`${S.grade}年生`:'1〜6年生',bigSize:170,badge:'毎日10問、指で書いてAIが採点',badgeColor:'#1C2A5C',
-    line2:`いま ${S.points}pt${st>=2?` ・ ${st}日連続クリア中`:''}`})}
+    line2:'ポイントを貯めて ごほうびと交換！'})}
 $('hsX').addEventListener('click',e=>{e.preventDefault();openX(homeShareText())});
 $('hsCopy').onclick=async()=>{try{await navigator.clipboard.writeText(homeShareText());$('hsCopy').textContent='コピーした'}catch(e){$('hsCopy').textContent='できません'}
   setTimeout(()=>$('hsCopy').textContent='コピー',1500)};
