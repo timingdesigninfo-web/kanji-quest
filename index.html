@@ -292,18 +292,24 @@ button:focus-visible{outline:4px solid var(--ink);outline-offset:3px}
 .rv{padding:12px 14px;display:flex;flex-direction:column;gap:8px}
 .rv-q{font-size:15px;font-weight:500;line-height:1.5}
 .rv-q b{color:var(--ink);background:var(--yellow);border-radius:6px;padding:0 4px}
-.rv-pair{display:flex;align-items:center;gap:10px}
-.rv-box{display:flex;flex-direction:column;align-items:center;gap:2px;min-width:0}
-.rv-box small{font-size:11px;font-weight:500}
-.rv-img{height:76px;width:auto;max-width:100%;border:3px solid var(--ink);border-radius:10px;background:#fff;display:block}
-.rv-ans{height:76px;display:flex;border:3px solid var(--red);border-radius:10px;background:#fff;overflow:hidden}
-.rv-ans span{width:76px;height:100%;display:flex;align-items:center;justify-content:center;font:600 54px/1 var(--f-kanji);color:var(--red)}
+.rv-pair{display:flex;align-items:center;gap:12px}
+.rv-col{flex:1;min-width:0;display:flex;flex-direction:column;gap:8px}
+.rv-box{display:flex;align-items:center;gap:8px;min-width:0}
+.rv-box small{flex:none;width:2.6em;font-size:12px;font-weight:800;text-align:right}
+.rv-img{height:96px;width:auto;max-width:100%;border:3px solid var(--ink);border-radius:10px;background:#fff;display:block}
+.rv-ans{height:96px;display:flex;border:3px solid var(--red);border-radius:10px;background:#fff;overflow:hidden;max-width:100%}
+.rv-ans span{width:96px;height:100%;display:flex;align-items:center;justify-content:center;font:600 70px/1 var(--f-kanji);color:var(--red)}
 .rv-ans span+span{border-left:2px solid #F5B5AE}
-.mark{margin-left:auto;flex:none;width:64px;height:64px;border-radius:50%;font-size:36px;line-height:1;border:4px solid var(--ink);background:#fff;color:#A9B6D3}
-.mark.ok{background:var(--green);color:#fff}
-.mark.ng{background:var(--red);color:#fff}
+.marks{margin-left:auto;flex:none;display:flex;flex-direction:column;gap:6px}
+.mk{width:58px;height:48px;border-radius:12px;font-size:30px;font-weight:800;line-height:1;border:3px solid;background:#fff;box-shadow:0 3px 0 var(--ink)}
+.mk.ok{border-color:var(--green-d);color:var(--green-d)}
+.mk.ng{border-color:var(--red-d);color:var(--red)}
+.mk.ok.on{background:var(--green);border-color:var(--ink);color:#fff}
+.mk.ng.on{background:var(--red);border-color:var(--ink);color:#fff}
+.mk:not(.on){opacity:.95}
+.rv:has(.mk.on) .mk:not(.on){opacity:.35}
 .rv-why{font-size:13px;font-weight:500;color:var(--ink)}
-@media (max-width:420px){.rv-img,.rv-ans{height:62px}.rv-ans span{width:62px;font-size:44px}.mark{width:54px;height:54px;font-size:30px}}
+@media (max-width:420px){.rv-img,.rv-ans{height:84px}.rv-ans span{width:84px;font-size:60px}.mk{width:48px;height:40px;font-size:24px}}
 
 /* ---- 結果 ---- */
 #result{padding-block:24px;gap:18px;align-items:stretch}
@@ -1924,9 +1930,11 @@ function renderReview(){
     return `<div class="panel rv">
       <div class="rv-q">${i+1}. ${esc(q.pre)}<b>${esc(q.yomi)}</b>${esc(q.post)}</div>
       <div class="rv-pair">
-        <div class="rv-box"><img class="rv-img" src="${w.url}" alt="じぶんの字"><small>じぶんの字</small></div>
-        <div class="rv-box"><div class="rv-ans">${[...q.ans].map(c=>`<span>${esc(c)}</span>`).join('')}</div><small>こたえ</small></div>
-        <button class="mark ${m===true?'ok':m===false?'ng':''}" data-mark="${i}" aria-label="採点">${m===false?'×':'○'}</button>
+        <div class="rv-col">
+          <div class="rv-box"><small>自分</small><img class="rv-img" src="${w.url}" alt="自分の字"></div>
+          <div class="rv-box"><small>答え</small><div class="rv-ans">${[...q.ans].map(c=>`<span>${esc(c)}</span>`).join('')}</div></div>
+        </div>
+        <div class="marks"><button class="mk ok ${m===true?'on':''}" data-mark="${i}" data-v="1" aria-label="正解">○</button><button class="mk ng ${m===false?'on':''}" data-mark="${i}" data-v="0" aria-label="まちがい">×</button></div>
       </div>
       ${whys[i]?`<div class="rv-why">${esc(whys[i])}</div>`:''}
     </div>`}).join('');
@@ -1937,9 +1945,9 @@ function updateReviewScore(){
   $('rvScore').textContent=`${c*10}点`;
   $('decideBtn').disabled=left>0;$('decideBtn').textContent=left?`あと${left}問 採点してください`:'けってい';
 }
-$('rvList').addEventListener('click',e=>{const b=e.target.closest('[data-mark]');if(!b)return;const i=+b.dataset.mark;
-  marks[i]=marks[i]===true?false:true;sfx(marks[i]?'coin':'miss');
-  b.className='mark '+(marks[i]?'ok':'ng');b.textContent=marks[i]?'○':'×';updateReviewScore()});
+$('rvList').addEventListener('click',e=>{const b=e.target.closest('[data-mark]');if(!b)return;const i=+b.dataset.mark,v=b.dataset.v==='1';
+  marks[i]=v;sfx(v?'coin':'miss');
+  b.parentNode.querySelectorAll('.mk').forEach(x=>x.classList.toggle('on',x===b));updateReviewScore()});
 $('decideBtn').onclick=()=>{results=written.map((w,i)=>({id:w.id,ok:marks[i]===true}));finish()};
 
 /* ===== 結果 ===== */
