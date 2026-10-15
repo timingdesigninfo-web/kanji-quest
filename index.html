@@ -1789,7 +1789,7 @@ const gctx=guide.getContext('2d'),ictx=ink.getContext('2d');
 let mode='test';
 function startQuiz(m){ensureToday();mode=m;const d=dayRec();
   const ids=m==='practice'?d.pending:S.today.ids;
-  qs=ids.map(id=>BANK[id]).filter(Boolean);if(!qs.length){renderHome();show('home');return}
+  qs=shuffle(ids.map(id=>BANK[id]).filter(Boolean));if(!qs.length){renderHome();show('home');return} // 毎回 順番をシャッフル
   qi=0;results=[];written=[];show('quiz');showQ()}
 function home(){const d=dayRec();
   if(!d.testDone)startQuiz('test');else if(d.pending.length)openLearn();else startQuiz('free')}
