@@ -108,6 +108,7 @@ button:focus-visible{outline:4px solid var(--ink);outline-offset:3px}
    repeating-linear-gradient(0deg,var(--brick) 0 18px,var(--brick-d) 18px 21px);
 }
 .foot-row{display:flex;gap:12px}
+.ai-note{margin:0;font-size:11px;font-weight:500;line-height:1.5;color:var(--ink);opacity:.75;text-align:center}
 .foot-row .btn{flex:1;font-size:18px}
 
 /* ---- テスト ---- */
@@ -240,6 +241,7 @@ button:focus-visible{outline:4px solid var(--ink);outline-offset:3px}
   <div class="foot-row">
     <button class="btn violet" id="shopBtn">ごほうびショップ</button>
   </div>
+  <p class="ai-note">※AIまるつけは、回数や利用の上限によって使えないことがあります。そのときは、こたえを見て じぶんで ○×をつけてね。</p>
   <div class="ground"></div>
 </main>
 
@@ -767,7 +769,7 @@ async function toReview(){
     aiState=marks.some(m=>m===null)?'partial':'ai';
   }catch(e){
     if(ctl.signal.aborted&&aiState==='manual')return;
-    aiState=(e&&(e.code==='not_granted'||e.code==='sampling_disabled'))?'denied':'failed';
+    aiState=(e&&(e.code==='not_granted'||e.code==='sampling_disabled'))?'denied':(e&&(e.code==='http_429'||e.code==='http_503'||e.code==='rate_limited'))?'limit':'failed';
   }
   renderReview();show('review');
 }
@@ -778,7 +780,7 @@ function renderReview(){
     partial:'AIが見られなかった もんだいは、じぶんで ○×を つけてね。',
     failed:'AIの まるつけが うまくいかなかったので、こたえを見て じぶんで ○×を つけてね。',
     denied:'AIが つかえないので、こたえを見て じぶんで ○×を つけてね。',
-    limit:'きょうの AIまるつけは おしまい。こたえを見て じぶんで ○×を つけてね。',
+    limit:'いまは AIまるつけが つかえないよ（回数や利用の上限）。こたえを見て じぶんで ○×を つけてね。',
     manual:'こたえを見て、○×を タップしてね。'}[aiState]||'';
   $('rvNote').textContent=note;
   $('rvList').innerHTML=written.map((w,i)=>{const q=BANK[w.id];const m=marks[i];
