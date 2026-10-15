@@ -1895,7 +1895,10 @@ ${RULES}`;
 }
 async function gradeWorker(signal){
   const items=written.map(w=>{const q=BANK[w.id];return {ans:q.ans,q:`${q.pre}［${q.yomi}］${q.post}`,image:w.url}});
-  const r=await fetch(AI_URL,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({items}),signal});
+  // うまくいかなかったら 1回だけ やりなおす（上限に達したときは やりなおさない）
+  let r;for(let t=0;t<2;t++){r=await fetch(AI_URL,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({items}),signal}).catch(e=>{if(signal.aborted)throw e;return null});
+    if(r&&(r.ok||r.status===429||r.status===403))break;if(t===0)await new Promise(z=>setTimeout(z,800))}
+  if(!r)throw {code:'network'};
   if(!r.ok)throw {code:'http_'+r.status};
   const d=await r.json();applyResults(d.results,written.map((_,i)=>i));
 }
