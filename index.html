@@ -203,6 +203,15 @@ button:focus-visible{outline:4px solid var(--ink);outline-offset:3px}
 .rq .st.wait{color:#8A6D00}.rq .st.ok{color:var(--green)}.rq .st.ng{color:var(--red)}
 .rq .btn{flex:none;font-size:15px;padding:8px 14px;width:auto}
 .wv .adm{font-size:12px;font-weight:800;color:var(--green)}
+.wv details.tk>summary{list-style:none;cursor:pointer;font-size:15px;font-weight:800;padding:6px 0;display:flex;align-items:center;gap:8px}
+.wv details.tk>summary::-webkit-details-marker{display:none}
+.wv details.tk>summary::before{content:'▶';font-size:11px;transition:transform .15s}
+.wv details.tk[open]>summary::before{transform:rotate(90deg)}
+.tkl{display:flex;flex-direction:column;gap:6px;padding-top:4px}
+.tkr{display:flex;align-items:center;gap:8px;border-top:2px dashed var(--line);padding-top:6px;font-size:14px}
+.tkr .n{flex:1;min-width:0;font-weight:800}.tkr .d{font-size:12px;font-weight:500;opacity:.7;white-space:nowrap}
+.tkr .u{font-size:12px;font-weight:800;white-space:nowrap;padding:2px 8px;border-radius:999px;background:#E8F7EA;color:var(--green)}
+.tkr .u.no{background:#FFF4CC;color:#8A6D00}.tkr .u.ng{background:#FDE4E1;color:var(--red)}
 .watch-list .w{display:flex;gap:8px;align-items:center}
 .watch-list .w .btn{flex:1;font-size:15px;padding:10px;text-align:left}
 .watch-list .w .x{flex:none;width:40px;height:40px;border-radius:10px;border:3px solid var(--ink);background:#fff;font-size:18px;color:var(--ink)}
@@ -2197,7 +2206,7 @@ function syncPayload(){
   for(const k in S.days)if(k>=cut){const d=S.days[k];days[k]={tries:d.tries,passed:d.passed,passRw:d.passRw,best:d.best,earned:d.earned,bonus:d.bonus,streakBonus:d.streakBonus}}
   const log=LOG.filter(s=>s.date>=cut).map(s=>({...s,items:s.items.map(it=>({...it}))}));
   const g=goalItem();
-  const out={v:1,at:Date.now(),name:S.share.name||'',grade:S.grade,points:S.points,reqs:S.reqs.slice(-30),shop:S.shop,shopV:S.shopV||0,streak:streakNow(),goal:g?{name:g.name,cost:g.cost}:null,days,log};
+  const out={v:1,at:Date.now(),name:S.share.name||'',grade:S.grade,points:S.points,reqs:S.reqs.slice(-30),tickets:S.tickets.slice(-50),shop:S.shop,shopV:S.shopV||0,streak:streakNow(),goal:g?{name:g.name,cost:g.cost}:null,days,log};
   let j=JSON.stringify(out);
   for(let i=0;j.length>800000&&i<log.length;i+=5){log.slice(i,i+5).forEach(s=>s.items.forEach(it=>delete it.img));j=JSON.stringify(out)}
   while(j.length>800000&&log.length){log.splice(0,10);j=JSON.stringify(out)}
@@ -2279,6 +2288,13 @@ function stampsHTML(days){const row=[],now=new Date();
   for(let i=14;i>=0;i--){const dt=new Date(now);dt.setDate(now.getDate()-i);const k=dkey(dt),r=days[k];
     const cls=r&&r.passed?((r.passRw??(r.tries-1))===0?'gold':'silver'):'';row.push(`<div class="st ${cls} ${i===0?'today':''}" title="${k}">${dt.getDate()}</div>`)}
   return row.join('')}
+// 交換したごほうび（チケット）と、ことわったおねがい
+function tkHTML(h){const md=k=>{const [,m,d]=String(k||'').split('-');return m?`${+m}/${+d}`:''};
+  const rows=[...(h.tickets||[]).map(t=>({d:t.date,n:t.name,c:t.cost,u:t.used?'used':'no',ud:t.usedAt})),
+    ...(h.reqs||[]).filter(q=>q.st==='ng'||(h.dec&&h.dec[q.rid]==='0'&&q.st==='wait')).map(q=>({d:dkey(new Date(q.at)),n:q.name,c:q.cost,u:'ng'}))]
+    .sort((a,b)=>a.d<b.d?1:a.d>b.d?-1:0).slice(0,40);
+  if(!rows.length)return `<div class="meta">交換したごほうびは、まだありません。</div>`;
+  return `<details class="tk"><summary>交換したごほうび（${(h.tickets||[]).length}）</summary><div class="tkl">${rows.map(r=>`<div class="tkr"><span class="d">${md(r.d)}</span><span class="n">${esc(r.n||'ごほうび')}${r.c?`<small style="font-weight:500;opacity:.7"> ${r.c}pt</small>`:''}</span><span class="u ${r.u==='used'?'':r.u}">${r.u==='used'?`使った${r.ud?' '+md(r.ud):''}`:r.u==='ng'?'ことわった':'まだ使ってない'}</span></div>`).join('')}</div></details>`}
 function renderWatchHead(){const h=HS,el=$('wvHead');
   const g=h.goal,left=g?Math.max(0,g.cost-h.points):0;
   const pend=pendingOf(h,h.dec||{}),w=S.watch.find(w=>w.id===h.id)||{},isAdm=!!w.admin;
@@ -2290,6 +2306,7 @@ function renderWatchHead(){const h=HS,el=$('wvHead');
     ${g?`<div class="goal-head"><span>${esc(g.name)} まで</span><span class="pixel">${left?`あと ${left}pt`:'交換できる！'}</span></div><div class="bar"><i style="width:${Math.min(100,(h.points||0)/g.cost*100)}%"></i><span>${h.points||0} / ${g.cost}</span></div>`:''}
     <div class="cal-head"><span>15日カレンダー</span><span>${h.streak?`${h.streak}日連続！`:''}</span></div>
     <div class="stamp-row">${stampsHTML(h.days||{})}</div>
+    ${tkHTML(h)}
     <div class="meta">${h.at?`${dLabel(dkey(new Date(h.at)))} ${hhmm(h.at)} の記録`:''}</div>`;
   $('wvReload').onclick=()=>openWatch(h.id);
   if(isAdm){const eb=document.createElement('button');eb.className='btn white';eb.textContent='ごほうびを編集';eb.onclick=()=>edOpen('remote',h.shop||[]);el.appendChild(eb)}
@@ -2525,7 +2542,7 @@ $('pinNo').onclick=()=>{$('pinModal').hidden=true;pinCb=null};
 function withPin(msg,cb){if(!S.pin){cb();return}pinAsk(msg,v=>pinHash(v)===S.pin||'PINがちがいます',cb)}
 const needOK=()=>!!S.pin||!!(S.share&&S.share.admin);
 function applyDecision(q,ok){if(q.st!=='wait')return;
-  if(ok){q.st='ok';S.tickets.push({id:Date.now()+Math.random(),name:q.name,date:todayKey(),used:false})}else{q.st='ng';S.points+=q.cost}}
+  if(ok){q.st='ok';S.tickets.push({id:Date.now()+Math.random(),name:q.name,cost:q.cost,date:todayKey(),used:false})}else{q.st='ng';S.points+=q.cost}}
 function renderReqs(){const rs=S.reqs.filter(r=>r.st==='wait'||Date.now()-r.at<7*864e5).slice(-6).reverse();
   $('reqBox').hidden=!rs.length;
   $('reqBox').innerHTML=`<h3>おねがい</h3>`+rs.map(r=>`<div class="rq"><div class="t">${esc(r.name)}<small>${r.cost}pt・${dLabel(dkey(new Date(r.at)))}</small></div>
@@ -2556,9 +2573,9 @@ function renderShop(){
 $('items').addEventListener('click',e=>{const b=e.target.closest('[data-buy]');if(!b)return;const it=S.shop.find(s=>s.id===b.dataset.buy);if(!it)return;
   if(needOK())ask(`${it.name}（${it.cost}pt）を、おうちの人におねがいする？ OKが出たらチケットになります。`,'おねがい',()=>{if(S.points<it.cost)return;
     S.points-=it.cost;S.reqs.push({rid:rid(10),name:it.name,cost:it.cost,at:Date.now(),st:'wait'});S.reqs=S.reqs.slice(-50);save();syncNow();sfx('coin');renderShop()});
-  else ask(`${it.name}と${it.cost}ptを交換する？`,'交換',()=>{if(S.points<it.cost)return;S.points-=it.cost;S.tickets.push({id:Date.now(),name:it.name,date:todayKey(),used:false});save();syncSoon();sfx('clear');renderShop()})});
+  else ask(`${it.name}と${it.cost}ptを交換する？`,'交換',()=>{if(S.points<it.cost)return;S.points-=it.cost;S.tickets.push({id:Date.now(),name:it.name,cost:it.cost,date:todayKey(),used:false});save();syncSoon();sfx('clear');renderShop()})});
 $('ticketList').addEventListener('click',e=>{const b=e.target.closest('[data-use]');if(!b)return;const t=S.tickets.find(x=>String(x.id)===b.dataset.use);
-  ask('このチケットを使った？','使った',()=>{t.used=true;save();renderShop()})});
+  ask('このチケットを使った？','使った',()=>{t.used=true;t.usedAt=todayKey();save();syncSoon();renderShop()})});
 $('resetBtn').onclick=()=>ask('ポイント・記録・チケットを全部消します。元に戻せません。','消す',()=>ask('本当に消しますか？','全部消す',()=>{if(S.share)fetch(SYNC_URL,{method:'DELETE',headers:{'Content-Type':'application/json'},body:JSON.stringify({id:S.share.id,key:S.share.key})}).catch(()=>{});S=fresh();save();openWelcome()}));
 
 /* ===== モーダル ===== */
