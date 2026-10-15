@@ -1997,13 +1997,15 @@ $('mYes').onclick=()=>{$('modal').hidden=true;const c=mCb;mCb=null;c&&c()};
 
 /* ===== 音と演出 ===== */
 let ac=null;
-function sfx(kind){try{ac=ac||new (window.AudioContext||window.webkitAudioContext)();const seq={coin:[[988,.07],[1319,.22]],miss:[[330,.12],[262,.22]],reveal:[[784,.06]],clear:[[523,.1],[659,.1],[784,.1],[1047,.3]]}[kind];
+function sfx(kind){try{ac=ac||new (window.AudioContext||window.webkitAudioContext)();if(ac.state==='suspended')ac.resume();const seq={tap:[[880,.035],[1175,.05]],coin:[[988,.07],[1319,.22]],miss:[[330,.12],[262,.22]],reveal:[[784,.06]],clear:[[523,.1],[659,.1],[784,.1],[1047,.3]]}[kind];
   let t=ac.currentTime;for(const [f,d] of seq){const o=ac.createOscillator(),g=ac.createGain();o.type='square';o.frequency.value=f;g.gain.setValueAtTime(.07,t);g.gain.exponentialRampToValueAtTime(.001,t+d);o.connect(g).connect(ac.destination);o.start(t);o.stop(t+d);t+=d*.8}}catch(e){}}
 function popText(t){const d=document.createElement('div');d.className='pop';d.textContent=t;document.body.appendChild(d);setTimeout(()=>d.remove(),800)}
 function rain(){for(let i=0;i<26;i++){const c=document.createElement('span');c.className='coin fall';c.style.left=Math.random()*100+'vw';c.style.animationDuration=(1.4+Math.random()*1.4)+'s';c.style.animationDelay=Math.random()*.6+'s';document.body.appendChild(c);setTimeout(()=>c.remove(),3400)}}
 
 /* ===== ボタン ===== */
 $('startBtn').onclick=home;
+// ボタンを押したときの 効果音（ほかの音を出すボタンは そちらを優先）
+document.addEventListener('pointerdown',e=>{const t=e.target.closest('button,.amz-links a');if(!t||t.disabled)return;sfx('tap')},true);
 $('learnGo').onclick=()=>startQuiz('practice');
 $('learnHome').onclick=()=>{renderHome();show('home')};
 $('shopBtn').onclick=()=>{renderShop();show('shop')};
