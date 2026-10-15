@@ -231,6 +231,20 @@ button:focus-visible{outline:4px solid var(--ink);outline-offset:3px}
 .parent{font-size:13px;font-weight:500;text-align:center;color:var(--ink)}
 .parent button{text-decoration:underline;font-weight:800}
 
+/* ---- ごほうび へんしゅう / Amazon ---- */
+.ed{padding:14px 16px;display:flex;flex-direction:column;gap:10px}
+.ed h3,.amz h3{margin:0;font-size:17px}
+.ed-list{display:flex;flex-direction:column;gap:10px}
+.ed-row{display:grid;grid-template-columns:1fr 1fr;gap:6px;padding:10px;border:2px dashed var(--line);border-radius:12px}
+.ed-row input,.ed-row select{min-width:0;border:2px solid var(--ink);border-radius:10px;padding:7px 8px;font:800 15px var(--f-body);color:var(--ink);background:#fff}
+.ed-row .full{grid-column:1/-1}
+.ed-row .del{border:2px solid var(--red);color:var(--red);border-radius:10px;background:#fff;font-size:14px}
+.ed-btns{display:flex;gap:10px}.ed-btns .btn{flex:1;font-size:17px}
+.amz{padding:12px 16px;display:flex;flex-direction:column;gap:8px;box-shadow:none;border-width:2px}
+.amz h3{font-size:14px}
+.amz-links{display:flex;flex-wrap:wrap;gap:6px}
+.amz-links a{border:2px solid var(--ink);border-radius:999px;padding:6px 12px;font-size:13px;color:var(--ink);text-decoration:none;background:var(--sky-lite)}
+.amz-note{margin:0;font-size:10px;font-weight:500;opacity:.7}
 /* ---- モーダル / 演出 ---- */
 .modal{position:fixed;inset:0;background:rgba(28,42,92,.55);display:flex;align-items:center;justify-content:center;z-index:50;
   padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px))}
@@ -262,9 +276,9 @@ button:focus-visible{outline:4px solid var(--ink);outline-offset:3px}
   </section>
 
   <section class="panel goal">
-    <div class="goal-head"><span>500 Robux まで</span><span class="pixel" id="goalLeft"></span></div>
+    <div class="goal-head"><span id="goalName">ごほうび まで</span><span class="pixel" id="goalLeft"></span></div>
     <div class="bar"><i id="goalBar" style="width:0%"></i><span id="goalTxt"></span></div>
-    <div class="goal-note">80てんいじょうで一発合格。まちがえた漢字は、書けるようになるまで れんしゅうして合格。クリアのあと じしゅれんしゅうで 80てんいじょうなら +10pt（1日4回まで）。ゲームチケット1じかん＝50pt。</div>
+    <div class="goal-note">80てんいじょうで一発合格。まちがえた漢字は、書けるようになるまで れんしゅうして合格。クリアのあと じしゅれんしゅうで 80てんいじょうなら +10pt（1日4回まで）。ごほうびは ショップで じゆうに きめられるよ。</div>
   </section>
 
   <section class="panel stamps">
@@ -369,7 +383,25 @@ button:focus-visible{outline:4px solid var(--ink);outline-offset:3px}
   </div>
   <div class="items" id="items"></div>
   <section class="panel tickets"><h3>もっているチケット</h3><div id="ticketList" style="display:flex;flex-direction:column;gap:8px"></div></section>
-  <button class="btn white" id="setupBtn2">おうちの人：がくねん・テストのはんい</button>
+  <button class="btn white" id="editShopBtn">ごほうびを へんしゅう</button>
+  <section class="panel ed" id="shopEdit" hidden>
+    <h3>ごほうびを へんしゅう</h3>
+    <p class="empty" style="margin:0">なまえ・せつめい・ひつようなポイントを じゆうに きめられます。</p>
+    <div class="ed-list" id="edList"></div>
+    <button class="btn white" id="edAdd">＋ ごほうびを ふやす</button>
+    <div class="ed-btns"><button class="btn white" id="edCancel">やめる</button><button class="btn green" id="edSave">ほぞん</button></div>
+  </section>
+  <button class="btn white" id="setupBtn2">がくねん・テストのはんい</button>
+  <section class="panel amz">
+    <h3>べんきょうに つかえる もの</h3>
+    <div class="amz-links">
+      <a href="https://www.amazon.co.jp/s?k=%E6%BC%A2%E5%AD%97%E3%83%89%E3%83%AA%E3%83%AB+%E5%B0%8F%E5%AD%A6%E7%94%9F&tag=timing-22" target="_blank" rel="sponsored noopener">漢字ドリル</a>
+      <a href="https://www.amazon.co.jp/s?k=%E6%BC%A2%E5%AD%97%E8%BE%9E%E5%85%B8+%E5%B0%8F%E5%AD%A6%E7%94%9F&tag=timing-22" target="_blank" rel="sponsored noopener">漢字辞典</a>
+      <a href="https://www.amazon.co.jp/s?k=%E6%BC%A2%E5%AD%97%E3%83%8E%E3%83%BC%E3%83%88&tag=timing-22" target="_blank" rel="sponsored noopener">漢字ノート</a>
+      <a href="https://www.amazon.co.jp/s?k=%E3%82%BF%E3%83%83%E3%83%81%E3%83%9A%E3%83%B3+%E3%82%BF%E3%83%96%E3%83%AC%E3%83%83%E3%83%88&tag=timing-22" target="_blank" rel="sponsored noopener">タッチペン</a>
+    </div>
+    <p class="amz-note">Amazonのアソシエイトとして、かんじクエストは適格販売により収入を得ています。</p>
+  </section>
   <button class="btn white" id="backBtn">もどる</button>
   <div class="parent">おうちの人へ：チケットはお子さんが見せたら「つかった」を押してください。<br><button id="resetBtn">データをリセット</button></div>
 </main>
@@ -1444,25 +1476,33 @@ function defaultFocus(g){const t=TERMS[g];let k=nowTerm();while(k<3&&!t[k])k++;r
 const BANK = BANK_SRC.split('\n').map((l,id)=>{const [s,a]=l.split('|');const m=s.match(/^(.*?)\[(.+?)\](.*)$/);return {id,pre:m[1],yomi:m[2],post:m[3],ans:a.trim()}});
 
 /* ===== ルール ===== */
-const PER_DAY=10, PASS=80, GOAL=1000;
+const PER_DAY=10, PASS=80;
 // 合格までの書き直し回数 → もらえるポイント（0=一発合格、5回以上は最低）
 const PTS=[70,50,40,30,20,10];
 const PTS_LABEL=['一発合格','書き直し1回','2回','3回','4回','5回〜'];
 const BONUS_PT=10, BONUS_MAX=4; // クリア後の じしゅれんしゅう：80てんいじょうで+10pt、1日4回まで
-const SHOP=[
-  {key:'snack',name:'おやつチケット',desc:'すきなおやつ 1つ',cost:50,color:'#FF8FB8'},
-  {key:'game',name:'ゲームチケット',desc:'ゲーム 1じかん',cost:50,color:'#33B84A'},
-  {key:'robux',name:'500 Robux',desc:'さいこうのごほうび',cost:1000,color:'#7A4DFF'}];
+// ごほうびは 使う人が 自由に へんしゅうできる（S.shop）。これは さいしょの 例
+const ICONS={snack:['おかし','#FF8FB8'],game:['ゲーム','#33B84A'],gem:['ほうせき','#7A4DFF'],star:['ほし','#FFCF1F'],book:['本','#2F8CFF'],cup:['のみもの','#F0402F']};
+const DEFAULT_SHOP=[
+  {id:'s1',icon:'snack',name:'おやつ',desc:'すきなおやつ 1つ',cost:50},
+  {id:'s2',icon:'game',name:'ゲーム 1じかん',desc:'すきなゲームを 1じかん',cost:50},
+  {id:'s3',icon:'gem',name:'とっておきの ごほうび',desc:'じぶんで きめよう',cost:1000}];
+const OLD_SHOP={snack:'おやつチケット',game:'ゲームチケット',robux:'500 Robux'};
 
 /* ===== 保存 ===== */
 const KEY='kanjiQuest4.v1';
 function fresh(){const order=BANK.map(b=>b.id);for(let i=order.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[order[i],order[j]]=[order[j],order[i]]}
-  return {v:1,points:0,total:0,days:{},today:null,weak:[],order,cursor:0,tickets:[],grade:null,focus:'',forder:[],fkey:''}}
+  return {v:1,points:0,total:0,days:{},today:null,weak:[],order,cursor:0,tickets:[],grade:null,focus:'',forder:[],fkey:'',shop:DEFAULT_SHOP.map(x=>({...x}))}}
 function load(){try{const s=JSON.parse(localStorage.getItem(KEY));if(s&&s.v===1){
   BANK.forEach(b=>{if(!s.order.includes(b.id))s.order.push(b.id)});
   if(s.focus===undefined){s.focus=DEFAULT_FOCUS;s.forder=[];s.fkey='';
     if(s.today&&!(s.days[s.today.date]||{}).tries)s.today=null}
   if(s.grade===undefined)s.grade=4;
+  if(!Array.isArray(s.shop))s.shop=[ // 前のバージョンの ごほうびを ひきつぐ
+    {id:'s1',icon:'snack',name:'おやつチケット',desc:'すきなおやつ 1つ',cost:50},
+    {id:'s2',icon:'game',name:'ゲームチケット',desc:'ゲーム 1じかん',cost:50},
+    {id:'s3',icon:'gem',name:'500 Robux',desc:'さいこうのごほうび',cost:1000}];
+  (s.tickets||[]).forEach(t=>{if(!t.name)t.name=OLD_SHOP[t.key]||'ごほうび'});
   return s}}catch(e){}return fresh()}
 const focusChars=()=>[...new Set([...(S.focus||'')].filter(c=>/[一-鿿]/.test(c)))];
 // その学年まで（または えらんだ漢字）だけで答えられる問題か
@@ -1535,8 +1575,8 @@ function renderHome(){
   $('rule').innerHTML=PTS.map((p,i)=>`<div class="${cur===i?'on':''}">${PTS_LABEL[i]}<strong>+${p}</strong></div>`).join('');
   const fc=focusChars();
   $('range').textContent=fc.length?`いまのはんい（${fc.length}字）：${fc.join(' ')}`:`はんい：${S.grade}年生の漢字ぜんぶ`;
-  const left=Math.max(0,GOAL-S.points);
-  $('goalLeft').textContent=left?`あと ${left}pt`:'こうかんできる！';
+  const GOAL=(goalItem()||{cost:1000}).cost;const left=Math.max(0,GOAL-S.points);
+  $('goalLeft').textContent=left?`あと ${left}pt`:'こうかんできる！';$('goalName').textContent=(goalItem()||{name:'ごほうび'}).name+' まで';
   $('goalBar').style.width=Math.min(100,S.points/GOAL*100)+'%';
   $('goalTxt').textContent=`${S.points} / ${GOAL}`;
   // カレンダー
@@ -1791,23 +1831,42 @@ $('suSave').onclick=()=>{S.grade=suGrade;S.focus=[...suSel].join('');S.fkey='';S
   if(!(S.days[todayKey()]||{}).tries)S.today=null;save();sfx('reveal');renderHome();show('home')};
 $('setupBtn').onclick=openSetup;
 $('setupBtn2').onclick=openSetup;
+/* ごほうび へんしゅう */
+let edDraft=[];
+function renderEd(){$('edList').innerHTML=edDraft.map((it,i)=>`<div class="ed-row">
+  <input class="full" data-f="name" data-i="${i}" value="${esc(it.name)}" placeholder="なまえ（れい：ゲーム 1じかん）" maxlength="20">
+  <input class="full" data-f="desc" data-i="${i}" value="${esc(it.desc||'')}" placeholder="せつめい（なくてもOK）" maxlength="30">
+  <input type="number" inputmode="numeric" min="1" max="99999" data-f="cost" data-i="${i}" value="${it.cost}" aria-label="ポイント">
+  <select data-f="icon" data-i="${i}">${Object.entries(ICONS).map(([k,v])=>`<option value="${k}" ${k===it.icon?'selected':''}>${v[0]}</option>`).join('')}</select>
+  <button class="del full" data-del="${i}">けす</button></div>`).join('')}
+$('editShopBtn').onclick=()=>{edDraft=S.shop.map(x=>({...x}));renderEd();$('shopEdit').hidden=false;$('editShopBtn').hidden=true};
+$('edList').addEventListener('input',e=>{const el=e.target,i=+el.dataset.i,f=el.dataset.f;if(!f)return;edDraft[i][f]=f==='cost'?Math.max(1,Math.round(+el.value||1)):el.value});
+$('edList').addEventListener('click',e=>{const b=e.target.closest('[data-del]');if(!b)return;edDraft.splice(+b.dataset.del,1);renderEd()});
+$('edAdd').onclick=()=>{edDraft.push({id:'s'+Date.now(),icon:'star',name:'',desc:'',cost:100});renderEd()};
+$('edCancel').onclick=()=>{$('shopEdit').hidden=true;$('editShopBtn').hidden=false};
+$('edSave').onclick=()=>{S.shop=edDraft.filter(x=>x.name.trim()).map(x=>({...x,name:x.name.trim(),desc:(x.desc||'').trim()}));save();$('shopEdit').hidden=true;$('editShopBtn').hidden=false;sfx('reveal');renderShop()};
 
 /* ===== ショップ ===== */
-function icon(k,c){
+function icon(k){const c=(ICONS[k]||ICONS.star)[1];
   if(k==='snack')return `<svg viewBox="0 0 64 64"><path d="M8 32l10-8v16z M56 32l-10-8v16z" fill="${c}" stroke="#1C2A5C" stroke-width="3" stroke-linejoin="round"/><circle cx="32" cy="32" r="15" fill="${c}" stroke="#1C2A5C" stroke-width="3"/><path d="M24 26c6 2 10 8 16 10" stroke="#fff" stroke-width="4" stroke-linecap="round" fill="none"/></svg>`;
   if(k==='game')return `<svg viewBox="0 0 64 64"><rect x="6" y="20" width="52" height="28" rx="14" fill="${c}" stroke="#1C2A5C" stroke-width="3"/><path d="M18 28v12M12 34h12" stroke="#fff" stroke-width="4" stroke-linecap="round"/><circle cx="42" cy="30" r="3.5" fill="#FFCF1F"/><circle cx="49" cy="37" r="3.5" fill="#F0402F"/></svg>`;
+  if(k==='star')return `<svg viewBox="0 0 64 64"><path d="M32 6l7.6 16.4 17.9 2.1-13.2 12.3 3.5 17.7L32 45.6 16.2 54.5l3.5-17.7L6.5 24.5l17.9-2.1z" fill="${c}" stroke="#1C2A5C" stroke-width="3" stroke-linejoin="round"/></svg>`;
+  if(k==='book')return `<svg viewBox="0 0 64 64"><path d="M8 14h20c3 0 4 2 4 4v34c0-2-1-4-4-4H8z M56 14H36c-3 0-4 2-4 4v34c0-2 1-4 4-4h20z" fill="${c}" stroke="#1C2A5C" stroke-width="3" stroke-linejoin="round"/><path d="M14 24h10M14 32h10M40 24h10M40 32h10" stroke="#fff" stroke-width="3" stroke-linecap="round"/></svg>`;
+  if(k==='cup')return `<svg viewBox="0 0 64 64"><path d="M14 18h30l-4 38H18z" fill="${c}" stroke="#1C2A5C" stroke-width="3" stroke-linejoin="round"/><path d="M44 26h6a6 6 0 010 12h-7" fill="none" stroke="#1C2A5C" stroke-width="3"/><path d="M24 8c-2 3 2 5 0 8M32 8c-2 3 2 5 0 8" stroke="#1C2A5C" stroke-width="2.5" fill="none" stroke-linecap="round"/></svg>`;
   return `<svg viewBox="0 0 64 64"><path d="M32 6l20 18-20 34L12 24z" fill="${c}" stroke="#1C2A5C" stroke-width="3" stroke-linejoin="round"/><path d="M12 24h40M24 24l8-18 8 18-8 34z" stroke="#1C2A5C" stroke-width="2.5" fill="none" stroke-linejoin="round"/><path d="M20 22l6-8" stroke="#fff" stroke-width="3" stroke-linecap="round"/></svg>`;
 }
+function goalItem(){return S.shop.reduce((a,b)=>!a||b.cost>a.cost?b:a,null)}
 function renderShop(){
   $('pts2').textContent=S.points;
-  $('items').innerHTML=SHOP.map(it=>`<div class="panel item">${icon(it.key,it.color)}<div><h3>${it.name}</h3><p>${it.desc}</p><div class="cost"><span class="coin"></span>${it.cost}pt</div></div>
-    <button class="btn ${S.points>=it.cost?'yellow':'white'}" data-buy="${it.key}" ${S.points>=it.cost?'':'disabled'}>こうかん</button></div>`).join('');
+  $('items').innerHTML=S.shop.length?S.shop.map(it=>`<div class="panel item">${icon(it.icon)}<div><h3>${esc(it.name)}</h3><p>${esc(it.desc||'')}</p><div class="cost"><span class="coin"></span>${it.cost}pt</div></div>
+    <button class="btn ${S.points>=it.cost?'yellow':'white'}" data-buy="${it.id}" ${S.points>=it.cost?'':'disabled'}>こうかん</button></div>`).join('')
+    :`<div class="panel item"><div></div><div><h3>ごほうびが まだないよ</h3><p>「ごほうびを へんしゅう」で つくろう</p></div><div></div></div>`;
   const own=S.tickets.slice().reverse();
-  $('ticketList').innerHTML=own.length?own.map(t=>{const it=SHOP.find(s=>s.key===t.key);return `<div class="ticket ${t.used?'used':''}"><div class="name">${it.name}<small>${t.date}${t.used?' ・ つかったよ':''}</small></div>${t.used?'':`<button class="btn green" data-use="${t.id}">つかった</button>`}</div>`}).join('')
+  $('ticketList').innerHTML=own.length?own.map(t=>{return `<div class="ticket ${t.used?'used':''}"><div class="name">${esc(t.name||'ごほうび')}<small>${t.date}${t.used?' ・ つかったよ':''}</small></div>${t.used?'':`<button class="btn green" data-use="${t.id}">つかった</button>`}</div>`}).join('')
     :`<div class="empty">まだないよ。ポイントをためて こうかんしよう！</div>`;
 }
-$('items').addEventListener('click',e=>{const b=e.target.closest('[data-buy]');if(!b)return;const it=SHOP.find(s=>s.key===b.dataset.buy);
-  ask(`${it.name}と ${it.cost}pt を こうかんする？`,'こうかん',()=>{if(S.points<it.cost)return;S.points-=it.cost;S.tickets.push({id:Date.now(),key:it.key,date:todayKey(),used:false});save();sfx('clear');renderShop()})});
+$('items').addEventListener('click',e=>{const b=e.target.closest('[data-buy]');if(!b)return;const it=S.shop.find(s=>s.id===b.dataset.buy);if(!it)return;
+  ask(`${it.name}と ${it.cost}pt を こうかんする？`,'こうかん',()=>{if(S.points<it.cost)return;S.points-=it.cost;S.tickets.push({id:Date.now(),name:it.name,date:todayKey(),used:false});save();sfx('clear');renderShop()})});
 $('ticketList').addEventListener('click',e=>{const b=e.target.closest('[data-use]');if(!b)return;const t=S.tickets.find(x=>String(x.id)===b.dataset.use);
   ask('おうちの人：このチケットを つかったことにしますか？','つかった',()=>{t.used=true;save();renderShop()})});
 $('resetBtn').onclick=()=>ask('ポイント・きろく・チケットを ぜんぶ けします。もとにもどせません。','けす',()=>ask('ほんとうに けしますか？','ぜんぶけす',()=>{S=fresh();save();openSetup()}));
