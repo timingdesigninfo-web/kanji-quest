@@ -193,6 +193,16 @@ button:focus-visible{outline:4px solid var(--ink);outline-offset:3px}
 .wpill{font:800 15px var(--f-body);color:var(--ink);background:#fff;border:3px solid var(--ink);border-radius:999px;padding:8px 16px;box-shadow:0 4px 0 var(--ink)}
 .wpill:active{transform:translateY(3px);box-shadow:0 1px 0 var(--ink)}
 .fam label{font-size:13px;font-weight:800}
+.wpill .bdg{display:inline-block;margin-left:6px;background:var(--red);color:#fff;border-radius:999px;padding:0 8px;font-size:13px;line-height:20px}
+.reqs{padding:14px 16px;display:flex;flex-direction:column;gap:8px}
+.reqs h3{margin:0;font-size:16px}
+.rq{display:flex;align-items:center;gap:10px;border-top:2px dashed var(--line);padding-top:8px}
+.rq .t{flex:1;min-width:0;font-size:15px;font-weight:800;line-height:1.4}
+.rq .t small{display:block;font-size:12px;font-weight:500;opacity:.75}
+.rq .st{font-size:13px;font-weight:800;white-space:nowrap}
+.rq .st.wait{color:#8A6D00}.rq .st.ok{color:var(--green)}.rq .st.ng{color:var(--red)}
+.rq .btn{flex:none;font-size:15px;padding:8px 14px;width:auto}
+.wv .adm{font-size:12px;font-weight:800;color:var(--green)}
 .watch-list .w{display:flex;gap:8px;align-items:center}
 .watch-list .w .btn{flex:1;font-size:15px;padding:10px;text-align:left}
 .watch-list .w .x{flex:none;width:40px;height:40px;border-radius:10px;border:3px solid var(--ink);background:#fff;font-size:18px;color:var(--ink)}
@@ -446,6 +456,14 @@ button:focus-visible{outline:4px solid var(--ink);outline-offset:3px}
 .modal .panel{max-width:380px;width:100%;padding:20px;display:flex;flex-direction:column;gap:14px;text-align:center}
 .modal p{margin:0;font-size:18px;line-height:1.6}
 .modal .row{display:flex;gap:10px}.modal .row .btn{flex:1;font-size:17px}
+.pin-in{align-self:center;width:180px;text-align:center;font:800 34px var(--f-pixel);letter-spacing:.4em;border:3px solid var(--ink);border-radius:12px;padding:8px 0 8px .4em;color:var(--ink);background:#fff}
+.pin-err{min-height:1.2em;font-size:14px;font-weight:800;color:var(--red)}
+.parent{padding:14px 16px;display:flex;flex-direction:column;gap:10px}
+.parent h3{margin:0;font-size:16px}
+.parent p{margin:0;font-size:13px;font-weight:500;line-height:1.6}
+.parent .row{display:flex;gap:8px}.parent .row .btn{flex:1;font-size:15px;padding:10px}
+.rq .who{font-size:11px;font-weight:800;opacity:.7;white-space:nowrap}
+#wvEdHost:empty{display:none}
 .pop{position:fixed;left:50%;top:40%;transform:translate(-50%,-50%);font-family:var(--f-pixel);font-size:64px;color:#fff;
   text-shadow:3px 3px 0 var(--ink);pointer-events:none;z-index:60;animation:pop .7s ease-out forwards}
 @keyframes pop{0%{opacity:0;transform:translate(-50%,-30%) scale(.6)}25%{opacity:1;transform:translate(-50%,-60%) scale(1.15)}100%{opacity:0;transform:translate(-50%,-110%) scale(1)}}
@@ -648,6 +666,7 @@ button:focus-visible{outline:4px solid var(--ink);outline-offset:3px}
 <main id="history" class="screen" hidden>
   <div class="shop-head"><h2>きろく</h2><button class="btn white small" id="hiBack">もどる</button></div>
   <section class="panel wv" id="wvHead" hidden></section>
+  <div id="wvEdHost"></div>
   <div class="hi-tabs" id="hiTabs"><button class="on" data-f="all">ぜんぶ</button><button data-f="ng">まちがえた字だけ</button></div>
   <div class="hi-list" id="hiList"></div>
   <section class="panel fam" id="famBox"></section>
@@ -660,9 +679,11 @@ button:focus-visible{outline:4px solid var(--ink);outline-offset:3px}
     <h2>ごほうび</h2>
     <div class="wallet"><span class="coin"></span><span class="num" id="pts2">0</span><span class="unit">pt</span></div>
   </div>
+  <section class="panel reqs" id="reqBox" hidden></section>
   <div class="items" id="items"></div>
   <section class="panel tickets"><h3>持っているチケット</h3><div id="ticketList" style="display:flex;flex-direction:column;gap:8px"></div></section>
   <button class="btn white" id="editShopBtn">ごほうびを編集</button>
+  <div id="shopEdHost"></div>
   <section class="panel ed" id="shopEdit" hidden>
     <h3>ごほうびを編集</h3>
     <p class="empty" style="margin:0">名前・説明・ポイントを自由に決められます。</p>
@@ -670,6 +691,7 @@ button:focus-visible{outline:4px solid var(--ink);outline-offset:3px}
     <button class="btn white" id="edAdd">＋ 追加</button>
     <div class="ed-btns"><button class="btn white" id="edCancel">やめる</button><button class="btn green" id="edSave">保存</button></div>
   </section>
+  <section class="panel parent" id="parentBox"></section>
   <button class="btn white" id="setupBtn2">学年</button>
   <section class="panel amz">
     <h3>おすすめ勉強ツール</h3>
@@ -687,6 +709,10 @@ button:focus-visible{outline:4px solid var(--ink);outline-offset:3px}
   <div class="parent">チケットは使ったら「使った」を押してください。<br><button id="resetBtn">データをリセット</button></div>
 </main>
 
+<div class="modal" id="pinModal" hidden><div class="panel"><p id="pinMsg"></p>
+  <input id="pinIn" class="pin-in" type="password" inputmode="numeric" pattern="[0-9]*" maxlength="4" autocomplete="off" aria-label="PIN">
+  <div class="pin-err" id="pinErr"></div>
+  <div class="row"><button class="btn white" id="pinNo">やめる</button><button class="btn green" id="pinYes">OK</button></div></div></div>
 <div class="modal" id="modal" hidden><div class="panel"><p id="mMsg"></p><div class="row"><button class="btn white" id="mNo">やめる</button><button class="btn green" id="mYes">OK</button></div></div></div>
 
 <script>
@@ -1775,13 +1801,13 @@ const OLD_SHOP={snack:'おやつチケット',game:'ゲームチケット',robux
 /* ===== 保存 ===== */
 const KEY='kanjiQuest4.v1';
 function fresh(){const order=BANK.map(b=>b.id);for(let i=order.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[order[i],order[j]]=[order[j],order[i]]}
-  return {v:1,points:0,total:0,days:{},today:null,weak:[],order,cursor:0,tickets:[],grade:null,onboarded:false,focus:'',forder:[],fkey:'',shop:DEFAULT_SHOP.map(x=>({...x})),share:null,watch:[]}}
+  return {v:1,points:0,total:0,days:{},today:null,weak:[],order,cursor:0,tickets:[],grade:null,onboarded:false,focus:'',forder:[],fkey:'',shop:DEFAULT_SHOP.map(x=>({...x})),share:null,watch:[],reqs:[],pin:'',shopV:0}}
 function load(){try{const s=JSON.parse(localStorage.getItem(KEY));if(s&&s.v===1){
   BANK.forEach(b=>{if(!s.order.includes(b.id))s.order.push(b.id)});
   if(s.focus===undefined){s.focus=DEFAULT_FOCUS;s.forder=[];s.fkey='';
     if(s.today&&!(s.days[s.today.date]||{}).tries)s.today=null}
   if(s.grade===undefined)s.grade=4;
-  if(!Array.isArray(s.watch))s.watch=[];if(s.share===undefined)s.share=null;
+  if(!Array.isArray(s.watch))s.watch=[];if(!Array.isArray(s.reqs))s.reqs=[];if(s.pin===undefined)s.pin='';if(s.shopV===undefined)s.shopV=0;if(s.share===undefined)s.share=null;
   if(!Array.isArray(s.shop))s.shop=[ // 前のバージョンの ごほうびを ひきつぐ
     {id:'s1',icon:'snack',name:'おやつチケット',desc:'すきなおやつ 1つ',cost:50},
     {id:'s2',icon:'game',name:'ゲームチケット',desc:'ゲーム 1じかん',cost:50},
@@ -1833,7 +1859,7 @@ function show(id){['home','quiz','learn','grading','review','result','shop','set
 function renderHome(){
   if(!S.onboarded){openWelcome();return}
   ensureToday();
-  $('gradeLabel').textContent=`${S.grade}年生の漢字`;renderWatchPills();
+  $('gradeLabel').textContent=`${S.grade}年生の漢字`;renderWatchPills();refreshPending();checkDecisions();
   const d=day();
   $('pts').textContent=S.points;$('ptsBig').textContent=S.points;updateHomeShare();
   const n=d.pending.length,nextRw=Math.min(d.rewrites+1,5);
@@ -2158,7 +2184,7 @@ $('hiList').addEventListener('toggle',e=>{const d=e.target;if(d.matches&&d.match
 $('hiTabs').onclick=e=>{const b=e.target.closest('button');if(!b)return;hiFilter=b.dataset.f;
   $('hiTabs').querySelectorAll('button').forEach(x=>x.classList.toggle('on',x===b));sfx('reveal');renderHistory()};
 $('historyBtn').onclick=()=>{sfx('reveal');openHistory()};
-$('hiBack').onclick=$('hiHome').onclick=()=>{HS=null;if(!S.onboarded){openWelcome();return}renderHome();show('home')};
+$('hiBack').onclick=$('hiHome').onclick=()=>{HS=null;if(edTarget==='remote')edClose();if(!S.onboarded){openWelcome();return}renderHome();show('home')};
 $('stampRow').addEventListener('click',e=>{const st=e.target.closest('.st');if(!st||!st.title)return;
   const k=st.title;if(LOG.some(s=>s.date===k)||(S.days[k]||{}).tries){sfx('reveal');openHistory(k)}});
 
@@ -2171,7 +2197,7 @@ function syncPayload(){
   for(const k in S.days)if(k>=cut){const d=S.days[k];days[k]={tries:d.tries,passed:d.passed,passRw:d.passRw,best:d.best,earned:d.earned,bonus:d.bonus,streakBonus:d.streakBonus}}
   const log=LOG.filter(s=>s.date>=cut).map(s=>({...s,items:s.items.map(it=>({...it}))}));
   const g=goalItem();
-  const out={v:1,at:Date.now(),name:S.share.name||'',grade:S.grade,points:S.points,streak:streakNow(),goal:g?{name:g.name,cost:g.cost}:null,days,log};
+  const out={v:1,at:Date.now(),name:S.share.name||'',grade:S.grade,points:S.points,reqs:S.reqs.slice(-30),shop:S.shop,shopV:S.shopV||0,streak:streakNow(),goal:g?{name:g.name,cost:g.cost}:null,days,log};
   let j=JSON.stringify(out);
   for(let i=0;j.length>800000&&i<log.length;i+=5){log.slice(i,i+5).forEach(s=>s.items.forEach(it=>delete it.img));j=JSON.stringify(out)}
   while(j.length>800000&&log.length){log.splice(0,10);j=JSON.stringify(out)}
@@ -2187,7 +2213,7 @@ let qrLib=null;
 function loadQR(){return qrLib||(qrLib=new Promise((ok,ng)=>{const sc=document.createElement('script');sc.src='qr.js';sc.onload=()=>ok(window.qrcode);sc.onerror=ng;document.head.appendChild(sc)}))}
 async function drawQR(el,text){try{const q=(await loadQR())(0,'M');q.addData(text);q.make();el.innerHTML=q.createSvgTag({cellSize:4,margin:2,scalable:true})}catch(e){el.textContent='QRを表示できませんでした'}}
 const wName=w=>w.name?`${w.name}さんの記録`:`${w.grade?w.grade+'年生の':''}記録`;
-function renderWatchPills(){const h=S.watch.map((w,i)=>`<button class="wpill" data-wp="${i}">${esc(wName(w))} ›</button>`).join('');
+function renderWatchPills(){const h=S.watch.map((w,i)=>`<button class="wpill" data-wp="${i}">${esc(wName(w))}${w.pend?`<span class="bdg">おねがい${w.pend}</span>`:''} ›</button>`).join('');
   ['homeWatch','wlWatch'].forEach(id=>{const el=$(id);if(!el)return;el.innerHTML=h;el.querySelectorAll('[data-wp]').forEach(x=>x.onclick=()=>{sfx('reveal');openWatch(S.watch[+x.dataset.wp].id)})})}
 let famStep='';
 function renderFam(){const b=$('famBox'),sh=S.share;
@@ -2210,6 +2236,7 @@ function renderFam(){const b=$('famBox'),sh=S.share;
       <div class="lnk"><input readonly value="${url}" id="famURL"><button class="btn white small" id="famCopy">コピー</button></div>
       ${syncErr?`<div class="err">${syncErr}</div>`:`<div class="meta">${sh.at?`最終更新 ${dLabel(dkey(new Date(sh.at)))} ${hhmm(sh.at)}`:''}</div>`}
       <div class="row"><button class="btn white" id="famSync">今すぐ更新</button><button class="btn white" id="famStop">共有をやめる</button></div>
+      <p class="meta">${sh.admin?'管理する人が登録済み。ごほうびの交換は、管理する人のOKで決まります。':'最初にQRを読みとったスマホが「管理する人」になり、ごほうびの交換をOKできます。'}</p>
       <label for="famName">表示名</label><input class="nm" id="famName" maxlength="12" placeholder="例：たろう" value="${esc(sh.name||'')}">
       <p class="meta">QRやリンクを知っている人は誰でも見られます。家族だけに教えてください。</p>${wl}`;
     drawQR($('famQR'),url);
@@ -2225,27 +2252,59 @@ async function startShare(name){name=String(name||'').trim().slice(0,12);if(!nam
   const b=$('famGo');if(b){b.disabled=true;b.textContent='準備中…'}
   if(S.share)S.share.name=name;else S.share={id:rid(20),key:rid(40),name,at:0};save();
   if(!await syncNow()){S.share=null;save()}else famStep='';renderFam()}
+/* --- ごほうびのおねがい（子ども側）：OK/ダメを取りにいく --- */
+let decT=0;
+async function checkDecisions(){if(!S.share||Date.now()-decT<5000)return;decT=Date.now();
+  try{const r=await fetch(SYNC_URL+'?dec=1&id='+S.share.id,{cache:'no-store'});if(!r.ok)return;const d=await r.json();
+    let ch=false;if(!!d.admin!==!!S.share.admin){S.share.admin=!!d.admin;ch=true}
+    for(const q of S.reqs){if(q.st!=='wait')continue;const v=d.dec&&d.dec[q.rid];
+      if(v==='1'||v==='0'){applyDecision(q,v==='1');ch=true;if(v==='1')sfx('clear')}}
+    if(d.shop&&Array.isArray(d.shop.list)&&d.shop.v>(S.shopV||0)){S.shop=d.shop.list;S.shopV=d.shop.v;ch=true}
+    if(ch){save();syncSoon();if(!$('shop').hidden)renderShop();else if(!$('home').hidden)renderHome();if(!$('history').hidden&&!HS)renderFam()}}catch(e){}}
+setInterval(()=>{if(S.share&&S.reqs.some(q=>q.st==='wait')&&!document.hidden){decT=0;checkDecisions()}},30000);
+/* --- 管理する人の側 --- */
+async function claimAdmin(w){const k=rid(40);
+  try{const r=await fetch(SYNC_URL,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({act:'claim',id:w.id,admin:k})});
+    if(r.ok&&(await r.json()).ok){w.admin=k;save();return true}}catch(e){}return false}
+async function fetchDec(id){try{const r=await fetch(SYNC_URL+'?dec=1&id='+id,{cache:'no-store'});if(r.ok)return await r.json()}catch(e){}return {admin:false,dec:{}}}
+const pendingOf=(data,dec)=>(data.reqs||[]).filter(q=>q.st==='wait'&&!(dec&&q.rid in dec));
+async function decide(q,ok){const w=S.watch.find(w=>w.id===HS.id);if(!w||!w.admin)return;
+  try{const r=await fetch(SYNC_URL,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({act:'decide',id:HS.id,admin:w.admin,req:q.rid,ok})});
+    if(r.ok){HS.dec[q.rid]=ok?'1':'0';w.pend=pendingOf(HS,HS.dec).length;save();sfx(ok?'clear':'miss');renderWatchHead();renderWatchPills()}}catch(e){}}
+let pendT={};
+async function refreshPending(){for(const w of S.watch){if(Date.now()-(pendT[w.id]||0)<60000)continue;pendT[w.id]=Date.now();
+  try{const [r,dd]=await Promise.all([fetch(SYNC_URL+'?id='+w.id,{cache:'no-store'}),fetchDec(w.id)]);if(!r.ok)continue;
+    const d=await r.json();w.pend=pendingOf(d,dd.dec).length;w.name=d.name||w.name;save();renderWatchPills()}catch(e){}}}
 function stampsHTML(days){const row=[],now=new Date();
   for(let i=14;i>=0;i--){const dt=new Date(now);dt.setDate(now.getDate()-i);const k=dkey(dt),r=days[k];
     const cls=r&&r.passed?((r.passRw??(r.tries-1))===0?'gold':'silver'):'';row.push(`<div class="st ${cls} ${i===0?'today':''}" title="${k}">${dt.getDate()}</div>`)}
   return row.join('')}
 function renderWatchHead(){const h=HS,el=$('wvHead');
   const g=h.goal,left=g?Math.max(0,g.cost-h.points):0;
+  const pend=pendingOf(h,h.dec||{}),w=S.watch.find(w=>w.id===h.id)||{},isAdm=!!w.admin;
   el.innerHTML=`<div class="wv-top"><b>${esc(h.name||'')}${h.grade?` ${h.grade}年生`:''}</b><button class="btn white small" id="wvReload">最新にする</button></div>
+    ${isAdm?`<div class="adm">このスマホが「管理する人」です。ごほうびのOKと編集ができます。</div>`:''}
+    ${pend.length?`<div class="reqs" style="padding:0"><h3>ごほうびのおねがい</h3>${pend.map((q,i)=>`<div class="rq"><div class="t">${esc(q.name)}<small>${q.cost}pt・${dLabel(dkey(new Date(q.at)))} ${hhmm(q.at)}</small></div>
+      ${isAdm?`<button class="btn white" data-dq="${i}" data-ok="0">ダメ</button><button class="btn green" data-dq="${i}" data-ok="1">OK</button>`:`<span class="st wait">OKまち</span>`}</div>`).join('')}</div>`:''}
     <div class="now-pt"><span class="now-l">今のポイント</span><span class="now-v"><span class="coin"></span><span class="pixel">${h.points||0}</span><small>pt</small></span></div>
     ${g?`<div class="goal-head"><span>${esc(g.name)} まで</span><span class="pixel">${left?`あと ${left}pt`:'交換できる！'}</span></div><div class="bar"><i style="width:${Math.min(100,(h.points||0)/g.cost*100)}%"></i><span>${h.points||0} / ${g.cost}</span></div>`:''}
     <div class="cal-head"><span>15日カレンダー</span><span>${h.streak?`${h.streak}日連続！`:''}</span></div>
     <div class="stamp-row">${stampsHTML(h.days||{})}</div>
     <div class="meta">${h.at?`${dLabel(dkey(new Date(h.at)))} ${hhmm(h.at)} の記録`:''}</div>`;
-  $('wvReload').onclick=()=>openWatch(h.id)}
+  $('wvReload').onclick=()=>openWatch(h.id);
+  if(isAdm){const eb=document.createElement('button');eb.className='btn white';eb.textContent='ごほうびを編集';eb.onclick=()=>edOpen('remote',h.shop||[]);el.appendChild(eb)}
+  el.querySelectorAll('[data-dq]').forEach(b=>b.onclick=()=>{const q=pend[+b.dataset.dq],ok=b.dataset.ok==='1';
+    if(ok)decide(q,true);else ask(`${q.name}のおねがいをことわる？ ポイントは戻ります。`,'ことわる',()=>decide(q,false))})}
 async function openWatch(id){
   hiFilter='all';$('hiTabs').querySelectorAll('button').forEach(x=>x.classList.toggle('on',x.dataset.f==='all'));
   const w0=S.watch.find(w=>w.id===id)||{};
   HS={id,name:w0.name,grade:w0.grade,log:[],days:{},loading:true};renderHistory();show('history');$('wvHead').hidden=true;$('hiList').innerHTML='<div class="panel hi-empty">読みこみ中…</div>';
   try{const r=await fetch(SYNC_URL+'?id='+encodeURIComponent(id),{cache:'no-store'});
     if(r.status===404){$('hiList').innerHTML='<div class="panel hi-empty">この共有は終了しています。</div>';$('wvHead').hidden=true;return}
-    if(!r.ok)throw 0;const d=await r.json();HS={...d,id};
-    const w=S.watch.find(w=>w.id===id);if(w){w.name=d.name||'';w.grade=d.grade}else S.watch.push({id,name:d.name||'',grade:d.grade});save();renderWatchPills();
+    if(!r.ok)throw 0;const d=await r.json();
+    let w=S.watch.find(w=>w.id===id);if(w){w.name=d.name||'';w.grade=d.grade}else{w={id,name:d.name||'',grade:d.grade};S.watch.push(w)}
+    let dd=await fetchDec(id);if(!dd.admin&&!w.admin&&await claimAdmin(w))dd=await fetchDec(id);
+    HS={...d,id,dec:dd.dec||{}};if(dd.shop&&dd.shop.v>(d.shopV||0)){HS.shop=dd.shop.list;HS.shopV=dd.shop.v;const g=HS.shop.reduce((a,b)=>!a||b.cost>a.cost?b:a,null);HS.goal=g?{name:g.name,cost:g.cost}:null}w.pend=pendingOf(HS,HS.dec).length;save();renderWatchPills();
     renderHistory();
   }catch(e){$('hiList').innerHTML='<div class="panel hi-empty">読みこめませんでした。<br>電波のよいところで「最新にする」を押してください。</div>'}}
 
@@ -2349,7 +2408,7 @@ function openSetup(g){if(g){suGrade=g;suSel=new Set(g===S.grade&&S.focus?focusCh
   renderSetup();show('setup')}
 /* はじめに（学年えらび）→ つかいかた → 範囲 */
 let obGrade=4,obStep=0,obFromHome=false;
-function openWelcome(){renderWatchPills();$('wlGrades').innerHTML=[1,2,3,4,5,6].map(g=>`<button data-wg="${g}">${g}<small>年</small></button>`).join('');show('welcome')}
+function openWelcome(){renderWatchPills();refreshPending();$('wlGrades').innerHTML=[1,2,3,4,5,6].map(g=>`<button data-wg="${g}">${g}<small>年</small></button>`).join('');show('welcome')}
 $('wlGrades').addEventListener('click',e=>{const b=e.target.closest('[data-wg]');if(!b)return;sfx('reveal');obGrade=+b.dataset.wg;obFromHome=false;obStep=0;obAdmin=false;renderOb();show('onboard')});
 const OB=[
   {pic:()=>`<div class="ob-board"><span>漢</span></div>`,h:'毎日10問、指で書く',p:'文の中の［よみがな］を漢字で書きます。書く場所は大きく、ほかには何も置いていません。'},
@@ -2362,12 +2421,14 @@ const OB_PHONE=`<svg viewBox="0 0 120 120"><rect x="34" y="8" width="52" height=
 function renderOb(){const last=obStep===OB.length-1;
   if(obAdmin){
     $('obCard').innerHTML=`<div class="ob-pic">${OB_PHONE}</div><h2>管理する人へ</h2>
-      <p>テストの結果は、あなたのスマホなどからも確認できます。</p>
+      <p><b>1台で使うとき</b>は「ごほうび」画面の下でPINを決めると、ごほうびの編集と交換のOKがおうちの人だけになります。</p>
+      <p><b>自分のスマホからも見るとき</b>は：</p>
       <ol class="ob-steps"><li><span>この端末で<b>「きろく」→「共有する」</b>を押す</span></li>
       <li><span><b>名前</b>を入れて「OK」</span></li>
       <li><span>出てきたQRを、<b>自分のスマホのカメラ</b>で読みとる</span></li>
-      <li><span>あなたのホームに「〇〇さんの記録」ボタンが出て、いつでも見られます</span></li></ol>
-      <p class="small">見るだけで、書きかえはできません。名前やメールアドレスは使いません。</p>`;
+      <li><span>あなたのホームに「〇〇さんの記録」ボタンが出て、いつでも見られます</span></li>
+      <li><span>ごほうびの交換は<b>あなたのOK</b>で決まります（最初に読みとったスマホが管理する人）</span></li></ol>
+      <p class="small">記録は見るだけで、書きかえはできません。メールアドレスなどの登録はいりません。</p>`;
   }else{const o=OB[obStep];$('obCard').innerHTML=`<div class="ob-pic">${o.pic()}</div><h2>${o.h}</h2><p>${o.p}</p>`}
   $('obDots').innerHTML=OB.map((_,i)=>`<i class="${i===obStep&&!obAdmin?'on':''}"></i>`).join('');
   $('obBack').hidden=obStep===0&&!obAdmin;
@@ -2417,12 +2478,16 @@ function renderEd(){$('edList').innerHTML=edDraft.map((it,i)=>`<div class="ed-ro
   <div class="ed-icons full" role="radiogroup" aria-label="アイコン">${Object.keys(ICONS).map(k=>`<button type="button" class="ed-ic ${k===it.icon?'on':''}" data-ic="${k}" data-i="${i}" aria-label="${ICONS[k][0]}">${icon(k)}</button>`).join('')}</div>
   <label class="ed-f full"><span>必要なポイント</span><input type="number" inputmode="numeric" min="1" max="99999" data-f="cost" data-i="${i}" value="${it.cost}"></label>
   <button class="del full" data-del="${i}">消す</button></div>`).join('')}
-$('editShopBtn').onclick=()=>{edDraft=S.shop.map(x=>({...x}));renderEd();$('shopEdit').hidden=false;$('editShopBtn').hidden=true};
+let edTarget='local';
+function edOpen(target,list){edTarget=target;edDraft=list.map(x=>({...x}));$(target==='remote'?'wvEdHost':'shopEdHost').appendChild($('shopEdit'));renderEd();$('shopEdit').hidden=false;
+  if(target==='local')$('editShopBtn').hidden=true;$('shopEdit').scrollIntoView({block:'start'})}
+function edClose(){$('shopEdit').hidden=true;$('editShopBtn').hidden=false;$('shopEdHost').appendChild($('shopEdit'))}
+$('editShopBtn').onclick=()=>withPin('ごほうびを編集するには、おうちの人のPINを入れてください',()=>edOpen('local',S.shop));
 $('edList').addEventListener('input',e=>{const el=e.target,i=+el.dataset.i,f=el.dataset.f;if(!f)return;edDraft[i][f]=f==='cost'?Math.max(1,Math.round(+el.value||1)):el.value});
 $('edList').addEventListener('click',e=>{const ic=e.target.closest('[data-ic]');if(ic){const i=+ic.dataset.i;edDraft[i].icon=ic.dataset.ic;ic.parentNode.querySelectorAll('.ed-ic').forEach(x=>x.classList.toggle('on',x===ic));return}
   const b=e.target.closest('[data-del]');if(!b)return;edDraft.splice(+b.dataset.del,1);renderEd()});
 $('edAdd').onclick=()=>{edDraft.push({id:'s'+Date.now(),icon:'star',name:'',desc:'',cost:100});renderEd()};
-$('edCancel').onclick=()=>{$('shopEdit').hidden=true;$('editShopBtn').hidden=false};
+$('edCancel').onclick=edClose;
 // アイコンは 名前から 自動で えらぶ
 function autoIcon(name,cost,max){const n=name||'';
   if(/コーヒー|お茶|ジュース|飲|カフェ|ドリンク|ビール/.test(n))return 'cup';
@@ -2430,8 +2495,13 @@ function autoIcon(name,cost,max){const n=name||'';
   if(/おやつ|お菓子|おかし|スイーツ|ケーキ|アイス|チョコ/.test(n))return 'snack';
   if(/本|マンガ|漫画|まんが/.test(n))return 'book';
   return cost>=max?'gem':'star'}
-$('edSave').onclick=()=>{const list=edDraft.filter(x=>x.name.trim());
-  S.shop=list.map(x=>({...x,name:x.name.trim(),desc:(x.desc||'').trim(),icon:x.icon||'star'}));save();$('shopEdit').hidden=true;$('editShopBtn').hidden=false;sfx('reveal');renderShop()};
+$('edSave').onclick=async()=>{const list=edDraft.filter(x=>x.name.trim()).map(x=>({...x,name:x.name.trim(),desc:(x.desc||'').trim(),icon:x.icon||'star'}));
+  if(edTarget==='remote'){const w=S.watch.find(w=>w.id===HS.id);if(!w||!w.admin)return;$('edSave').textContent='保存中…';
+    try{const r=await fetch(SYNC_URL,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({act:'shop',id:HS.id,admin:w.admin,shop:list})});
+      if(!r.ok)throw 0;const d=await r.json();HS.shop=list;HS.shopV=d.v;HS.goal=(()=>{const g=list.reduce((a,b)=>!a||b.cost>a.cost?b:a,null);return g?{name:g.name,cost:g.cost}:null})();
+      $('edSave').textContent='保存';edClose();sfx('reveal');renderWatchHead()}catch(e){$('edSave').textContent='保存';ask('保存できませんでした。電波のよいところで、もう一度おしてください。','OK',()=>{})}
+    return}
+  S.shop=list;S.shopV=Date.now();save();syncSoon();edClose();sfx('reveal');renderShop()};
 
 /* ===== ショップ ===== */
 function icon(k){const c=(ICONS[k]||ICONS.star)[1];
@@ -2443,17 +2513,50 @@ function icon(k){const c=(ICONS[k]||ICONS.star)[1];
   return `<svg viewBox="0 0 64 64"><path d="M32 6l20 18-20 34L12 24z" fill="${c}" stroke="#1C2A5C" stroke-width="3" stroke-linejoin="round"/><path d="M12 24h40M24 24l8-18 8 18-8 34z" stroke="#1C2A5C" stroke-width="2.5" fill="none" stroke-linejoin="round"/><path d="M20 22l6-8" stroke="#fff" stroke-width="3" stroke-linecap="round"/></svg>`;
 }
 function goalItem(){return S.shop.reduce((a,b)=>!a||b.cost>a.cost?b:a,null)}
+/* ===== おうちの人（PIN・おねがい） ===== */
+const pinHash=v=>{let h=5381;for(const c of 'kq:'+v)h=(h*33+c.charCodeAt(0))>>>0;return h.toString(36)};
+let pinCb=null,pinCheck=null;
+function pinAsk(msg,check,cb){$('pinMsg').textContent=msg;$('pinIn').value='';$('pinErr').textContent='';pinCheck=check;pinCb=cb;$('pinModal').hidden=false;setTimeout(()=>$('pinIn').focus(),50)}
+function pinSubmit(){const v=$('pinIn').value.trim();if(!/^\d{4}$/.test(v)){$('pinErr').textContent='数字4けたで入れてください';return}
+  const r=pinCheck?pinCheck(v):true;if(r!==true){$('pinErr').textContent=r||'PINがちがいます';$('pinIn').value='';sfx('miss');return}
+  $('pinModal').hidden=true;const cb=pinCb;pinCb=null;cb&&cb(v)}
+$('pinYes').onclick=pinSubmit;$('pinIn').onkeydown=e=>{if(e.key==='Enter')pinSubmit()};
+$('pinNo').onclick=()=>{$('pinModal').hidden=true;pinCb=null};
+function withPin(msg,cb){if(!S.pin){cb();return}pinAsk(msg,v=>pinHash(v)===S.pin||'PINがちがいます',cb)}
+const needOK=()=>!!S.pin||!!(S.share&&S.share.admin);
+function applyDecision(q,ok){if(q.st!=='wait')return;
+  if(ok){q.st='ok';S.tickets.push({id:Date.now()+Math.random(),name:q.name,date:todayKey(),used:false})}else{q.st='ng';S.points+=q.cost}}
+function renderReqs(){const rs=S.reqs.filter(r=>r.st==='wait'||Date.now()-r.at<7*864e5).slice(-6).reverse();
+  $('reqBox').hidden=!rs.length;
+  $('reqBox').innerHTML=`<h3>おねがい</h3>`+rs.map(r=>`<div class="rq"><div class="t">${esc(r.name)}<small>${r.cost}pt・${dLabel(dkey(new Date(r.at)))}</small></div>
+    ${r.st!=='wait'?`<span class="st ${r.st}">${r.st==='ok'?'OK！ チケットに':'ダメ（ポイントは戻りました）'}</span>`
+      :S.pin?`<span class="who">おうちの人</span><button class="btn white" data-lq="${r.rid}" data-ok="0">ダメ</button><button class="btn green" data-lq="${r.rid}" data-ok="1">OK</button>`
+      :`<span class="st wait">OKまち</span>`}</div>`).join('')
+    +(S.reqs.some(r=>r.st==='wait')&&!S.pin?`<p class="meta" style="margin:0;font-size:12px">おうちの人のスマホでOKが出ると、チケットになります。</p>`:'')}
+$('reqBox').addEventListener('click',e=>{const b=e.target.closest('[data-lq]');if(!b)return;const q=S.reqs.find(r=>r.rid===b.dataset.lq);if(!q)return;const ok=b.dataset.ok==='1';
+  withPin(`${q.name}（${q.cost}pt）を${ok?'OK':'ことわる'}には、おうちの人のPINを入れてください`,()=>{applyDecision(q,ok);save();syncSoon();sfx(ok?'clear':'miss');renderShop()})});
+function renderParent(){const b=$('parentBox'),adm=!!(S.share&&S.share.admin);
+  b.innerHTML=`<h3>おうちの人の設定</h3>`+(S.pin
+    ?`<p>PINを設定ずみ。ごほうびの編集と、交換のOKにはPINが必要です。</p><div class="row"><button class="btn white" id="pinChg">PINを変える</button><button class="btn white" id="pinDel">PINを外す</button></div>`
+    :`<p>PIN（数字4けた）を決めると、ごほうびの編集と交換のOKを、おうちの人だけができるようになります。1台のスマホでも使えます。</p><button class="btn white" id="pinSet">PINを決める</button>`)
+    +(adm?`<p>共有先の「管理する人」のスマホからも、OKやごほうびの編集ができます。</p>`:'');
+  const setNew=()=>pinAsk('新しいPIN（数字4けた）を入れてください',null,v1=>pinAsk('もう一度入れてください',v=>v===v1||'さっきとちがいます',()=>{S.pin=pinHash(v1);save();sfx('clear');renderShop()}));
+  if($('pinSet'))$('pinSet').onclick=setNew;
+  if($('pinChg'))$('pinChg').onclick=()=>withPin('今のPINを入れてください',setNew);
+  if($('pinDel'))$('pinDel').onclick=()=>withPin('PINを外すには、今のPINを入れてください',()=>{S.pin='';save();renderShop()});}
 function renderShop(){
-  $('pts2').textContent=S.points;
+  $('pts2').textContent=S.points;renderReqs();renderParent();checkDecisions();
   $('items').innerHTML=S.shop.length?S.shop.map(it=>`<div class="panel item">${icon(it.icon)}<div><h3>${esc(it.name)}</h3><p>${esc(it.desc||'')}</p><div class="cost"><span class="coin"></span>${it.cost}pt</div></div>
-    <button class="btn ${S.points>=it.cost?'yellow':'white'}" data-buy="${it.id}" ${S.points>=it.cost?'':'disabled'}>交換</button></div>`).join('')
+    <button class="btn ${S.points>=it.cost?'yellow':'white'}" data-buy="${it.id}" ${S.points>=it.cost?'':'disabled'}>${needOK()?'おねがい':'交換'}</button></div>`).join('')
     :`<div class="panel item"><div></div><div><h3>ごほうびがありません</h3><p>「ごほうびを編集」で作れます</p></div><div></div></div>`;
   const own=S.tickets.slice().reverse();
   $('ticketList').innerHTML=own.length?own.map(t=>{return `<div class="ticket ${t.used?'used':''}"><div class="name">${esc(t.name||'ごほうび')}<small>${t.date}${t.used?' ・ 使った':''}</small></div>${t.used?'':`<button class="btn green" data-use="${t.id}">使った</button>`}</div>`}).join('')
     :`<div class="empty">まだありません。ポイントをためて交換しよう！</div>`;
 }
 $('items').addEventListener('click',e=>{const b=e.target.closest('[data-buy]');if(!b)return;const it=S.shop.find(s=>s.id===b.dataset.buy);if(!it)return;
-  ask(`${it.name}と${it.cost}ptを交換する？`,'交換',()=>{if(S.points<it.cost)return;S.points-=it.cost;S.tickets.push({id:Date.now(),name:it.name,date:todayKey(),used:false});save();syncSoon();sfx('clear');renderShop()})});
+  if(needOK())ask(`${it.name}（${it.cost}pt）を、おうちの人におねがいする？ OKが出たらチケットになります。`,'おねがい',()=>{if(S.points<it.cost)return;
+    S.points-=it.cost;S.reqs.push({rid:rid(10),name:it.name,cost:it.cost,at:Date.now(),st:'wait'});S.reqs=S.reqs.slice(-50);save();syncNow();sfx('coin');renderShop()});
+  else ask(`${it.name}と${it.cost}ptを交換する？`,'交換',()=>{if(S.points<it.cost)return;S.points-=it.cost;S.tickets.push({id:Date.now(),name:it.name,date:todayKey(),used:false});save();syncSoon();sfx('clear');renderShop()})});
 $('ticketList').addEventListener('click',e=>{const b=e.target.closest('[data-use]');if(!b)return;const t=S.tickets.find(x=>String(x.id)===b.dataset.use);
   ask('このチケットを使った？','使った',()=>{t.used=true;save();renderShop()})});
 $('resetBtn').onclick=()=>ask('ポイント・記録・チケットを全部消します。元に戻せません。','消す',()=>ask('本当に消しますか？','全部消す',()=>{if(S.share)fetch(SYNC_URL,{method:'DELETE',headers:{'Content-Type':'application/json'},body:JSON.stringify({id:S.share.id,key:S.share.key})}).catch(()=>{});S=fresh();save();openWelcome()}));

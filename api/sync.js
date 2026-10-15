@@ -4,6 +4,11 @@
 // POST   /api/sync {id, key, data}  記録を保存（最初に使ったカギの持ち主だけが上書きできる）
 // GET    /api/sync?id=...           記録を見る（読みとり専用）
 // DELETE /api/sync {id, key}        共有をやめる（記録を消す）
+// ごほうびの交換を おうちの人がOKする：
+// POST   /api/sync {act:"claim", id, admin}           最初に読みこんだ端末が「管理する人」になる
+// POST   /api/sync {act:"decide", id, admin, req, ok}  おねがいに OK / ダメ をつける
+// POST   /api/sync {act:"shop", id, admin, shop:[...]} ごほうびの中身を 管理する人が決める
+// GET    /api/sync?id=...&dec=1                       管理する人がいるか・OK/ダメの一覧・ごほうび
 //
 // データベース：Upstash Redis（Vercel の Storage からつなぐ）。180日 更新がなければ自動で消える。
 
@@ -16,7 +21,7 @@ const DB_URL = process.env.KV_REST_API_URL || process.env.UPSTASH_REDIS_REST_URL
 const DB_TOKEN = process.env.KV_REST_API_TOKEN || process.env.UPSTASH_REDIS_REST_TOKEN || envEnding('KV_REST_API_TOKEN') || envEnding('REDIS_REST_TOKEN');
 const TTL = 180 * 24 * 3600;
 const MAX = 900 * 1024;
-const ID_RE = /^[A-Za-z0-9]{16,32}$/, KEY_RE = /^[A-Za-z0-9]{32,64}$/;
+const ID_RE = /^[A-Za-z0-9]{16,32}$/, KEY_RE = /^[A-Za-z0-9]{32,64}$/, REQ_RE = /^[A-Za-z0-9]{6,20}$/;
 
 function send(res, code, body) {
   res.statusCode = code;
@@ -49,6 +54,14 @@ module.exports = async (req, res) => {
     const id = String((req.query && req.query.id) || new URL(req.url, 'http://x').searchParams.get('id') || '');
     if (!id) return send(res, 200, { ok: true, db: true });
     if (!ID_RE.test(id)) return send(res, 400, { error: 'bad_id' });
+    const q = req.query || {};
+    if (q.dec) {
+      const [a, h, sh] = await db([['EXISTS', 'kq:adm:' + id], ['HGETALL', 'kq:dec:' + id], ['GET', 'kq:shop:' + id]]);
+      const dec = {}; const arr = h.result || [];
+      for (let i = 0; i + 1 < arr.length; i += 2) dec[arr[i]] = arr[i + 1];
+      let shop = null; try { shop = sh.result ? JSON.parse(sh.result) : null; } catch {}
+      return send(res, 200, { admin: Number(a.result) > 0, dec, shop });
+    }
     const [d] = await db([['GET', 'kq:data:' + id]]);
     if (!d.result) return send(res, 404, { error: 'not_found' });
     return send(res, 200, d.result);
@@ -61,7 +74,37 @@ module.exports = async (req, res) => {
   let b;
   try { b = await readBody(req); } catch (e) { return send(res, e.message === 'too_big' ? 413 : 400, { error: e.message === 'too_big' ? 'too_big' : 'bad_json' }); }
   const id = String(b.id || ''), key = String(b.key || '');
-  if (!ID_RE.test(id) || !KEY_RE.test(key)) return send(res, 400, { error: 'bad_id' });
+  if (!ID_RE.test(id)) return send(res, 400, { error: 'bad_id' });
+
+  if (req.method === 'POST' && (b.act === 'claim' || b.act === 'decide' || b.act === 'shop')) {
+    const admin = String(b.admin || '');
+    if (!KEY_RE.test(admin)) return send(res, 400, { error: 'bad_admin' });
+    const [ex] = await db([['EXISTS', 'kq:data:' + id]]);
+    if (!Number(ex.result)) return send(res, 404, { error: 'not_found' });
+    const mine = sha(admin);
+    if (b.act === 'claim') {
+      const [, cur] = await db([['SET', 'kq:adm:' + id, mine, 'NX', 'EX', TTL], ['GET', 'kq:adm:' + id]]);
+      return send(res, 200, { ok: cur.result === mine });
+    }
+    const [cur] = await db([['GET', 'kq:adm:' + id]]);
+    if (cur.result !== mine) return send(res, 403, { error: 'not_admin' });
+    if (b.act === 'shop') {
+      const list = (Array.isArray(b.shop) ? b.shop : []).slice(0, 20).map(x => ({
+        id: String(x.id || '').slice(0, 24), icon: String(x.icon || 'star').slice(0, 12),
+        name: String(x.name || '').slice(0, 20), desc: String(x.desc || '').slice(0, 30),
+        cost: Math.max(1, Math.min(99999, Math.round(Number(x.cost) || 1))),
+      })).filter(x => x.name.trim());
+      const v = Date.now();
+      await db([['SET', 'kq:shop:' + id, JSON.stringify({ v, list }), 'EX', TTL]]);
+      return send(res, 200, { ok: true, v });
+    }
+    const r = String(b.req || '');
+    if (!REQ_RE.test(r)) return send(res, 400, { error: 'bad_req' });
+    await db([['HSET', 'kq:dec:' + id, r, b.ok ? '1' : '0'], ['EXPIRE', 'kq:dec:' + id, TTL], ['EXPIRE', 'kq:adm:' + id, TTL]]);
+    return send(res, 200, { ok: true });
+  }
+
+  if (!KEY_RE.test(key)) return send(res, 400, { error: 'bad_id' });
   const owner = sha(key);
 
   if (req.method === 'POST') {
@@ -69,13 +112,13 @@ module.exports = async (req, res) => {
     if (data.length > MAX) return send(res, 413, { error: 'too_big' });
     const [set, cur] = await db([['SET', 'kq:own:' + id, owner, 'NX', 'EX', TTL], ['GET', 'kq:own:' + id]]);
     if (cur.result !== owner) return send(res, 403, { error: 'not_owner' });
-    await db([['SET', 'kq:data:' + id, data, 'EX', TTL], ['EXPIRE', 'kq:own:' + id, TTL]]);
+    await db([['SET', 'kq:data:' + id, data, 'EX', TTL], ['EXPIRE', 'kq:own:' + id, TTL], ['EXPIRE', 'kq:adm:' + id, TTL], ['EXPIRE', 'kq:dec:' + id, TTL], ['EXPIRE', 'kq:shop:' + id, TTL]]);
     return send(res, 200, { ok: true });
   }
   if (req.method === 'DELETE') {
     const [cur] = await db([['GET', 'kq:own:' + id]]);
     if (cur.result && cur.result !== owner) return send(res, 403, { error: 'not_owner' });
-    await db([['DEL', 'kq:data:' + id, 'kq:own:' + id]]);
+    await db([['DEL', 'kq:data:' + id, 'kq:own:' + id, 'kq:adm:' + id, 'kq:dec:' + id, 'kq:shop:' + id]]);
     return send(res, 200, { ok: true });
   }
   return send(res, 405, { error: 'method' });
