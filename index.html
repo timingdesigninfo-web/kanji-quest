@@ -286,9 +286,10 @@ button:focus-visible{outline:4px solid var(--ink);outline-offset:3px}
 .ed-row .del{border:2px solid var(--red);color:var(--red);border-radius:10px;background:#fff;font-size:14px}
 .ed-btns{display:flex;gap:10px}.ed-btns .btn{flex:1;font-size:17px}
 .amz{padding:12px 16px;display:flex;flex-direction:column;gap:8px;box-shadow:none;border-width:2px}
-.amz h3{font-size:14px}
-.amz-links{display:flex;flex-wrap:wrap;gap:6px}
-.amz-links a{border:2px solid var(--ink);border-radius:999px;padding:6px 12px;font-size:13px;color:var(--ink);text-decoration:none;background:var(--sky-lite)}
+.amz h3{font-size:16px}
+.amz-links{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.amz-links a{display:flex;align-items:center;justify-content:center;min-height:48px;padding:8px;border:3px solid var(--ink);border-radius:12px;font-size:15px;font-weight:800;color:var(--ink);text-decoration:none;background:var(--sky-lite);box-shadow:0 3px 0 var(--ink);text-align:center}
+.amz-links a:active{transform:translateY(2px);box-shadow:0 1px 0 var(--ink)}
 .amz-note{margin:0;font-size:10px;font-weight:500;opacity:.7}
 /* ---- モーダル / 演出 ---- */
 .modal{position:fixed;inset:0;background:rgba(28,42,92,.55);display:flex;align-items:center;justify-content:center;z-index:50;
@@ -465,14 +466,16 @@ button:focus-visible{outline:4px solid var(--ink);outline-offset:3px}
   </section>
   <button class="btn white" id="setupBtn2">学年</button>
   <section class="panel amz">
-    <h3>勉強のおともに</h3>
+    <h3>おすすめ勉強ツール</h3>
     <div class="amz-links">
       <a href="https://www.amazon.co.jp/s?k=%E6%BC%A2%E5%AD%97%E3%83%89%E3%83%AA%E3%83%AB+%E5%B0%8F%E5%AD%A6%E7%94%9F&tag=timing-22" target="_blank" rel="sponsored noopener">漢字ドリル</a>
-      <a href="https://www.amazon.co.jp/s?k=%E6%BC%A2%E5%AD%97%E8%BE%9E%E5%85%B8+%E5%B0%8F%E5%AD%A6%E7%94%9F&tag=timing-22" target="_blank" rel="sponsored noopener">漢字辞典</a>
       <a href="https://www.amazon.co.jp/s?k=%E6%BC%A2%E5%AD%97%E3%83%8E%E3%83%BC%E3%83%88&tag=timing-22" target="_blank" rel="sponsored noopener">漢字ノート</a>
+      <a href="https://www.amazon.co.jp/s?k=%E3%81%88%E3%82%93%E3%81%B4%E3%81%A4+2B&tag=timing-22" target="_blank" rel="sponsored noopener">えんぴつ・ペン</a>
+      <a href="https://www.amazon.co.jp/s?k=%E6%BC%A2%E5%AD%97%E8%BE%9E%E5%85%B8+%E5%B0%8F%E5%AD%A6%E7%94%9F&tag=timing-22" target="_blank" rel="sponsored noopener">漢字辞典</a>
       <a href="https://www.amazon.co.jp/s?k=%E3%82%BF%E3%83%83%E3%83%81%E3%83%9A%E3%83%B3+%E3%82%BF%E3%83%96%E3%83%AC%E3%83%83%E3%83%88&tag=timing-22" target="_blank" rel="sponsored noopener">タッチペン</a>
+      <a href="https://www.amazon.co.jp/s?k=%E4%B8%8B%E3%81%98%E3%81%8D&tag=timing-22" target="_blank" rel="sponsored noopener">ドリル用 下じき</a>
     </div>
-    <p class="amz-note">Amazonのアソシエイトとして、かんじクエストは適格販売により収入を得ています。</p>
+    <p class="amz-note">※広告です。Amazonのアソシエイトとして、かんじクエストは適格販売により収入を得ています。</p>
   </section>
   <button class="btn white" id="backBtn">戻る</button>
   <div class="parent">チケットは使ったら「使った」を押してください。<br><button id="resetBtn">データをリセット</button></div>
