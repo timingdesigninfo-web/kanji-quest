@@ -137,7 +137,7 @@ button:focus-visible{outline:4px solid var(--ink);outline-offset:3px}
 .tools .btn{font-size:18px;padding:14px 12px}
 .tools .btn.small{flex:0 0 auto;min-width:76px}
 .tools .btn.grow{flex:1}
-.walk{position:absolute;left:0;bottom:100%;width:100%;height:60px;pointer-events:none;image-rendering:pixelated}
+.walk{position:absolute;left:0;bottom:100%;width:100%;height:60px;overflow:visible;pointer-events:none;image-rendering:pixelated}
 /* ---- はじめに / つかいかた ---- */
 #welcome{padding-block:24px 0;gap:22px;position:relative}
 #welcome>*{position:relative;z-index:1}
@@ -1978,42 +1978,63 @@ ink.addEventListener('touchstart',e=>e.preventDefault(),{passive:false});
 ink.addEventListener('touchmove',e=>e.preventDefault(),{passive:false});
 document.fonts.load('600 40px "Klee One"','漢').catch(()=>{});
 
-/* ===== 地面を歩く 漢字キャラ（オリジナル） ===== */
+/* ===== 地面を歩く 漢字キャラ（オリジナル・意味に合わせた かざり） ===== */
 (function(){
-  // 味方：明るい色のタイル。敵：黒いトゲトゲのタイル
-  const FRIENDS=[['山','#33B84A'],['川','#2F8CFF'],['木','#1E8631'],['花','#FF8FB8'],['星','#FFCF1F'],['犬','#FF9F1C'],['王','#F0402F'],['友','#7A4DFF']];
-  const FOES=[['悪','#F0402F'],['毒','#B7F04A'],['鬼','#FF5A5A'],['敵','#FFCF1F']];
-  const INK='#1C2A5C',S=46; // 1コマの大きさ
-  const cache={};
-  function sprite(ch,col,foe,fi,dir){const key=ch+fi+dir+foe;if(cache[key])return cache[key];
-    const c=document.createElement('canvas'),q=2;c.width=S*q;c.height=S*q;const x=c.getContext('2d');x.scale(q,q);
-    const bx=5,by=8,bw=36,bh=30;
-    // あし（2コマ）
-    x.fillStyle=INK;const lf=fi?[[12,0],[28,-2]]:[[12,-2],[28,0]];
-    lf.forEach(([lx,ly])=>{x.fillRect(lx,by+bh-1,5,7+ly);x.fillRect(lx+(dir>0?0:-3),by+bh+5+ly,8,3)});
-    // からだ（タイル）
-    x.fillStyle=foe?'#2A2440':col;x.strokeStyle=INK;x.lineWidth=3;
-    if(foe){x.beginPath();x.moveTo(bx,by+6);for(let i=0;i<5;i++){const px=bx+i*bw/4;x.lineTo(px,by+6);x.lineTo(px+bw/8,by-2)}x.lineTo(bx+bw,by+6);x.lineTo(bx+bw,by+bh);x.lineTo(bx,by+bh);x.closePath();x.fill();x.stroke()}
-    else{x.beginPath();x.roundRect?x.roundRect(bx,by,bw,bh,8):x.rect(bx,by,bw,bh);x.fill();x.stroke()}
-    // 漢字
-    x.fillStyle=foe?col:'#FFFFFF';x.font='400 25px "DotGothic16","Hiragino Kaku Gothic ProN",sans-serif';x.textAlign='center';x.textBaseline='middle';
-    if(!foe){x.strokeStyle=INK;x.lineWidth=3;x.strokeText(ch,bx+bw/2,by+bh/2+2)}
-    x.fillText(ch,bx+bw/2,by+bh/2+2);
-    // 目（上からのぞく）
-    const ey=by-4,ex=bx+bw/2+(dir>0?4:-4);
-    [ex-7,ex+7].forEach(e=>{x.fillStyle='#fff';x.beginPath();x.arc(e,ey,4.5,0,7);x.fill();x.strokeStyle=INK;x.lineWidth=2;x.stroke();
-      x.fillStyle=INK;x.beginPath();x.arc(e+dir*1.5,ey+.5,2,0,7);x.fill()});
-    if(foe){x.strokeStyle=INK;x.lineWidth=2.5;x.beginPath();x.moveTo(ex-12,ey-7);x.lineTo(ex-3,ey-3);x.moveTo(ex+12,ey-7);x.lineTo(ex+3,ey-3);x.stroke()}
-    return cache[key]=c}
+  const INK='#1C2A5C';
+  // ch:漢字 col:色 foe:敵 deco:かざり
+  const CHARS=[
+    {ch:'山',col:'#33B84A',deco:'snow'},{ch:'川',col:'#2F8CFF',deco:'drops'},{ch:'木',col:'#8B5A2B',deco:'leaf'},
+    {ch:'花',col:'#FF6FA8',deco:'flower'},{ch:'星',col:'#FFC21A',deco:'sparkle'},{ch:'犬',col:'#FF9F1C',deco:'dog'},
+    {ch:'王',col:'#E8A800',deco:'crown'},{ch:'火',col:'#F0402F',deco:'flame'},
+    {ch:'鬼',col:'#E03A3A',deco:'oni',foe:1},{ch:'毒',col:'#7A4DFF',deco:'bubble',foe:1},
+    {ch:'悪',col:'#2A2440',deco:'devil',foe:1},{ch:'敵',col:'#4A3F6B',deco:'spike',foe:1}];
+  const W0=60,H0=64,cache={};
+  const ell=(x,cx,cy,rx,ry,f,st)=>{x.beginPath();x.ellipse(cx,cy,rx,ry,0,0,7);if(f){x.fillStyle=f;x.fill()}if(st){x.strokeStyle=INK;x.lineWidth=2;x.stroke()}};
+  function deco(x,d,dir,front){const cx=30,top=12;x.lineJoin='round';x.lineCap='round';
+    if(!front){ // うしろ
+      if(d==='dog'){x.fillStyle='#FF9F1C';x.strokeStyle=INK;x.lineWidth=2;x.beginPath();const tx=dir>0?8:52;x.moveTo(tx,38);x.quadraticCurveTo(tx-dir*8,26,tx-dir*4,20);x.lineTo(tx+dir*2,36);x.fill();x.stroke()}
+      if(d==='devil'){x.strokeStyle=INK;x.lineWidth=2.5;x.beginPath();const tx=dir>0?10:50;x.moveTo(tx,44);x.quadraticCurveTo(tx-dir*12,44,tx-dir*10,30);x.stroke();x.fillStyle='#F0402F';x.beginPath();x.moveTo(tx-dir*10,26);x.lineTo(tx-dir*14,33);x.lineTo(tx-dir*6,33);x.fill()}
+      if(d==='flower'){[0,1,2,3,4].forEach(i=>{const a=i*1.256;ell(x,cx+Math.cos(a)*6,top-2+Math.sin(a)*6,4,4,'#FFD1E3',1)});ell(x,cx,top-2,3.5,3.5,'#FFCF1F',1)}
+      return}
+    switch(d){
+      case 'snow':x.fillStyle='#fff';x.strokeStyle=INK;x.lineWidth=2;x.beginPath();x.moveTo(cx-7,top+2);x.lineTo(cx,top-6);x.lineTo(cx+7,top+2);x.lineTo(cx+3,top);x.lineTo(cx,top+3);x.lineTo(cx-3,top);x.closePath();x.fill();x.stroke();break;
+      case 'drops':[[cx-16,top+4],[cx+17,top+10]].forEach(([dx,dy])=>{x.fillStyle='#8FD3FF';x.strokeStyle=INK;x.lineWidth=1.5;x.beginPath();x.moveTo(dx,dy-6);x.quadraticCurveTo(dx+4,dy,dx,dy+3);x.quadraticCurveTo(dx-4,dy,dx,dy-6);x.fill();x.stroke()});break;
+      case 'leaf':[[cx-9,top-2,-.6],[cx+9,top-2,.6],[cx,top-7,0]].forEach(([lx,ly,r])=>{x.save();x.translate(lx,ly);x.rotate(r);ell(x,0,0,5,8,'#33B84A',1);x.restore()});break;
+      case 'sparkle':[[cx+18,top],[cx-18,top+6]].forEach(([sx,sy],i)=>{const r=i?3:4.5;x.fillStyle='#FFF2A8';x.strokeStyle=INK;x.lineWidth=1.5;x.beginPath();x.moveTo(sx,sy-r*2);x.lineTo(sx+r*.5,sy-r*.5);x.lineTo(sx+r*2,sy);x.lineTo(sx+r*.5,sy+r*.5);x.lineTo(sx,sy+r*2);x.lineTo(sx-r*.5,sy+r*.5);x.lineTo(sx-r*2,sy);x.lineTo(sx-r*.5,sy-r*.5);x.closePath();x.fill();x.stroke()});break;
+      case 'dog':[-1,1].forEach(sd=>{x.fillStyle='#B8661A';x.strokeStyle=INK;x.lineWidth=2;x.beginPath();x.moveTo(cx+sd*8,top);x.quadraticCurveTo(cx+sd*20,top-2,cx+sd*17,top+14);x.quadraticCurveTo(cx+sd*12,top+8,cx+sd*8,top+3);x.fill();x.stroke()});break;
+      case 'crown':x.fillStyle='#FFD84A';x.strokeStyle=INK;x.lineWidth=2;x.beginPath();x.moveTo(cx-10,top+2);x.lineTo(cx-10,top-6);x.lineTo(cx-5,top-1);x.lineTo(cx,top-9);x.lineTo(cx+5,top-1);x.lineTo(cx+10,top-6);x.lineTo(cx+10,top+2);x.closePath();x.fill();x.stroke();ell(x,cx,top-9,1.8,1.8,'#F0402F');break;
+      case 'flame':x.fillStyle='#FFB020';x.strokeStyle=INK;x.lineWidth=2;x.beginPath();x.moveTo(cx-8,top+2);x.quadraticCurveTo(cx-10,top-8,cx-2,top-12);x.quadraticCurveTo(cx-2,top-4,cx+3,top-6);x.quadraticCurveTo(cx+10,top-4,cx+8,top+2);x.closePath();x.fill();x.stroke();break;
+      case 'oni':[-1,1].forEach(sd=>{x.fillStyle='#FFE08A';x.strokeStyle=INK;x.lineWidth=2;x.beginPath();x.moveTo(cx+sd*6,top+2);x.lineTo(cx+sd*10,top-10);x.lineTo(cx+sd*13,top+2);x.closePath();x.fill();x.stroke()});break;
+      case 'bubble':[[cx-18,top+2,4],[cx-21,top-6,2.5],[cx+18,top+6,3]].forEach(([bx,by,r])=>ell(x,bx,by,r,r,'#C9F28A',1));break;
+      case 'devil':[-1,1].forEach(sd=>{x.fillStyle='#F0402F';x.strokeStyle=INK;x.lineWidth=2;x.beginPath();x.moveTo(cx+sd*5,top+2);x.quadraticCurveTo(cx+sd*14,top-2,cx+sd*15,top-10);x.quadraticCurveTo(cx+sd*12,top-2,cx+sd*11,top+3);x.closePath();x.fill();x.stroke()});break;
+      case 'spike':x.fillStyle='#9B8FD1';x.strokeStyle=INK;x.lineWidth=2;x.beginPath();for(let i=0;i<4;i++){const sx=cx-12+i*8;x.moveTo(sx,top+2);x.lineTo(sx+4,top-7);x.lineTo(sx+8,top+2)}x.fill();x.stroke();break;
+    }}
+  function face(x,foe,dir){const ex=30+dir*2,ey=31;
+    [-7,7].forEach(o=>{ell(x,ex+o,ey,4.6,5.4,'#fff',1);ell(x,ex+o+dir*1.4,ey+.8,2.1,2.6,INK)});
+    x.strokeStyle=INK;x.lineWidth=2.4;x.lineCap='round';x.beginPath();
+    if(foe){x.moveTo(ex-12,ey-9);x.lineTo(ex-3,ey-5);x.moveTo(ex+12,ey-9);x.lineTo(ex+3,ey-5);x.stroke();
+      x.fillStyle='#fff';x.beginPath();x.moveTo(ex-5,ey+8);x.lineTo(ex+5,ey+8);x.lineTo(ex+3,ey+12);x.lineTo(ex+1,ey+8.5);x.lineTo(ex-1,ey+12);x.lineTo(ex-3,ey+8.5);x.closePath();x.fill();x.lineWidth=1.5;x.stroke()}
+    else{x.arc(ex,ey+7,3.5,.15*Math.PI,.85*Math.PI);x.stroke();ell(x,ex-11,ey+6,2.5,1.6,'rgba(255,111,168,.6)');ell(x,ex+11,ey+6,2.5,1.6,'rgba(255,111,168,.6)')}}
+  function sprite(c,fi,dir){const key=c.ch+fi+dir;if(cache[key])return cache[key];
+    const q=2,cv=document.createElement('canvas');cv.width=W0*q;cv.height=H0*q;const x=cv.getContext('2d');x.scale(q,q);
+    deco(x,c.deco,dir,false);
+    // あし
+    x.fillStyle=INK;(fi?[[21,-2],[35,0]]:[[21,0],[35,-2]]).forEach(([lx,ly])=>{x.fillRect(lx,50,4,8+ly);x.beginPath();x.ellipse(lx+2+dir*2,58+ly,4.5,2.5,0,0,7);x.fill()});
+    // 漢字そのもの（ふちどり）
+    x.font='800 44px "M PLUS Rounded 1c","Hiragino Maru Gothic ProN","Yu Gothic",sans-serif';x.textAlign='center';x.textBaseline='middle';
+    x.lineJoin='round';x.strokeStyle=INK;x.lineWidth=7;x.strokeText(c.ch,30,33);x.fillStyle=c.col;x.fillText(c.ch,30,33);
+    deco(x,c.deco,dir,true);face(x,c.foe,dir);
+    return cache[key]=cv}
   const reduce=matchMedia('(prefers-reduced-motion: reduce)').matches;
-  document.fonts&&document.fonts.load('25px "DotGothic16"','山悪').then(()=>{for(const k in cache)delete cache[k]}).catch(()=>{});
-  const pick=a=>a[Math.floor(Math.random()*a.length)];
+  document.fonts&&document.fonts.load('800 44px "M PLUS Rounded 1c"','山川木花星犬王火鬼毒悪敵').then(()=>{for(const k in cache)delete cache[k]}).catch(()=>{});
+  const friends=CHARS.filter(c=>!c.foe),foes=CHARS.filter(c=>c.foe),pick=a=>a[Math.floor(Math.random()*a.length)];
+  const S=50;
   document.querySelectorAll('canvas.walk').forEach(cv=>{
     const ctx=cv.getContext('2d');let W=0,H=60,dpr=1,actors=[],last=0,spawnT=0;
     function size(){dpr=Math.min(devicePixelRatio||1,2);W=cv.clientWidth;cv.width=W*dpr;cv.height=H*dpr;ctx.setTransform(dpr,0,0,dpr,0,0)}
-    function spawn(foe){const [ch,col]=pick(foe?FOES:FRIENDS),dir=foe?-1:1;
-      actors.push({ch,col,foe,dir,x:dir>0?-S:W+S,v:(foe?28:36)+Math.random()*16,y:0,vy:0,jump:0,t:Math.random()*1000})}
-    function seed(){actors=[];[0,1,0,0,1,0].forEach((f,i,arr)=>{spawn(!!f);actors[actors.length-1].x=(W/arr.length)*i+8})}
+    function spawn(foe){const c=pick(foe?foes:friends),dir=foe?-1:1;
+      actors.push({c,foe,dir,x:dir>0?-S:W+S,v:(foe?26:34)+Math.random()*16,y:0,vy:0,jump:0,t:Math.random()*1000})}
+    function seed(){actors=[];[0,1,0,0,1,0].forEach((f,i,arr)=>{spawn(!!f);actors[actors.length-1].x=(W/arr.length)*i+6})}
     function step(ts){if(!cv.isConnected)return;requestAnimationFrame(step);
       if(cv.offsetParent===null||!W){last=ts;return}
       const dt=Math.min(.05,(ts-last)/1000||0);last=ts;spawnT-=dt;
@@ -2021,11 +2042,10 @@ document.fonts.load('600 40px "Klee One"','漢').catch(()=>{});
       ctx.clearRect(0,0,W,H);
       for(const a of actors){
         if(!reduce){a.x+=a.dir*a.v*dt;a.t+=dt*1000;
-          // 味方は 敵が来たら ジャンプで とびこえる
-          if(!a.foe&&!a.jump&&actors.some(o=>o.foe&&o.x>a.x&&o.x-a.x<S*1.15)){a.jump=1;a.vy=-300}
+          if(!a.foe&&!a.jump&&actors.some(o=>o.foe&&o.x>a.x&&o.x-a.x<S*1.1)){a.jump=1;a.vy=-300}
           if(a.jump){a.vy+=1000*dt;a.y+=a.vy*dt;if(a.y>=0){a.y=0;a.jump=0}}}
-        const fi=a.jump?0:Math.floor(a.t/170)%2;
-        ctx.drawImage(sprite(a.ch,a.col,a.foe,fi,a.dir),Math.round(a.x),Math.round(H-S+2+a.y),S,S)}
+        const fi=a.jump?0:Math.floor(a.t/170)%2,bob=a.jump?0:(fi?-1:0);
+        ctx.drawImage(sprite(a.c,fi,a.dir),Math.round(a.x),Math.round(H-S*H0/W0+2+a.y+bob),S,S*H0/W0)}
       actors=actors.filter(a=>a.x>-S*2&&a.x<W+S*2)}
     new ResizeObserver(()=>{if(cv.clientWidth){size();if(!actors.length)seed()}}).observe(cv);
     requestAnimationFrame(step);
