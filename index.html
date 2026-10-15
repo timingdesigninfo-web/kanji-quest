@@ -31,6 +31,11 @@ body{background:var(--sky);color:var(--ink);font-family:var(--f-body);font-weigh
   padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));
   -webkit-tap-highlight-color:transparent;overflow-x:hidden}
 button{font:inherit;color:inherit;cursor:pointer;border:0;background:none}
+/* 指で書くときに 文字の選択や長押しメニューが出ないように */
+body{-webkit-user-select:none;user-select:none;-webkit-touch-callout:none}
+input,textarea,select{-webkit-user-select:text;user-select:text}
+#quiz,#quiz *{-webkit-user-select:none;user-select:none;-webkit-touch-callout:none;touch-action:manipulation}
+#quiz .board,#quiz canvas{touch-action:none}
 button:focus-visible{outline:4px solid var(--ink);outline-offset:3px}
 .screen{max-width:640px;margin:0 auto;min-height:100%;display:flex;flex-direction:column}
 
@@ -132,6 +137,31 @@ button:focus-visible{outline:4px solid var(--ink);outline-offset:3px}
 .tools .btn{font-size:18px;padding:14px 12px}
 .tools .btn.small{flex:0 0 auto;min-width:76px}
 .tools .btn.grow{flex:1}
+/* ---- はじめに / つかいかた ---- */
+#welcome{padding-block:24px 0;gap:22px;position:relative}
+#welcome>*{position:relative;z-index:1}
+.wl-hero{text-align:center;padding-top:28px;display:flex;flex-direction:column;gap:10px;align-items:center}
+.wl-logo{font-size:clamp(40px,12vw,60px)}
+.wl-tag{margin:0;font-size:17px;color:#fff;text-shadow:1px 1px 0 var(--ink)}
+#onboard{padding-block:16px;gap:16px}
+.ob-top{display:flex;justify-content:space-between;align-items:center}
+.ob-dots{display:flex;gap:6px}
+.ob-dots i{width:10px;height:10px;border-radius:50%;background:rgba(255,255,255,.55)}
+.ob-dots i.on{background:var(--ink)}
+.ob-skip{font-size:15px;text-decoration:underline}
+.ob-card{flex:1;padding:24px 20px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:18px;text-align:center;min-height:360px}
+.ob-card h2{margin:0;font-size:26px;text-wrap:balance}
+.ob-card p{margin:0;font-size:16px;font-weight:500;line-height:1.7;max-width:30ch}
+.ob-pic{flex:none;width:150px;height:150px;display:flex;align-items:center;justify-content:center}
+.ob-pic svg{width:130px;height:130px}
+.ob-board{flex:none;box-sizing:border-box;width:140px;height:140px;border:4px solid var(--ink);border-radius:18px;background:#fff;position:relative;display:flex;align-items:center;justify-content:center;font:600 96px/1 var(--f-kanji);color:var(--ink);box-shadow:0 6px 0 var(--ink)}
+.ob-board::before,.ob-board::after{content:"";position:absolute;background:transparent}
+.ob-board::before{left:50%;top:10px;bottom:10px;border-left:2px dashed #C9DAF5}
+.ob-board::after{top:50%;left:10px;right:10px;border-top:2px dashed #C9DAF5}
+.ob-board span{position:relative;z-index:1}
+.ob-mark{flex:none;box-sizing:border-box;width:140px;height:140px;border-radius:50%;border:12px solid var(--red);display:flex;align-items:center;justify-content:center;font:400 34px var(--f-pixel);color:var(--ink);background:#fff}
+.ob-btns{display:flex;gap:12px}.ob-btns .btn{flex:1;font-size:20px}
+.howto{align-self:center;font-size:13px;text-decoration:underline;color:var(--ink)}
 /* ---- せってい ---- */
 #setup{padding-block:16px 0;gap:14px}
 .su-sec{padding:14px 16px;display:flex;flex-direction:column;gap:10px}
@@ -259,6 +289,28 @@ button:focus-visible{outline:4px solid var(--ink);outline-offset:3px}
 @media (prefers-reduced-motion:reduce){.pop,.fall{animation-duration:.01s}.btn{transition:none}}
 </style>
 
+<!-- ============ はじめに（学年） ============ -->
+<main id="welcome" class="screen" hidden>
+  <div class="cloud c1"></div><div class="cloud c2"></div>
+  <div class="wl-hero">
+    <div class="logo wl-logo">かんじクエスト</div>
+    <p class="wl-tag">小学校の漢字に、もう一度。</p>
+  </div>
+  <section class="panel su-sec">
+    <h2>何年生にする？</h2>
+    <div class="grade-row" id="wlGrades"></div>
+    <p class="su-note">あとで変えられます。</p>
+  </section>
+  <div class="ground"></div>
+</main>
+
+<!-- ============ つかいかた ============ -->
+<main id="onboard" class="screen" hidden>
+  <div class="ob-top"><span class="ob-dots" id="obDots"></span><button class="ob-skip" id="obSkip">スキップ</button></div>
+  <section class="panel ob-card" id="obCard"></section>
+  <div class="ob-btns"><button class="btn white" id="obBack">もどる</button><button class="btn" id="obNext">つぎへ</button></div>
+</main>
+
 <!-- ============ ホーム ============ -->
 <main id="home" class="screen">
   <div class="cloud c1"></div><div class="cloud c2"></div>
@@ -289,8 +341,9 @@ button:focus-visible{outline:4px solid var(--ink);outline-offset:3px}
 
   <div class="foot-row">
     <button class="btn violet" id="shopBtn">ごほうび</button>
-    <button class="btn white" id="setupBtn" style="flex:0 0 auto">範囲</button>
+    <button class="btn white" id="setupBtn" style="flex:0 0 auto">学年・範囲</button>
   </div>
+  <button class="howto" id="howtoBtn">使い方</button>
   <p class="ai-note">※AI採点は、回数や利用の上限で使えないことがあります。そのときは自分で○×をつけます。</p>
   <div class="ground"></div>
 </main>
@@ -1492,7 +1545,7 @@ const OLD_SHOP={snack:'おやつチケット',game:'ゲームチケット',robux
 /* ===== 保存 ===== */
 const KEY='kanjiQuest4.v1';
 function fresh(){const order=BANK.map(b=>b.id);for(let i=order.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[order[i],order[j]]=[order[j],order[i]]}
-  return {v:1,points:0,total:0,days:{},today:null,weak:[],order,cursor:0,tickets:[],grade:null,focus:'',forder:[],fkey:'',shop:DEFAULT_SHOP.map(x=>({...x}))}}
+  return {v:1,points:0,total:0,days:{},today:null,weak:[],order,cursor:0,tickets:[],grade:null,onboarded:false,focus:'',forder:[],fkey:'',shop:DEFAULT_SHOP.map(x=>({...x}))}}
 function load(){try{const s=JSON.parse(localStorage.getItem(KEY));if(s&&s.v===1){
   BANK.forEach(b=>{if(!s.order.includes(b.id))s.order.push(b.id)});
   if(s.focus===undefined){s.focus=DEFAULT_FOCUS;s.forder=[];s.fkey='';
@@ -1543,11 +1596,11 @@ const day=()=>dayRec();
 
 /* ===== 画面切りかえ ===== */
 const $=id=>document.getElementById(id);
-function show(id){['home','quiz','learn','grading','review','result','shop','setup'].forEach(s=>$(s).hidden=s!==id);window.scrollTo(0,0);if(id==='quiz')requestAnimationFrame(layout)}
+function show(id){['home','quiz','learn','grading','review','result','shop','setup','welcome','onboard'].forEach(s=>$(s).hidden=s!==id);window.scrollTo(0,0);if(id==='quiz')requestAnimationFrame(layout)}
 
 /* ===== ホーム ===== */
 function renderHome(){
-  if(!S.grade){openSetup();return}
+  if(!S.onboarded){openWelcome();return}
   ensureToday();
   $('gradeLabel').textContent=`${S.grade}年生の漢字`;
   const d=day();
@@ -1801,7 +1854,30 @@ function finish(){
 
 /* ===== せってい（学年・はんい） ===== */
 let suGrade=4,suSel=new Set();
-function openSetup(){suGrade=S.grade||4;suSel=new Set(S.grade?focusChars():[...defaultFocus(suGrade)]);renderSetup();show('setup')}
+function openSetup(g){if(g){suGrade=g;suSel=new Set(g===S.grade&&S.focus?focusChars():[...defaultFocus(g)])}
+  else{suGrade=S.grade||4;suSel=new Set(S.grade?focusChars():[...defaultFocus(suGrade)])}
+  renderSetup();show('setup')}
+/* はじめに（学年えらび）→ つかいかた → 範囲 */
+let obGrade=4,obStep=0,obFromHome=false;
+function openWelcome(){$('wlGrades').innerHTML=[1,2,3,4,5,6].map(g=>`<button data-wg="${g}">${g}<small>年</small></button>`).join('');show('welcome')}
+$('wlGrades').addEventListener('click',e=>{const b=e.target.closest('[data-wg]');if(!b)return;sfx('reveal');obGrade=+b.dataset.wg;obFromHome=false;obStep=0;renderOb();show('onboard')});
+const OB=[
+  {pic:()=>`<div class="ob-board"><span>漢</span></div>`,h:'毎日10問、指で書く',p:'文の中の［よみがな］を漢字で書きます。書く場所は大きく、ほかには何も置いていません。'},
+  {pic:()=>`<div class="ob-mark">80点</div>`,h:'AIが採点',p:'10問書いたら、AIがまとめて丸つけ。80点以上で一発合格です。使えないときは自分で○×をつけます。'},
+  {pic:()=>icon('star'),h:'書けるまで練習！',p:'まちがえた漢字は、答えを見て覚えて、書けるまでくり返します。書き直しが少ないほどポイントアップ。'},
+  {pic:()=>icon('gem'),h:'ポイントでごほうび',p:'ためたポイントで、自分で決めたごほうびと交換。合格のあとの自主練でも+10pt（1日4回）。'},
+];
+function renderOb(){const o=OB[obStep];
+  $('obCard').innerHTML=`<div class="ob-pic">${o.pic()}</div><h2>${o.h}</h2><p>${o.p}</p>`;
+  $('obDots').innerHTML=OB.map((_,i)=>`<i class="${i===obStep?'on':''}"></i>`).join('');
+  $('obBack').hidden=obStep===0;
+  $('obNext').textContent=obStep<OB.length-1?'つぎへ':(obFromHome?'閉じる':'範囲を選ぶ');
+  $('obSkip').hidden=obStep===OB.length-1}
+function obDone(){if(obFromHome){renderHome();show('home')}else openSetup(obGrade)}
+$('obNext').onclick=()=>{if(obStep<OB.length-1){obStep++;renderOb()}else obDone()};
+$('obBack').onclick=()=>{if(obStep>0){obStep--;renderOb()}};
+$('obSkip').onclick=obDone;
+$('howtoBtn').onclick=()=>{obFromHome=true;obStep=0;renderOb();show('onboard')};
 function renderSetup(){
   $('gradeRow').innerHTML=[1,2,3,4,5,6].map(g=>`<button class="${g===suGrade?'on':''}" data-grade="${g}">${g}<small>年</small></button>`).join('');
   const t=TERMS[suGrade],nt=nowTerm();
@@ -1827,7 +1903,7 @@ $('setup').addEventListener('click',e=>{const b=e.target.closest('button');if(!b
   renderSetup()});
 $('suAddBtn').onclick=()=>{const v=[...$('suAddInput').value].filter(c=>KG[c]);v.forEach(c=>suSel.add(c));$('suAddInput').value='';
   if(!v.length)$('suAddInput').placeholder='小学校の漢字を入力';renderSetup()};
-$('suSave').onclick=()=>{S.grade=suGrade;S.focus=[...suSel].join('');S.fkey='';S.forder=[];
+$('suSave').onclick=()=>{S.grade=suGrade;S.onboarded=true;S.focus=[...suSel].join('');S.fkey='';S.forder=[];
   if(!(S.days[todayKey()]||{}).tries)S.today=null;save();sfx('reveal');renderHome();show('home')};
 $('setupBtn').onclick=openSetup;
 $('setupBtn2').onclick=openSetup;
@@ -1869,7 +1945,7 @@ $('items').addEventListener('click',e=>{const b=e.target.closest('[data-buy]');i
   ask(`${it.name}と${it.cost}ptを交換する？`,'交換',()=>{if(S.points<it.cost)return;S.points-=it.cost;S.tickets.push({id:Date.now(),name:it.name,date:todayKey(),used:false});save();sfx('clear');renderShop()})});
 $('ticketList').addEventListener('click',e=>{const b=e.target.closest('[data-use]');if(!b)return;const t=S.tickets.find(x=>String(x.id)===b.dataset.use);
   ask('このチケットを使った？','使った',()=>{t.used=true;save();renderShop()})});
-$('resetBtn').onclick=()=>ask('ポイント・記録・チケットを全部消します。元に戻せません。','消す',()=>ask('本当に消しますか？','全部消す',()=>{S=fresh();save();openSetup()}));
+$('resetBtn').onclick=()=>ask('ポイント・記録・チケットを全部消します。元に戻せません。','消す',()=>ask('本当に消しますか？','全部消す',()=>{S=fresh();save();openWelcome()}));
 
 /* ===== モーダル ===== */
 let mCb=null;
@@ -1895,6 +1971,10 @@ $('clearBtn').onclick=()=>{strokes=[];redraw();updateBtns()};
 $('nextBtn').onclick=nextQ;
 $('quitBtn').onclick=()=>ask('テストをやめる？ 今回は記録されません。','やめる',()=>{renderHome();show('home')});
 new ResizeObserver(()=>layout()).observe(stage);
+// 書く画面では 長押しメニュー・選択・ドラッグを止める
+['contextmenu','selectstart','dragstart'].forEach(t=>$('quiz').addEventListener(t,e=>e.preventDefault()));
+ink.addEventListener('touchstart',e=>e.preventDefault(),{passive:false});
+ink.addEventListener('touchmove',e=>e.preventDefault(),{passive:false});
 document.fonts.load('600 40px "Klee One"','漢').catch(()=>{});
 renderHome();
 </script>
