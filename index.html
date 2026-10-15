@@ -152,6 +152,12 @@ button:focus-visible{outline:4px solid var(--ink);outline-offset:3px}
 .share-btns>*{flex:1}
 .share-btns .btn{font-size:15px;padding:10px 6px;text-decoration:none}
 .share-home{padding:12px 16px}
+.share-img{width:100%;max-width:100%;aspect-ratio:1;border:3px solid var(--ink);border-radius:12px;display:block;background:var(--sky-lite);-webkit-touch-callout:default;-webkit-user-select:auto;user-select:auto}
+.share-tip{margin:0;font-size:11px;font-weight:500;line-height:1.5}
+#shareSave,#hsSave{font-size:15px;padding:10px}
+.img-modal{position:fixed;inset:0;z-index:70;background:rgba(28,42,92,.85);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:12px;padding:20px}
+.img-modal img{max-width:min(92vw,520px);border-radius:12px;-webkit-touch-callout:default;-webkit-user-select:auto;user-select:auto}
+.img-modal p{margin:0;color:#fff;font-size:14px}
 .share-home h3{font-size:15px}
 .btn.sx{background:#111;box-shadow:0 6px 0 #000}
 .btn.sl{background:#06C755;box-shadow:0 6px 0 #04913E}
@@ -382,12 +388,14 @@ button:focus-visible{outline:4px solid var(--ink);outline-offset:3px}
 
   <section class="panel share share-home">
     <h3>かんじクエストをシェア</h3>
+    <img id="hsImg" class="share-img" alt="かんじクエストの紹介画像" hidden>
     <div class="share-btns">
       <button class="btn" id="hsNative">シェア</button>
       <a class="btn sx" id="hsX" target="_blank" rel="noopener">X</a>
-      <a class="btn sl" id="hsLine" target="_blank" rel="noopener">LINE</a>
+      <a class="btn sl" id="hsLine" rel="noopener">LINE</a>
       <button class="btn white" id="hsCopy">コピー</button>
     </div>
+    <button class="btn white" id="hsSave">画像を保存</button>
   </section>
 
   <section class="panel info">
@@ -460,13 +468,16 @@ button:focus-visible{outline:4px solid var(--ink);outline-offset:3px}
   <div style="display:flex;flex-direction:column;gap:14px" id="resultBtns"></div>
   <section class="panel share" id="shareBox">
     <h3>今日の結果をシェア</h3>
+    <img id="shareImg" class="share-img" alt="今日の結果の画像">
     <textarea id="shareText" rows="5" maxlength="260"></textarea>
     <div class="share-btns">
       <button class="btn" id="shareNative">シェア</button>
       <a class="btn sx" id="shareX" target="_blank" rel="noopener">X</a>
-      <a class="btn sl" id="shareLine" target="_blank" rel="noopener">LINE</a>
+      <a class="btn sl" id="shareLine" rel="noopener">LINE</a>
       <button class="btn white" id="shareCopy">コピー</button>
     </div>
+    <button class="btn white" id="shareSave">画像を保存</button>
+    <p class="share-tip" id="shareTip">「シェア」なら画像つきで送れます。XやLINEに画像を貼るときは、先に「画像を保存」してください。</p>
   </section>
 </main>
 
@@ -1937,24 +1948,79 @@ function makeShare(d,correct,total){
   else{line=`${g}年生の漢字 自主練：${correct*10}点`;comment='自主練もがんばった！'}
   const extra=st>=2?` ${st}日連続クリア中！`:'';
   $('shareText').value=`${line}\n${comment}${extra}\n#かんじクエスト\n${SHARE_URL}`;
-  updateShareLinks()}
+  updateShareLinks();
+  const sc=correct*10,isTest=mode!=='practice';
+  shareBlob=null;$('shareImg').removeAttribute('src');
+  shareCard({sub:`${g}年生の漢字`+(mode==='free'?'・自主練':mode==='practice'?'・書けるまで練習':''),
+    big:isTest?`${sc}点`:`${correct}/${total}`,badge:comment.replace(/。$/,''),line2:st>=2?`${st}日連続クリア中！`:'',
+    thumbs:written.map((w,i)=>({url:w.url,ok:!!(results[i]&&results[i].ok)}))}).then(b=>{shareBlob=b;if(b)$('shareImg').src=URL.createObjectURL(b)})}
+/* シェア画像（1080x1080）をつくる */
+function rr(x,X,Y,w,h,r){x.beginPath();x.moveTo(X+r,Y);x.arcTo(X+w,Y,X+w,Y+h,r);x.arcTo(X+w,Y+h,X,Y+h,r);x.arcTo(X,Y+h,X,Y,r);x.arcTo(X,Y,X+w,Y,r);x.closePath()}
+const loadImg=src=>new Promise(r=>{const i=new Image();i.onload=()=>r(i);i.onerror=()=>r(null);i.src=src});
+async function shareCard(o){const N=1080,c=document.createElement('canvas');c.width=c.height=N;const x=c.getContext('2d');
+  const F=w=>`${w} "M PLUS Rounded 1c","Hiragino Maru Gothic ProN",sans-serif`;
+  x.fillStyle='#5EC4FF';x.fillRect(0,0,N,N);
+  // 地面
+  x.fillStyle='#33B84A';x.fillRect(0,N-90,N,30);x.fillStyle='#D9692A';x.fillRect(0,N-60,N,60);
+  x.fillStyle='#8C3C10';for(let i=0;i<N;i+=60){x.fillRect(i,N-60,4,60)}x.fillRect(0,N-32,N,4);
+  // ロゴ
+  x.textAlign='center';x.textBaseline='middle';x.lineJoin='round';
+  x.font=F('800 96px');x.lineWidth=18;x.strokeStyle='#1C2A5C';x.strokeText('かんじクエスト',N/2,110);x.fillStyle='#fff';x.fillText('かんじクエスト',N/2,110);
+  x.font=F('800 40px');x.fillStyle='#FFCF1F';x.lineWidth=10;x.strokeText(o.sub,N/2,190);x.fillText(o.sub,N/2,190);
+  // パネル
+  x.fillStyle='#1C2A5C';rr(x,60,250,N-120,o.thumbs?600:470,36);x.fill();x.fillStyle='#fff';rr(x,60,240,N-120,o.thumbs?600:470,36);x.fill();
+  x.fillStyle='#1C2A5C';x.font=F('800 '+(o.bigSize||150)+'px');x.fillText(o.big,N/2,o.thumbs?350:390);
+  x.font=F('800 52px');x.fillStyle=o.badgeColor||'#F0402F';x.fillText(o.badge,N/2,o.thumbs?460:530);
+  if(o.line2){x.font=F('500 38px');x.fillStyle='#1C2A5C';x.fillText(o.line2,N/2,o.thumbs?520:610)}
+  if(o.thumbs){const imgs=await Promise.all(o.thumbs.map(t=>loadImg(t.url)));
+    const cols=5,gap=14,cw=(N-160-gap*(cols-1))/cols,ch=110;
+    imgs.forEach((im,i)=>{const cx=80+(i%cols)*(cw+gap),cy=570+Math.floor(i/cols)*(ch+gap);
+      x.fillStyle='#F2F7FF';rr(x,cx,cy,cw,ch,14);x.fill();
+      if(im){const sc=Math.min((cw-12)/im.width,(ch-12)/im.height),w=im.width*sc,h=im.height*sc;x.drawImage(im,cx+(cw-w)/2,cy+(ch-h)/2,w,h)}
+      const ok=o.thumbs[i].ok;x.lineWidth=7;x.strokeStyle=ok?'rgba(240,64,47,.9)':'rgba(47,140,255,.9)';x.beginPath();
+      if(ok){x.arc(cx+cw-26,cy+26,17,0,7)}else{x.moveTo(cx+cw-42,cy+10);x.lineTo(cx+cw-10,cy+42);x.moveTo(cx+cw-10,cy+10);x.lineTo(cx+cw-42,cy+42)}x.stroke()})}
+  x.font=F('800 44px');x.fillStyle='#fff';x.lineWidth=10;x.strokeStyle='#1C2A5C';x.strokeText('#かんじクエスト',N/2,o.thumbs?N-140:800);x.fillText('#かんじクエスト',N/2,o.thumbs?N-140:800);
+  if(!o.thumbs){x.font=F('500 34px');x.fillStyle='#1C2A5C';x.fillText(SHARE_URL.replace(/^https?:\/\//,''),N/2,870)}
+  return new Promise(r=>c.toBlob(b=>r(b),'image/png'))}
+let shareBlob=null,hsBlob=null;
+async function shareWith(text,blob,name){
+  const file=blob?new File([blob],name,{type:'image/png'}):null;
+  try{if(file&&navigator.canShare&&navigator.canShare({files:[file]}))await navigator.share({text,files:[file]});else await navigator.share({text})}catch(e){}}
+function saveImage(blob,name){if(!blob)return;const url=URL.createObjectURL(blob);
+  if(IS_MOBILE){const m=document.createElement('div');m.className='img-modal';m.innerHTML=`<img src="${url}" alt="シェア画像"><p>画像を長押しして保存してください</p><button class="btn white">閉じる</button>`;
+    m.querySelector('button').onclick=()=>m.remove();document.body.appendChild(m);return}
+  const a=document.createElement('a');a.href=url;a.download=name;document.body.appendChild(a);a.click();a.remove()}
 function updateShareLinks(){const t=$('shareText').value;
   $('shareX').href='https://x.com/intent/post?text='+encodeURIComponent(t);
-  $('shareLine').href='https://social-plugins.line.me/lineit/share?url='+encodeURIComponent(SHARE_URL)+'&text='+encodeURIComponent(t);
+  $('shareLine').href='https://line.me/R/share?text='+encodeURIComponent(t);
   $('shareNative').hidden=!navigator.share}
 $('shareText').addEventListener('input',updateShareLinks);
+// スマホでは Xアプリを 直接ひらく（アプリがなければ Web版）
+const IS_MOBILE=/iPhone|iPad|iPod|Android/i.test(navigator.userAgent);
+function openX(text){const web='https://x.com/intent/post?text='+encodeURIComponent(text);
+  if(!IS_MOBILE){window.open(web,'_blank','noopener');return}
+  let gone=false;const onHide=()=>{gone=true};document.addEventListener('visibilitychange',onHide,{once:true});
+  location.href='twitter://post?message='+encodeURIComponent(text);
+  setTimeout(()=>{document.removeEventListener('visibilitychange',onHide);if(!gone&&!document.hidden)location.href=web},1200)}
+$('shareX').addEventListener('click',e=>{e.preventDefault();openX($('shareText').value)});
 // トップ用：アプリの紹介と 今の がんばり
 function homeShareText(){const st=streakNow();
   const me=S.grade?`いま${S.grade}年生の漢字に挑戦中${st>=2?`（${st}日連続クリア！）`:''}。`:'';
   return `小学生の漢字、書けますか？\n毎日10問、指で書いてAIが採点。${me}\n#かんじクエスト\n${SHARE_URL}`}
-function updateHomeShare(){const t=homeShareText();
+function updateHomeShare(){const t=homeShareText();hsBlob=null;
   $('hsX').href='https://x.com/intent/post?text='+encodeURIComponent(t);
-  $('hsLine').href='https://social-plugins.line.me/lineit/share?url='+encodeURIComponent(SHARE_URL)+'&text='+encodeURIComponent(t);
+  $('hsLine').href='https://line.me/R/share?text='+encodeURIComponent(t);
   $('hsNative').hidden=!navigator.share}
-$('hsNative').onclick=async()=>{try{await navigator.share({text:homeShareText()})}catch(e){}};
+$('hsNative').onclick=async()=>{if(!hsBlob)hsBlob=await homeCard();shareWith(homeShareText(),hsBlob,'kanji-quest.png')};
+$('hsSave').onclick=async()=>{if(!hsBlob)hsBlob=await homeCard();saveImage(hsBlob,'kanji-quest.png')};
+function homeCard(){const st=streakNow();
+  return shareCard({sub:'小学生の漢字。書けますか？',big:S.grade?`${S.grade}年生`:'1〜6年生',bigSize:170,badge:'毎日10問、指で書いてAIが採点',badgeColor:'#1C2A5C',
+    line2:`いま ${S.points}pt${st>=2?` ・ ${st}日連続クリア中`:''}`})}
+$('hsX').addEventListener('click',e=>{e.preventDefault();openX(homeShareText())});
 $('hsCopy').onclick=async()=>{try{await navigator.clipboard.writeText(homeShareText());$('hsCopy').textContent='コピーした'}catch(e){$('hsCopy').textContent='できません'}
   setTimeout(()=>$('hsCopy').textContent='コピー',1500)};
-$('shareNative').onclick=async()=>{try{await navigator.share({text:$('shareText').value})}catch(e){}};
+$('shareNative').onclick=()=>shareWith($('shareText').value,shareBlob,'kanji-quest.png');
+$('shareSave').onclick=()=>saveImage(shareBlob,'kanji-quest.png');
 $('shareCopy').onclick=async()=>{const t=$('shareText').value;
   try{await navigator.clipboard.writeText(t);$('shareCopy').textContent='コピーした'}catch(e){$('shareText').select();$('shareCopy').textContent='選択した'}
   setTimeout(()=>$('shareCopy').textContent='コピー',1500)};
