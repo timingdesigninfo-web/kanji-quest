@@ -149,7 +149,8 @@ button:focus-visible{outline:4px solid var(--ink);outline-offset:3px}
 .range{font:600 14px/1.6 var(--f-kanji);letter-spacing:.06em;max-height:4.8em;overflow:auto}
 .info-p{margin:0;font-size:11px;font-weight:500;line-height:1.5}
 .info .howto{align-self:flex-start}
-.cal-head{display:flex;justify-content:space-between;font-size:14px;margin-top:4px}
+.cal-head{display:flex;justify-content:space-between;flex-wrap:wrap;gap:4px;font-size:14px;margin-top:4px}
+.cal-head b{color:var(--red)}
 .walk-space{height:58px;flex:none}
 /* ---- はじめに / つかいかた ---- */
 #welcome{padding-block:24px 0;gap:22px;position:relative}
@@ -358,7 +359,7 @@ button:focus-visible{outline:4px solid var(--ink);outline-offset:3px}
     <div class="range" id="range"></div>
     <div class="info-h">ポイント</div>
     <div class="rule" id="rule"></div>
-    <p class="info-p">まちがえた漢字は書けるまで練習！ クリア後の自主練は80点以上で+10pt（1日4回）。</p>
+    <p class="info-p">まちがえた漢字は書けるまで練習！ クリア後の自主練は80点以上で+10pt（1日4回）。15日連続で+100pt。</p>
     <p class="info-p">※AI採点は、回数や利用の上限で使えないことがあります。そのときは自分で○×をつけます。</p>
     <button class="howto" id="howtoBtn">使い方</button>
   </section>
@@ -1639,7 +1640,7 @@ function renderHome(){
   }else{
     const bl=BONUS_MAX-(d.bonus||0);
     $('qTitle').textContent='今日のクエスト クリア！';
-    $('status').innerHTML=`${d.passRw?`書き直し${d.passRw}回で`:'一発'}合格！ <b>+${d.earned+(d.bonus||0)*BONUS_PT}pt</b><br>`
+    $('status').innerHTML=`${d.passRw?`書き直し${d.passRw}回で`:'一発'}合格！ <b>+${d.earned+(d.bonus||0)*BONUS_PT+(d.streakBonus||0)}pt</b><br>`
       +(bl>0?`自主練で80点以上なら <b>+${BONUS_PT}pt</b>（あと${bl}回）`:'今日の自主練ポイントは終了。練習は続けられます。');
     $('startBtn').textContent=bl>0?`自主練（+${BONUS_PT}pt）`:'もう一度テスト';$('startBtn').className=bl>0?'btn yellow bigstart':'btn white bigstart';
   }
@@ -1655,9 +1656,8 @@ function renderHome(){
   for(let i=14;i>=0;i--){const dt=new Date(now);dt.setDate(now.getDate()-i);const k=dkey(dt);const r=S.days[k];
     const cls=r&&r.passed?((r.passRw??(r.tries-1))===0?'gold':'silver'):'';row.push(`<div class="st ${cls} ${i===0?'today':''}" title="${k}">${dt.getDate()}</div>`)}
   $('stampRow').innerHTML=row.join('');
-  let st=0;const dt=new Date();if(!(S.days[todayKey()]||{}).passed)dt.setDate(dt.getDate()-1);
-  while((S.days[dkey(dt)]||{}).passed){st++;dt.setDate(dt.getDate()-1)}
-  $('streak').textContent=st?`${st}日連続！`:'';
+  const st=streakNow();
+  $('streak').innerHTML=`${st?`${st}日連続！ `:''}あと${STREAK_DAYS-st%STREAK_DAYS}日で <b>+${STREAK_PT}pt</b>`;
 }
 
 /* ===== テスト ===== */
@@ -1828,11 +1828,17 @@ $('rvList').addEventListener('click',e=>{const b=e.target.closest('[data-mark]')
 $('decideBtn').onclick=()=>{results=written.map((w,i)=>({id:w.id,ok:marks[i]===true}));finish()};
 
 /* ===== 結果 ===== */
-function award(d,rw){const e=PTS[Math.min(rw,5)];d.passed=true;d.earned=e;d.passRw=rw;S.points+=e;S.total+=e;return e}
+const STREAK_DAYS=15,STREAK_PT=100; // 15日連続で +100pt
+function streakNow(){let st=0;const dt=new Date();if(!(S.days[todayKey()]||{}).passed)dt.setDate(dt.getDate()-1);
+  while((S.days[dkey(dt)]||{}).passed){st++;dt.setDate(dt.getDate()-1)}return st}
+let streakGot=0;
+function award(d,rw){const e=PTS[Math.min(rw,5)];d.passed=true;d.earned=e;d.passRw=rw;S.points+=e;S.total+=e;
+  streakGot=0;const st=streakNow();if(st>0&&st%STREAK_DAYS===0&&!d.streakBonus){d.streakBonus=STREAK_PT;S.points+=STREAK_PT;S.total+=STREAK_PT;streakGot=STREAK_PT}
+  return e}
 function finish(){
   const d=dayRec();
   const correct=results.filter(r=>r.ok).length,wrong=results.filter(r=>!r.ok).map(r=>r.id),total=results.length;
-  let earned=0,head='',body='';const wasPassed=d.passed;
+  let earned=0,head='',body='';streakGot=0;const wasPassed=d.passed;
   // にがてリスト：テストで書けたら外す、まちがえたら入れる（れんしゅうで書けても、あしたもう一度出す）
   for(const r of results){if(!r.ok){if(!S.weak.includes(r.id))S.weak.push(r.id)}else if(mode!=='practice')S.weak=S.weak.filter(w=>w!==r.id)}
   if(mode==='test'){
@@ -1857,6 +1863,7 @@ function finish(){
       :(d.bonus||0)>=BONUS_MAX?`<div class="sub">おつかれさま。今日の自主練ポイントは終了。</div>`
       :`<div class="sub">80点以上で +${BONUS_PT}pt。もう一度！</div>`;
   }
+  if(streakGot)body+=`<div class="sub" style="color:var(--red)">${STREAK_DAYS}日連続ボーナス +${STREAK_PT}pt！</div>`;
   save();
   $('scoreBox').innerHTML=head+body;
   const miss=results.filter(r=>!r.ok);
