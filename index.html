@@ -75,7 +75,7 @@ button:focus-visible{outline:4px solid var(--ink);outline-offset:3px}
 .pixel{font-family:var(--f-pixel);font-weight:800}
 
 /* ---- ホーム ---- */
-#home{padding-block:18px 0;gap:18px;position:relative}
+#home{padding-block:18px 0;gap:22px;position:relative}
 .cloud{position:absolute;background:#fff;border-radius:40px;opacity:.9;pointer-events:none;z-index:0}
 .cloud::before,.cloud::after{content:"";position:absolute;background:#fff;border-radius:50%}
 .c1{width:110px;height:34px;top:96px;right:-6px}.c1::before{width:50px;height:50px;left:16px;top:-26px}.c1::after{width:38px;height:38px;left:54px;top:-16px}
@@ -83,7 +83,12 @@ button:focus-visible{outline:4px solid var(--ink);outline-offset:3px}
 #home>*{position:relative;z-index:1}
 #home>.cloud,#welcome>.cloud{position:absolute;z-index:0}
 @media (min-width:760px){#home>.cloud{display:none}}
-.top{display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap}
+.top{position:relative;display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap;padding-block:26px 34px}
+.top .logo{position:relative;z-index:1}
+/* 見出しの空にうかぶ雲（パネルとは重ならない） */
+.hc1{width:96px;height:30px;top:18px;right:4%}.hc1::before{width:44px;height:44px;left:14px;top:-22px}.hc1::after{width:34px;height:34px;left:48px;top:-14px}
+.hc2{width:70px;height:22px;bottom:12px;right:30%;opacity:.75}.hc2::before{width:32px;height:32px;left:10px;top:-16px}.hc2::after{width:24px;height:24px;left:36px;top:-10px}
+.hc3{width:58px;height:18px;top:6px;left:58%;opacity:.6}.hc3::before{width:26px;height:26px;left:8px;top:-13px}.hc3::after{width:20px;height:20px;left:30px;top:-8px}
 .logo{font-family:var(--f-body);font-weight:800;font-size:clamp(28px,8vw,40px);line-height:1.1;color:#fff;letter-spacing:.02em;
   -webkit-text-stroke:.22em var(--ink);paint-order:stroke fill;text-shadow:0 .1em 0 var(--ink)}
 .logo small{display:block;font-size:.5em;color:var(--yellow);-webkit-text-stroke:.24em var(--ink);margin-top:2px}
@@ -391,6 +396,7 @@ button:focus-visible{outline:4px solid var(--ink);outline-offset:3px}
 <!-- ============ ホーム ============ -->
 <main id="home" class="screen">
   <div class="top">
+    <i class="cloud hc1"></i><i class="cloud hc2"></i><i class="cloud hc3"></i>
     <div class="logo"><img class="logo-img" alt="かんじクエスト" width="1000" height="184"><small id="gradeLabel">4年生の漢字</small></div>
     <div class="wallet" hidden><span class="coin"></span><span class="num" id="pts">0</span><span class="unit">pt</span></div>
   </div>
