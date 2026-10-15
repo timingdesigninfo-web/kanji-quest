@@ -1978,59 +1978,55 @@ ink.addEventListener('touchstart',e=>e.preventDefault(),{passive:false});
 ink.addEventListener('touchmove',e=>e.preventDefault(),{passive:false});
 document.fonts.load('600 40px "Klee One"','漢').catch(()=>{});
 
-/* ===== 地面を歩くキャラクター（オリジナル） ===== */
+/* ===== 地面を歩く 漢字キャラ（オリジナル） ===== */
 (function(){
-  const C={k:'#1C2A5C',y:'#FFCF1F',p:'#FF8FB8',g:'#A9B6D3',s:'#F2C38B',w:'#FFFFFF',r:'#F0402F',b:'#2F8CFF',n:'#33B84A',v:'#8A4DFF',o:'#FF9F1C'};
-  // 12x12 ドット。2コマで足が動く
-  const SP={
-    pencil:{side:1,f:[[
-'....kkkk....','...kppppk...','...kggggk...','...kyyyyk...','...kwkwkk...','...kyyyyk...','...kyrryk...','...kyyyyk...','....kssk....','.....kk.....','...kk..kk...','..kk....kk..'],[
-'....kkkk....','...kppppk...','...kggggk...','...kyyyyk...','...kwkwkk...','...kyyyyk...','...kyrryk...','...kyyyyk...','....kssk....','.....kk.....','....kkkk....','....k..k....']]},
-    eraser:{side:1,f:[[
-'............','............','..kkkkkkkk..','..kwwwwwwk..','..kwkwwkwk..','..kwwwrwwk..','..kbbbbbbk..','..kbwbbwbk..','..kbbbbbbk..','..kkkkkkkk..','..kk....kk..','.kk......kk.'],[
-'............','............','..kkkkkkkk..','..kwwwwwwk..','..kwkwwkwk..','..kwwwrwwk..','..kbbbbbbk..','..kbwbbwbk..','..kbbbbbbk..','..kkkkkkkk..','...kk..kk...','...k....k...']]},
-    note:{side:1,f:[[
-'............','..kkkkkkkk..','..knnnnnnk..','..knwwwwnk..','..knnnnnnk..','..knwknwkk..','..knnnnnnk..','..knnrrnnk..','..knnnnnnk..','..kkkkkkkk..','..kk....kk..','.kk......kk.'],[
-'............','..kkkkkkkk..','..knnnnnnk..','..knwwwwnk..','..knnnnnnk..','..knwknwkk..','..knnnnnnk..','..knnrrnnk..','..knnnnnnk..','..kkkkkkkk..','...kk..kk...','...k....k...']]},
-    ink:{side:-1,f:[[
-'............','............','....kkkk....','..kkkkkkkk..','.kkkkkkkkkk.','.kwwkkkwwkk.','.kwkkkkwkkk.','kkkkkkkkkkkk','kkkkrrrrkkkk','kkkkkkkkkkkk','kk.kk.kk.kk.','............'],[
-'............','............','....kkkk....','..kkkkkkkk..','.kkkkkkkkkk.','.kwwkkkwwkk.','.kwkkkkwkkk.','kkkkkkkkkkkk','kkkkrrrrkkkk','kkkkkkkkkkkk','.kk.kk.kk.kk','............']]},
-    batsu:{side:-1,f:[[
-'rr........rr','rrr......rrr','.rrr....rrr.','..rrr..rrr..','...rwkkwr...','....rrrr....','....rrrr....','...rrrrrr...','..rrr..rrr..','.rrr....rrr.','rrr......rrr','.k........k.'],[
-'rr........rr','rrr......rrr','.rrr....rrr.','..rrr..rrr..','...rwkkwr...','....rrrr....','....rrrr....','...rrrrrr...','..rrr..rrr..','.rrr....rrr.','rrr......rrr','k..........k']]},
-    bug:{side:-1,f:[[
-'..k......k..','...k....k...','....kkkk....','...kvvvvk...','..kvwvvwvk..','..kvkvvkvk..','.kvvvvvvvvk.','.kvvovvovvk.','.kvvvvvvvvk.','..kkkkkkkk..','.k.k.k.k.k..','............'],[
-'..k......k..','...k....k...','....kkkk....','...kvvvvk...','..kvwvvwvk..','..kvkvvkvk..','.kvvvvvvvvk.','.kvvovvovvk.','.kvvvvvvvvk.','..kkkkkkkk..','..k.k.k.k.k.','............']]},
-  };
+  // 味方：明るい色のタイル。敵：黒いトゲトゲのタイル
+  const FRIENDS=[['山','#33B84A'],['川','#2F8CFF'],['木','#1E8631'],['花','#FF8FB8'],['星','#FFCF1F'],['犬','#FF9F1C'],['王','#F0402F'],['友','#7A4DFF']];
+  const FOES=[['悪','#F0402F'],['毒','#B7F04A'],['鬼','#FF5A5A'],['敵','#FFCF1F']];
+  const INK='#1C2A5C',S=46; // 1コマの大きさ
   const cache={};
-  function sprite(name,fi,flip){const key=name+fi+flip;if(cache[key])return cache[key];
-    const rows=SP[name].f[fi],c=document.createElement('canvas');c.width=12;c.height=12;const x=c.getContext('2d');
-    rows.forEach((r,y)=>[...r].forEach((ch,i)=>{if(ch!=='.'){x.fillStyle=C[ch];x.fillRect(flip?11-i:i,y,1,1)}}));
+  function sprite(ch,col,foe,fi,dir){const key=ch+fi+dir+foe;if(cache[key])return cache[key];
+    const c=document.createElement('canvas'),q=2;c.width=S*q;c.height=S*q;const x=c.getContext('2d');x.scale(q,q);
+    const bx=5,by=8,bw=36,bh=30;
+    // あし（2コマ）
+    x.fillStyle=INK;const lf=fi?[[12,0],[28,-2]]:[[12,-2],[28,0]];
+    lf.forEach(([lx,ly])=>{x.fillRect(lx,by+bh-1,5,7+ly);x.fillRect(lx+(dir>0?0:-3),by+bh+5+ly,8,3)});
+    // からだ（タイル）
+    x.fillStyle=foe?'#2A2440':col;x.strokeStyle=INK;x.lineWidth=3;
+    if(foe){x.beginPath();x.moveTo(bx,by+6);for(let i=0;i<5;i++){const px=bx+i*bw/4;x.lineTo(px,by+6);x.lineTo(px+bw/8,by-2)}x.lineTo(bx+bw,by+6);x.lineTo(bx+bw,by+bh);x.lineTo(bx,by+bh);x.closePath();x.fill();x.stroke()}
+    else{x.beginPath();x.roundRect?x.roundRect(bx,by,bw,bh,8):x.rect(bx,by,bw,bh);x.fill();x.stroke()}
+    // 漢字
+    x.fillStyle=foe?col:'#FFFFFF';x.font='400 25px "DotGothic16","Hiragino Kaku Gothic ProN",sans-serif';x.textAlign='center';x.textBaseline='middle';
+    if(!foe){x.strokeStyle=INK;x.lineWidth=3;x.strokeText(ch,bx+bw/2,by+bh/2+2)}
+    x.fillText(ch,bx+bw/2,by+bh/2+2);
+    // 目（上からのぞく）
+    const ey=by-4,ex=bx+bw/2+(dir>0?4:-4);
+    [ex-7,ex+7].forEach(e=>{x.fillStyle='#fff';x.beginPath();x.arc(e,ey,4.5,0,7);x.fill();x.strokeStyle=INK;x.lineWidth=2;x.stroke();
+      x.fillStyle=INK;x.beginPath();x.arc(e+dir*1.5,ey+.5,2,0,7);x.fill()});
+    if(foe){x.strokeStyle=INK;x.lineWidth=2.5;x.beginPath();x.moveTo(ex-12,ey-7);x.lineTo(ex-3,ey-3);x.moveTo(ex+12,ey-7);x.lineTo(ex+3,ey-3);x.stroke()}
     return cache[key]=c}
   const reduce=matchMedia('(prefers-reduced-motion: reduce)').matches;
-  const friends=['pencil','eraser','note'],foes=['ink','batsu','bug'];
+  document.fonts&&document.fonts.load('25px "DotGothic16"','山悪').then(()=>{for(const k in cache)delete cache[k]}).catch(()=>{});
+  const pick=a=>a[Math.floor(Math.random()*a.length)];
   document.querySelectorAll('canvas.walk').forEach(cv=>{
     const ctx=cv.getContext('2d');let W=0,H=60,dpr=1,actors=[],last=0,spawnT=0;
-    const SCALE=4,SZ=12*SCALE;
-    function size(){dpr=Math.min(devicePixelRatio||1,2);W=cv.clientWidth;cv.width=W*dpr;cv.height=H*dpr;ctx.setTransform(dpr,0,0,dpr,0,0);ctx.imageSmoothingEnabled=false}
-    function spawn(type){const friend=friends.includes(type),dir=friend?1:-1;
-      actors.push({type,dir,x:dir>0?-SZ:W+SZ,v:(friend?38:30)+Math.random()*18,jump:0,vy:0,t:Math.random()*1000})}
-    function seed(){actors=[];const list=['pencil','ink','eraser','bug','note','batsu'];
-      list.forEach((t,i)=>{spawn(t);const a=actors[actors.length-1];a.x=(W/list.length)*i+10})}
+    function size(){dpr=Math.min(devicePixelRatio||1,2);W=cv.clientWidth;cv.width=W*dpr;cv.height=H*dpr;ctx.setTransform(dpr,0,0,dpr,0,0)}
+    function spawn(foe){const [ch,col]=pick(foe?FOES:FRIENDS),dir=foe?-1:1;
+      actors.push({ch,col,foe,dir,x:dir>0?-S:W+S,v:(foe?28:36)+Math.random()*16,y:0,vy:0,jump:0,t:Math.random()*1000})}
+    function seed(){actors=[];[0,1,0,0,1,0].forEach((f,i,arr)=>{spawn(!!f);actors[actors.length-1].x=(W/arr.length)*i+8})}
     function step(ts){if(!cv.isConnected)return;requestAnimationFrame(step);
-      if(cv.offsetParent===null){last=ts;return}
-      if(cv.clientWidth!==W)size(),actors.length||seed();
+      if(cv.offsetParent===null||!W){last=ts;return}
       const dt=Math.min(.05,(ts-last)/1000||0);last=ts;spawnT-=dt;
-      if(spawnT<=0){spawnT=2.5+Math.random()*3;if(actors.length<8){const pool=Math.random()<.5?friends:foes;spawn(pool[Math.floor(Math.random()*pool.length)])}}
+      if(spawnT<=0){spawnT=2+Math.random()*3;if(actors.length<8)spawn(Math.random()<.4)}
       ctx.clearRect(0,0,W,H);
       for(const a of actors){
         if(!reduce){a.x+=a.dir*a.v*dt;a.t+=dt*1000;
-          // 味方は 敵に近づくと ジャンプして よける
-          if(a.dir>0&&!a.jump&&actors.some(o=>o.dir<0&&Math.abs(o.x-a.x)<SZ*1.1&&o.x>a.x)){a.jump=1;a.vy=-260}
-          if(a.jump){a.vy+=900*dt;a.y=(a.y||0)+a.vy*dt;if(a.y>=0){a.y=0;a.jump=0}}}
-        const fi=Math.floor(a.t/180)%2,img=sprite(a.type,fi,(SP[a.type].side>0)!==(a.dir>0));
-        ctx.drawImage(img,Math.round(a.x),Math.round(H-SZ+(a.y||0)),SZ,SZ)}
-      actors=actors.filter(a=>a.x>-SZ*2&&a.x<W+SZ*2)}
+          // 味方は 敵が来たら ジャンプで とびこえる
+          if(!a.foe&&!a.jump&&actors.some(o=>o.foe&&o.x>a.x&&o.x-a.x<S*1.15)){a.jump=1;a.vy=-300}
+          if(a.jump){a.vy+=1000*dt;a.y+=a.vy*dt;if(a.y>=0){a.y=0;a.jump=0}}}
+        const fi=a.jump?0:Math.floor(a.t/170)%2;
+        ctx.drawImage(sprite(a.ch,a.col,a.foe,fi,a.dir),Math.round(a.x),Math.round(H-S+2+a.y),S,S)}
+      actors=actors.filter(a=>a.x>-S*2&&a.x<W+S*2)}
     new ResizeObserver(()=>{if(cv.clientWidth){size();if(!actors.length)seed()}}).observe(cv);
     requestAnimationFrame(step);
   });
