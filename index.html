@@ -487,6 +487,7 @@ button:focus-visible{outline:4px solid var(--ink);outline-offset:3px}
 .news-l small{display:block;font-size:11px;font-weight:500;opacity:.65}
 .news details[open] .news-l small{display:none}
 .news-s{font-weight:800;margin:8px 0 2px}
+.news-old{margin-top:14px;padding-top:10px;border-top:2px dashed var(--line)}
 .news summary::-webkit-details-marker{display:none}
 .news summary::before{content:'▶';font-size:11px;transition:transform .15s}
 .news details[open] summary::before{transform:rotate(90deg)}
@@ -620,10 +621,16 @@ button:focus-visible{outline:4px solid var(--ink);outline-offset:3px}
   </section>
   <section class="panel news" id="news">
     <details>
-      <summary><span class="news-h">アップデートのお知らせ</span><span class="news-v">ベータ版 1.0</span>
-        <span class="news-l">もらえるポイントを調整しました。<small>タップでくわしく</small></span></summary>
+      <summary><span class="news-h">アップデートのお知らせ</span><span class="news-v">ベータ版 1.01</span>
+        <span class="news-l">利用規約とプライバシーポリシーを作りました。<small>タップでくわしく</small></span></summary>
       <div class="news-body">
-        <div class="news-d">ベータ版 1.0（2026年10月15日）</div>
+        <div class="news-d">ベータ版 1.01（2026年10月16日）</div>
+        <ul>
+          <li>利用規約とプライバシーポリシーを作りました。はじめて使うときと、内容が変わったときに、同意してから使う形になります。</li>
+          <li>ホームの一番下の「利用規約」「プライバシー」から、いつでも見られます。</li>
+          <li>運営者（TIMING）とお問い合わせ先をのせました。</li>
+        </ul>
+        <div class="news-d news-old">ベータ版 1.0（2026年10月15日）：もらえるポイントを調整しました</div>
         <div class="news-s">もらえるポイント</div>
         <ul>
           <li>一発合格 +50</li>
@@ -639,7 +646,6 @@ button:focus-visible{outline:4px solid var(--ink);outline-offset:3px}
           <li>問題数：1回 5・10・20問から選べます（「学年」の画面）。</li>
           <li>ごほうびをさがす：ごほうびに合わせたAmazonのリンクが出ます（広告）。</li>
           <li>キャラクターをタップすると、びっくりします。</li>
-          <li>利用規約とプライバシーポリシーを作りました（ホームの一番下からいつでも見られます）。</li>
         </ul>
       </div>
     </details>
