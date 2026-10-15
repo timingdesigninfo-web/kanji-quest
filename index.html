@@ -10,7 +10,7 @@
 <style>:root{color-scheme:light;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}body{margin:0;font:14px system-ui,sans-serif}img{max-width:100%}[hidden]{display:none!important}</style>
 </head>
 <body>
-<title>かんじクエスト4ねん</title>
+<title>かんじクエスト</title>
 <meta name="claude:viewport-fit-sides" content="cover">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=DotGothic16&family=Klee+One:wght@600&family=M+PLUS+Rounded+1c:wght@500;800&display=swap">
@@ -263,12 +263,12 @@ button:focus-visible{outline:4px solid var(--ink);outline-offset:3px}
 <main id="home" class="screen">
   <div class="cloud c1"></div><div class="cloud c2"></div>
   <div class="top">
-    <div class="logo">かんじクエスト<small id="gradeLabel">4ねんせい</small></div>
+    <div class="logo">かんじクエスト<small id="gradeLabel">4年生の漢字</small></div>
     <div class="wallet"><span class="coin"></span><span class="num" id="pts">0</span><span class="unit">pt</span></div>
   </div>
 
   <section class="panel quest">
-    <h2><span class="flag"></span><span id="qTitle">きょうのクエスト</span></h2>
+    <h2><span class="flag"></span><span id="qTitle">今日のクエスト</span></h2>
     <div class="status" id="status"></div>
     <div class="rule" id="rule"></div>
     <div class="goal-note" id="range" style="font-family:var(--f-kanji);font-size:15px;letter-spacing:.08em"></div>
@@ -278,7 +278,7 @@ button:focus-visible{outline:4px solid var(--ink);outline-offset:3px}
   <section class="panel goal">
     <div class="goal-head"><span id="goalName">ごほうび まで</span><span class="pixel" id="goalLeft"></span></div>
     <div class="bar"><i id="goalBar" style="width:0%"></i><span id="goalTxt"></span></div>
-    <div class="goal-note">80てんいじょうで一発合格。まちがえた漢字は、書けるようになるまで れんしゅうして合格。クリアのあと じしゅれんしゅうで 80てんいじょうなら +10pt（1日4回まで）。ごほうびは ショップで じゆうに きめられるよ。</div>
+    <div class="goal-note">80点以上で一発合格。まちがえた漢字は書けるまで練習！ クリア後の自主練は80点以上で+10pt（1日4回）。</div>
   </section>
 
   <section class="panel stamps">
@@ -288,10 +288,10 @@ button:focus-visible{outline:4px solid var(--ink);outline-offset:3px}
   </section>
 
   <div class="foot-row">
-    <button class="btn violet" id="shopBtn">ごほうびショップ</button>
-    <button class="btn white" id="setupBtn" style="flex:0 0 auto">はんい</button>
+    <button class="btn violet" id="shopBtn">ごほうび</button>
+    <button class="btn white" id="setupBtn" style="flex:0 0 auto">範囲</button>
   </div>
-  <p class="ai-note">※AIまるつけは、回数や利用の上限によって使えないことがあります。そのときは、こたえを見て じぶんで ○×をつけてね。</p>
+  <p class="ai-note">※AI採点は、回数や利用の上限で使えないことがあります。そのときは自分で○×をつけます。</p>
   <div class="ground"></div>
 </main>
 
@@ -318,31 +318,31 @@ button:focus-visible{outline:4px solid var(--ink);outline-offset:3px}
 <!-- ============ れんしゅう前 ============ -->
 <main id="learn" class="screen" hidden>
   <section class="panel learn-head">
-    <div class="pixel" style="font-size:26px">まちがえた漢字を れんしゅう</div>
+    <div class="pixel" style="font-size:26px">書けるまで練習！</div>
     <p class="sub" id="learnNote"></p>
   </section>
   <div class="learn-list" id="learnList"></div>
-  <button class="btn" id="learnGo" style="font-size:22px">おぼえた！ かいてみる</button>
-  <button class="btn white" id="learnHome">あとで やる</button>
+  <button class="btn" id="learnGo" style="font-size:22px">覚えた！ 書いてみる</button>
+  <button class="btn white" id="learnHome">あとで</button>
 </main>
 
 <!-- ============ まるつけ中 ============ -->
 <main id="grading" class="screen" hidden>
   <div class="grading-box">
     <div class="hop"><span class="coin"></span><span class="coin"></span><span class="coin"></span></div>
-    <div class="logo" style="font-size:34px">まるつけ中</div>
-    <p class="sub" style="color:#fff;text-shadow:1px 1px 0 var(--ink)">AIせんせいが 10もん ぜんぶ見ているよ。<br>30びょうくらい まってね。</p>
-    <button class="btn white" id="selfBtn">じぶんで まるつけする</button>
+    <div class="logo" style="font-size:34px">採点中</div>
+    <p class="sub" style="color:#fff;text-shadow:1px 1px 0 var(--ink)">AIが採点しています。<br>30秒ほどお待ちください。</p>
+    <button class="btn white" id="selfBtn">自分で採点する</button>
   </div>
 </main>
 
 <!-- ============ 見なおし ============ -->
 <main id="review" class="screen" hidden>
   <section class="panel rv-head">
-    <div><div class="pixel" id="rvScore" style="font-size:40px">0てん</div><div class="sub" id="rvNote"></div></div>
+    <div><div class="pixel" id="rvScore" style="font-size:40px">0点</div><div class="sub" id="rvNote"></div></div>
   </section>
   <div class="rv-list" id="rvList"></div>
-  <button class="btn green" id="decideBtn" style="font-size:22px">けってい</button>
+  <button class="btn green" id="decideBtn" style="font-size:22px">決定</button>
 </main>
 
 <!-- ============ 結果 ============ -->
@@ -355,45 +355,45 @@ button:focus-visible{outline:4px solid var(--ink);outline-offset:3px}
 <!-- ============ せってい ============ -->
 <main id="setup" class="screen" hidden>
   <section class="panel su-sec">
-    <h2>なんねんせい？</h2>
+    <h2>何年生にする？</h2>
     <div class="grade-row" id="gradeRow"></div>
   </section>
   <section class="panel su-sec">
-    <h2>テストに 出す漢字</h2>
+    <h2>出す漢字</h2>
     <p class="su-note" id="suNote"></p>
     <div class="su-quick" id="suQuick"></div>
     <div id="suTerms"></div>
     <div class="su-add">
-      <input id="suAddInput" type="text" placeholder="ほかの漢字を くわえる（れい：桜）" autocomplete="off">
-      <button class="btn white" id="suAddBtn">くわえる</button>
+      <input id="suAddInput" type="text" placeholder="ほかの漢字を追加（例：桜）" autocomplete="off">
+      <button class="btn white" id="suAddBtn">追加</button>
     </div>
     <div class="chips" id="suExtra"></div>
   </section>
   <div class="su-foot">
     <div class="su-count" id="suCount"></div>
-    <button class="btn green" id="suSave">これで はじめる</button>
+    <button class="btn green" id="suSave">はじめる</button>
   </div>
 </main>
 
 <!-- ============ ショップ ============ -->
 <main id="shop" class="screen" hidden>
   <div class="shop-head">
-    <h2>ごほうびショップ</h2>
+    <h2>ごほうび</h2>
     <div class="wallet"><span class="coin"></span><span class="num" id="pts2">0</span><span class="unit">pt</span></div>
   </div>
   <div class="items" id="items"></div>
-  <section class="panel tickets"><h3>もっているチケット</h3><div id="ticketList" style="display:flex;flex-direction:column;gap:8px"></div></section>
-  <button class="btn white" id="editShopBtn">ごほうびを へんしゅう</button>
+  <section class="panel tickets"><h3>持っているチケット</h3><div id="ticketList" style="display:flex;flex-direction:column;gap:8px"></div></section>
+  <button class="btn white" id="editShopBtn">ごほうびを編集</button>
   <section class="panel ed" id="shopEdit" hidden>
-    <h3>ごほうびを へんしゅう</h3>
-    <p class="empty" style="margin:0">なまえ・せつめい・ひつようなポイントを じゆうに きめられます。</p>
+    <h3>ごほうびを編集</h3>
+    <p class="empty" style="margin:0">名前・説明・ポイントを自由に決められます。</p>
     <div class="ed-list" id="edList"></div>
-    <button class="btn white" id="edAdd">＋ ごほうびを ふやす</button>
-    <div class="ed-btns"><button class="btn white" id="edCancel">やめる</button><button class="btn green" id="edSave">ほぞん</button></div>
+    <button class="btn white" id="edAdd">＋ 追加</button>
+    <div class="ed-btns"><button class="btn white" id="edCancel">やめる</button><button class="btn green" id="edSave">保存</button></div>
   </section>
-  <button class="btn white" id="setupBtn2">がくねん・テストのはんい</button>
+  <button class="btn white" id="setupBtn2">学年・範囲</button>
   <section class="panel amz">
-    <h3>べんきょうに つかえる もの</h3>
+    <h3>勉強のおともに</h3>
     <div class="amz-links">
       <a href="https://www.amazon.co.jp/s?k=%E6%BC%A2%E5%AD%97%E3%83%89%E3%83%AA%E3%83%AB+%E5%B0%8F%E5%AD%A6%E7%94%9F&tag=timing-22" target="_blank" rel="sponsored noopener">漢字ドリル</a>
       <a href="https://www.amazon.co.jp/s?k=%E6%BC%A2%E5%AD%97%E8%BE%9E%E5%85%B8+%E5%B0%8F%E5%AD%A6%E7%94%9F&tag=timing-22" target="_blank" rel="sponsored noopener">漢字辞典</a>
@@ -402,8 +402,8 @@ button:focus-visible{outline:4px solid var(--ink);outline-offset:3px}
     </div>
     <p class="amz-note">Amazonのアソシエイトとして、かんじクエストは適格販売により収入を得ています。</p>
   </section>
-  <button class="btn white" id="backBtn">もどる</button>
-  <div class="parent">おうちの人へ：チケットはお子さんが見せたら「つかった」を押してください。<br><button id="resetBtn">データをリセット</button></div>
+  <button class="btn white" id="backBtn">戻る</button>
+  <div class="parent">チケットは使ったら「使った」を押してください。<br><button id="resetBtn">データをリセット</button></div>
 </main>
 
 <div class="modal" id="modal" hidden><div class="panel"><p id="mMsg"></p><div class="row"><button class="btn white" id="mNo">やめる</button><button class="btn green" id="mYes">OK</button></div></div></div>
@@ -1470,7 +1470,7 @@ const DEFAULT_FOCUS='飛席機菜司順辞成訓印景群府岐季包帯付静�
 const GRADE_KANJI=["一右雨円王音下火花貝学気九休玉金空月犬見五口校左三山子四糸字耳七車手十出女小上森人水正生青夕石赤千川先早草足村大男竹中虫町天田土二日入年白八百文木本名目立力林六", "引羽雲園遠何科夏家歌画回会海絵外角楽活間丸岩顔汽記帰弓牛魚京強教近兄形計元言原戸古午後語工公広交光考行高黄合谷国黒今才細作算止市矢姉思紙寺自時室社弱首秋週春書少場色食心新親図数西声星晴切雪船線前組走多太体台地池知茶昼長鳥朝直通弟店点電刀冬当東答頭同道読内南肉馬売買麦半番父風分聞米歩母方北毎妹万明鳴毛門夜野友用曜来里理話", "悪安暗医委意育員院飲運泳駅央横屋温化荷界開階寒感漢館岸起期客究急級宮球去橋業曲局銀区苦具君係軽血決研県庫湖向幸港号根祭皿仕死使始指歯詩次事持式実写者主守取酒受州拾終習集住重宿所暑助昭消商章勝乗植申身神真深進世整昔全相送想息速族他打対待代第題炭短談着注柱丁帳調追定庭笛鉄転都度投豆島湯登等動童農波配倍箱畑発反坂板皮悲美鼻筆氷表秒病品負部服福物平返勉放味命面問役薬由油有遊予羊洋葉陽様落流旅両緑礼列練路和", "愛案以衣位茨印英栄媛塩岡億加果貨課芽賀改械害街各覚潟完官管関観願岐希季旗器機議求泣給挙漁共協鏡競極熊訓軍郡群径景芸欠結建健験固功好香候康佐差菜最埼材崎昨札刷察参産散残氏司試児治滋辞鹿失借種周祝順初松笑唱焼照城縄臣信井成省清静席積折節説浅戦選然争倉巣束側続卒孫帯隊達単置仲沖兆低底的典伝徒努灯働特徳栃奈梨熱念敗梅博阪飯飛必票標不夫付府阜富副兵別辺変便包法望牧末満未民無約勇要養浴利陸良料量輪類令冷例連老労録", "圧囲移因永営衛易益液演応往桜可仮価河過快解格確額刊幹慣眼紀基寄規喜技義逆久旧救居許境均禁句型経潔件険検限現減故個護効厚耕航鉱構興講告混査再災妻採際在財罪殺雑酸賛士支史志枝師資飼示似識質舎謝授修述術準序招証象賞条状常情織職制性政勢精製税責績接設絶祖素総造像増則測属率損貸態団断築貯張停提程適統堂銅導得毒独任燃能破犯判版比肥非費備評貧布婦武復複仏粉編弁保墓報豊防貿暴脈務夢迷綿輸余容略留領歴", "胃異遺域宇映延沿恩我灰拡革閣割株干巻看簡危机揮貴疑吸供胸郷勤筋系敬警劇激穴券絹権憲源厳己呼誤后孝皇紅降鋼刻穀骨困砂座済裁策冊蚕至私姿視詞誌磁射捨尺若樹収宗就衆従縦縮熟純処署諸除承将傷障蒸針仁垂推寸盛聖誠舌宣専泉洗染銭善奏窓創装層操蔵臓存尊退宅担探誕段暖値宙忠著庁頂腸潮賃痛敵展討党糖届難乳認納脳派拝背肺俳班晩否批秘俵腹奮並陛閉片補暮宝訪亡忘棒枚幕密盟模訳郵優預幼欲翌乱卵覧裏律臨朗論"];
 const TERMS={"1": ["", "大小一二三四五六七八九十子空男女手天青見学校虫文字正山水雨上下日木田川林森月車人中力竹出火休金土本犬早目", "名夕町百円千糸気玉村白音赤生耳王口年草貝入右足石左立花先"], "2": ["読雪言行南書絵図分方春思記曜肉話聞黄色黒太毛高風晴多形長数体近同今会社刀切内店姉妹線汽海回歩魚広前元岩教光知考室組後丸点買友羽雲夏公園通万頭鳥", "朝顔毎家当間昼半電外声楽親父母兄弟午夜国語算紙来時帰何里食明池週番東京古寺西止道場台新船米秋合活理作馬画用首細角工科鳴戸麦茶地市自歌心答野原冬", "星少走交遠強才門弓矢谷北牛引売弱計直"], "3": ["詩習商動物開族葉実所面登事館使深意味漢調由温酒問題章平次昔表発県有氷秒農球局決整相落着洋服遊全短世界横指鉄安定様運予返緑送住感想具悪拾持向坂悲岸路区陽泳練助童申仕身品客終銀去筆式植集化死都", "両負対屋員写真祭部係板柱油港起列乗急追血暗橋暑寒軽命第主州根流荷君守進役他豆者育消取期畑福苦倍談鼻歯階央旅委級昭和駅業皮皿息美転病医薬飲重配度幸始島待受号", "代曲投炭庫羊勝宿丁帳宮院笛礼研究庭等湖注反波勉放打速神箱湯"], "4": ["信達飛席建菜例料良照熱府児関辞典成訓類順愛昨城覚伝説好印要的必初案街試選観静旗材栃群埼潟井梨岡茨奈富岐阜季節別郡戦争最給機包帯泣勇軍兵隊輪特夫衣氏祝徒競約清完法滋阪徳香佐賀崎熊沖縄媛鹿未希望民働健康", "散令位置欠満栄養卒単結果漁径副臣梅灯貨変種続折積飯松不議差念連景末司録参加挙協験極芸無械以博管便孫量借仲底浅焼利笑省残周課然浴芽改", "共願失辺低敗老束票陸各産求付固塩側労標官巣候察兆億鏡害刷治努倉札功器英牧冷唱"], "5": ["像経情象絶厚賞状喜解容技術適許可複構桜銅破修復眼停祖準備貿易際潔質報告属確識因造似限留現接応勢河歴史幹招句常序武士資査性非総測舎往演刊肥製謝罪暴防鉱績志航夢編険断境態逆判圧得比政興示張個支迷", "在独弁検提寄余仏貸効条件保評価賛妻混雑略採禁能過程豊布減護再増証責任統酸素設授紀財脈織築旧規則貯型液基額故婦救格職移墓義殺", "貧版述仮飼綿居永久毒営犯講師精慣囲益災枝費税制衛耕損粉均輸団務快燃率領導堂"], "6": ["視蔵吸染模痛欲骨忘補砂訪存宣窓批株巻暖担腹我刻暮延傷善宝詞姿段承激探論若班郷朗討並蒸簡座樹閉危敬胸専降処机幼覧遺割秘片潮認就難著値翌否聖劇針洗臨疑権源縦至絹将穴異従券尊退頂宅拝皇灰純恩障庁", "厳忠糖鋼后奮射裁派装優誠紅亡陛済背律警届推敵卵干憲捨脳署沿貴蚕乳衆党舌臓銭冊策己創郵閣乱腸勤宇縮除奏賃革域肺諸宙棒仁誕孝宗", "誌胃供俳熟泉困預垂映私収誤尺裏看穀層拡密納幕寸系筋俵磁展呼枚晩揮盟盛訳操"]};
 const KG={};GRADE_KANJI.forEach((s,i)=>{for(const c of s)KG[c]=i+1});
-const TERM_NAME=['1がっき','2がっき','3がっき'];
+const TERM_NAME=['1学期','2学期','3学期'];
 function nowTerm(){const m=new Date().getMonth()+1;return m>=4&&m<=8?0:m>=9?1:2}
 function defaultFocus(g){const t=TERMS[g];let k=nowTerm();while(k<3&&!t[k])k++;return t[Math.min(k,2)]||GRADE_KANJI[g-1]}
 const BANK = BANK_SRC.split('\n').map((l,id)=>{const [s,a]=l.split('|');const m=s.match(/^(.*?)\[(.+?)\](.*)$/);return {id,pre:m[1],yomi:m[2],post:m[3],ans:a.trim()}});
@@ -1482,11 +1482,11 @@ const PTS=[70,50,40,30,20,10];
 const PTS_LABEL=['一発合格','書き直し1回','2回','3回','4回','5回〜'];
 const BONUS_PT=10, BONUS_MAX=4; // クリア後の じしゅれんしゅう：80てんいじょうで+10pt、1日4回まで
 // ごほうびは 使う人が 自由に へんしゅうできる（S.shop）。これは さいしょの 例
-const ICONS={snack:['おかし','#FF8FB8'],game:['ゲーム','#33B84A'],gem:['ほうせき','#7A4DFF'],star:['ほし','#FFCF1F'],book:['本','#2F8CFF'],cup:['のみもの','#F0402F']};
+const ICONS={snack:['おかし','#FF8FB8'],game:['ゲーム','#33B84A'],gem:['宝石','#7A4DFF'],star:['星','#FFCF1F'],book:['本','#2F8CFF'],cup:['飲み物','#F0402F']};
 const DEFAULT_SHOP=[
-  {id:'s1',icon:'snack',name:'おやつ',desc:'すきなおやつ 1つ',cost:50},
-  {id:'s2',icon:'game',name:'ゲーム 1じかん',desc:'すきなゲームを 1じかん',cost:50},
-  {id:'s3',icon:'gem',name:'とっておきの ごほうび',desc:'じぶんで きめよう',cost:1000}];
+  {id:'s1',icon:'cup',name:'コーヒー 1杯',desc:'',cost:50},
+  {id:'s2',icon:'game',name:'ゲーム 1時間',desc:'',cost:50},
+  {id:'s3',icon:'gem',name:'とっておきのごほうび',desc:'自分で決めよう',cost:1000}];
 const OLD_SHOP={snack:'おやつチケット',game:'ゲームチケット',robux:'500 Robux'};
 
 /* ===== 保存 ===== */
@@ -1549,34 +1549,34 @@ function show(id){['home','quiz','learn','grading','review','result','shop','set
 function renderHome(){
   if(!S.grade){openSetup();return}
   ensureToday();
-  $('gradeLabel').textContent=`${S.grade}ねんせい`;
+  $('gradeLabel').textContent=`${S.grade}年生の漢字`;
   const d=day();
   $('pts').textContent=S.points;
   const n=d.pending.length,nextRw=Math.min(d.rewrites+1,5);
   let cur=-1;
   if(!d.testDone){
-    $('qTitle').textContent='きょうのクエスト';
-    $('status').innerHTML=`漢字10もん。80てんいじょうなら 一発合格で <b>+${PTS[0]}pt</b>`;
-    $('startBtn').textContent='テスト スタート';$('startBtn').className='btn bigstart';cur=0;
+    $('qTitle').textContent='今日のクエスト';
+    $('status').innerHTML=`10問。80点以上で一発合格 <b>+${PTS[0]}pt</b>`;
+    $('startBtn').textContent='スタート';$('startBtn').className='btn bigstart';cur=0;
   }else if(n){
-    $('qTitle').textContent=d.passed?'あと すこし！':'きょうのクエスト';
+    $('qTitle').textContent=d.passed?'あと少し！':'今日のクエスト';
     $('status').innerHTML=d.passed
-      ?`合格して <b>+${d.earned}pt</b> ゲット！<br>まちがえた漢字 ${n}こを 書けるようにして おわろう。`
-      :`まちがえた漢字が ぜんぶ書けたら 合格！<br>つぎで ぜんぶ書けたら <b>+${PTS[nextRw]}pt</b>`;
-    $('startBtn').textContent=`まちがえた漢字を れんしゅう（のこり ${n}こ）`;$('startBtn').className='btn bigstart';
+      ?`合格 <b>+${d.earned}pt</b>！<br>まちがえた${n}字を書けるまで練習！`
+      :`まちがえた漢字が全部書けたら合格！<br>次で書ければ <b>+${PTS[nextRw]}pt</b>`;
+    $('startBtn').textContent=`書けるまで練習！（残り${n}字）`;$('startBtn').className='btn bigstart';
     if(!d.passed)cur=nextRw;
   }else{
     const bl=BONUS_MAX-(d.bonus||0);
-    $('qTitle').textContent='きょうのクエスト クリア！';
-    $('status').innerHTML=`${d.passRw?`書き直し${d.passRw}回で`:'一発'}合格！ <b>+${d.earned+(d.bonus||0)*BONUS_PT}pt</b> ゲット。<br>`
-      +(bl>0?`おなじ もんだいを じしゅれんしゅうして 80てんいじょうなら <b>+${BONUS_PT}pt</b>（きょう あと${bl}回）`:'じしゅれんしゅうの ポイントは きょうは おしまい。れんしゅうは つづけられるよ。');
-    $('startBtn').textContent=bl>0?`じしゅれんしゅう（+${BONUS_PT}pt）`:'もういちど テスト';$('startBtn').className=bl>0?'btn yellow bigstart':'btn white bigstart';
+    $('qTitle').textContent='今日のクエスト クリア！';
+    $('status').innerHTML=`${d.passRw?`書き直し${d.passRw}回で`:'一発'}合格！ <b>+${d.earned+(d.bonus||0)*BONUS_PT}pt</b><br>`
+      +(bl>0?`自主練で80点以上なら <b>+${BONUS_PT}pt</b>（あと${bl}回）`:'今日の自主練ポイントは終了。練習は続けられます。');
+    $('startBtn').textContent=bl>0?`自主練（+${BONUS_PT}pt）`:'もう一度テスト';$('startBtn').className=bl>0?'btn yellow bigstart':'btn white bigstart';
   }
   $('rule').innerHTML=PTS.map((p,i)=>`<div class="${cur===i?'on':''}">${PTS_LABEL[i]}<strong>+${p}</strong></div>`).join('');
   const fc=focusChars();
-  $('range').textContent=fc.length?`いまのはんい（${fc.length}字）：${fc.join(' ')}`:`はんい：${S.grade}年生の漢字ぜんぶ`;
+  $('range').textContent=fc.length?`範囲（${fc.length}字）：${fc.join(' ')}`:`範囲：${S.grade}年生の漢字ぜんぶ`;
   const GOAL=(goalItem()||{cost:1000}).cost;const left=Math.max(0,GOAL-S.points);
-  $('goalLeft').textContent=left?`あと ${left}pt`:'こうかんできる！';$('goalName').textContent=(goalItem()||{name:'ごほうび'}).name+' まで';
+  $('goalLeft').textContent=left?`あと ${left}pt`:'交換できる！';$('goalName').textContent=(goalItem()||{name:'ごほうび'}).name+' まで';
   $('goalBar').style.width=Math.min(100,S.points/GOAL*100)+'%';
   $('goalTxt').textContent=`${S.points} / ${GOAL}`;
   // カレンダー
@@ -1586,7 +1586,7 @@ function renderHome(){
   $('stampRow').innerHTML=row.join('');
   let st=0;const dt=new Date();if(!(S.days[todayKey()]||{}).passed)dt.setDate(dt.getDate()-1);
   while((S.days[dkey(dt)]||{}).passed){st++;dt.setDate(dt.getDate()-1)}
-  $('streak').textContent=st?`${st}日れんぞく！`:'';
+  $('streak').textContent=st?`${st}日連続！`:'';
 }
 
 /* ===== テスト ===== */
@@ -1602,7 +1602,7 @@ function startQuiz(m){ensureToday();mode=m;const d=dayRec();
 function home(){const d=dayRec();
   if(!d.testDone)startQuiz('test');else if(d.pending.length)openLearn();else startQuiz('free')}
 function openLearn(){const d=dayRec();
-  $('learnNote').textContent=`${d.pending.length}こ あるよ。よく見て おぼえたら、こたえを見ないで 書いてみよう。`+(d.passed?'':` ぜんぶ書けたら 合格（+${PTS[Math.min(d.rewrites+1,5)]}pt）！`);
+  $('learnNote').textContent=`${d.pending.length}字。よく見て覚えたら、見ないで書こう。`+(d.passed?'':` 全部書けたら合格（+${PTS[Math.min(d.rewrites+1,5)]}pt）！`);
   $('learnList').innerHTML=d.pending.map(id=>{const q=BANK[id];return `<div class="panel learn-card"><div class="k">${esc(q.ans)}</div><div class="q">${esc(q.pre)}<b>${esc(q.yomi)}</b>${esc(q.post)}</div></div>`}).join('');
   show('learn')}
 function showQ(){
@@ -1727,12 +1727,12 @@ async function toReview(){
 $('selfBtn').onclick=()=>{aiState='manual';aiCtl?.abort();marks=written.map(()=>null);whys=written.map(()=>'');renderReview();show('review')};
 
 function renderReview(){
-  const note={ai:'AIせんせいの まるつけだよ。まちがっていたら ○×を タップして なおせます。',
-    partial:'AIが見られなかった もんだいは、じぶんで ○×を つけてね。',
-    failed:'AIの まるつけが うまくいかなかったので、こたえを見て じぶんで ○×を つけてね。',
-    denied:'AIが つかえないので、こたえを見て じぶんで ○×を つけてね。',
-    limit:'いまは AIまるつけが つかえないよ（回数や利用の上限）。こたえを見て じぶんで ○×を つけてね。',
-    manual:'こたえを見て、○×を タップしてね。'}[aiState]||'';
+  const note={ai:'AIの採点です。違っていたら○×をタップで直せます。',
+    partial:'AIが採点できなかった問題は、自分で○×をつけてください。',
+    failed:'AI採点ができませんでした。答えを見て自分で○×をつけてください。',
+    denied:'AIが使えません。答えを見て自分で○×をつけてください。',
+    limit:'AI採点は上限に達しました。答えを見て自分で○×をつけてください。',
+    manual:'答えを見て○×をタップ。'}[aiState]||'';
   $('rvNote').textContent=note;
   $('rvList').innerHTML=written.map((w,i)=>{const q=BANK[w.id];const m=marks[i];
     return `<div class="panel rv">
@@ -1740,7 +1740,7 @@ function renderReview(){
       <div class="rv-pair">
         <div class="rv-box"><img class="rv-img" src="${w.url}" alt="じぶんの字"><small>じぶんの字</small></div>
         <div class="rv-box"><div class="rv-ans">${[...q.ans].map(c=>`<span>${esc(c)}</span>`).join('')}</div><small>こたえ</small></div>
-        <button class="mark ${m===true?'ok':m===false?'ng':''}" data-mark="${i}" aria-label="まるつけ">${m===false?'×':'○'}</button>
+        <button class="mark ${m===true?'ok':m===false?'ng':''}" data-mark="${i}" aria-label="採点">${m===false?'×':'○'}</button>
       </div>
       ${whys[i]?`<div class="rv-why">${esc(whys[i])}</div>`:''}
     </div>`}).join('');
@@ -1748,8 +1748,8 @@ function renderReview(){
 }
 function updateReviewScore(){
   const c=marks.filter(m=>m===true).length,left=marks.filter(m=>m===null).length;
-  $('rvScore').textContent=`${c*10}てん`;
-  $('decideBtn').disabled=left>0;$('decideBtn').textContent=left?`あと ${left}もん まるつけしてね`:'けってい';
+  $('rvScore').textContent=`${c*10}点`;
+  $('decideBtn').disabled=left>0;$('decideBtn').textContent=left?`あと${left}問 採点してください`:'けってい';
 }
 $('rvList').addEventListener('click',e=>{const b=e.target.closest('[data-mark]');if(!b)return;const i=+b.dataset.mark;
   marks[i]=marks[i]===true?false:true;sfx(marks[i]?'coin':'miss');
@@ -1767,24 +1767,24 @@ function finish(){
   if(mode==='test'){
     const score=correct*10;d.tries++;d.best=Math.max(d.best,score);d.testDone=true;d.pending=wrong;d.rewrites=0;
     if(score>=PASS)earned=award(d,0);
-    head=`<div class="badge ${earned?'':'ng'}">${earned?'一発合格！':'もうすこし！'}</div><div class="big">${score}<small>てん</small></div>`;
+    head=`<div class="badge ${earned?'':'ng'}">${earned?'一発合格！':'もう少し！'}</div><div class="big">${score}<small>点</small></div>`;
     body=earned?`<div class="earn"><span class="coin"></span><span class="pixel">+${earned}</span>pt</div>`
-      +(wrong.length?`<div class="sub">まちがえた漢字 ${wrong.length}こを 書けるようにしたら おわり！</div>`:`<div class="sub">ぜんもん せいかい！ いまのポイント ${S.points}pt</div>`)
-      :`<div class="sub">まちがえた漢字 ${wrong.length}こが ぜんぶ書けたら 合格！<br>書き直しが すくないほど ポイントが おおいよ。</div>`;
+      +(wrong.length?`<div class="sub">まちがえた${wrong.length}字を書けるまで練習！</div>`:`<div class="sub">全問正解！ 合計 ${S.points}pt</div>`)
+      :`<div class="sub">まちがえた${wrong.length}字が書けたら合格！<br>書き直しが少ないほどポイントアップ。</div>`;
   }else if(mode==='practice'){
     d.rewrites++;d.pending=wrong;
     if(!wasPassed&&!wrong.length)earned=award(d,d.rewrites);
-    head=`<div class="badge ${wrong.length?'ng':''}">${wrong.length?`あと ${wrong.length}こ！`:(earned?'合格！':'ぜんぶ書けた！')}</div><div class="big">${correct}<small>/${total}</small></div>`;
-    body=earned?`<div class="earn"><span class="coin"></span><span class="pixel">+${earned}</span>pt</div><div class="sub">書き直し ${d.rewrites}回で 合格。いまのポイント ${S.points}pt</div>`
-      :!wrong.length?`<div class="sub">きょうのクエスト クリア！</div>`
-      :`<div class="sub">もういちど おぼえて 書いてみよう。${wasPassed?'':`<br>つぎで ぜんぶ書けたら +${PTS[Math.min(d.rewrites+1,5)]}pt`}</div>`;
+    head=`<div class="badge ${wrong.length?'ng':''}">${wrong.length?`あと${wrong.length}字！`:(earned?'合格！':'全部書けた！')}</div><div class="big">${correct}<small>/${total}</small></div>`;
+    body=earned?`<div class="earn"><span class="coin"></span><span class="pixel">+${earned}</span>pt</div><div class="sub">書き直し${d.rewrites}回で合格。合計 ${S.points}pt</div>`
+      :!wrong.length?`<div class="sub">今日のクエスト クリア！</div>`
+      :`<div class="sub">もう一度覚えて書こう。${wasPassed?'':`<br>次で書ければ +${PTS[Math.min(d.rewrites+1,5)]}pt`}</div>`;
   }else{
     const sc=correct*10;
     if(sc>=PASS&&(d.bonus||0)<BONUS_MAX){d.bonus=(d.bonus||0)+1;earned=BONUS_PT;S.points+=earned;S.total+=earned}
-    head=`<div class="badge ${earned?'':'ng'}">じしゅれんしゅう</div><div class="big">${sc}<small>てん</small></div>`;
-    body=earned?`<div class="earn"><span class="coin"></span><span class="pixel">+${earned}</span>pt</div><div class="sub">えらい！ ${BONUS_MAX-d.bonus?`きょう あと${BONUS_MAX-d.bonus}回 もらえるよ。`:'きょうの ぶんは これで おしまい。'}</div>`
-      :(d.bonus||0)>=BONUS_MAX?`<div class="sub">れんしゅう おつかれさま。きょうの じしゅれんしゅうポイントは おしまい。</div>`
-      :`<div class="sub">80てんいじょうで +${BONUS_PT}pt。もういちど やってみよう！</div>`;
+    head=`<div class="badge ${earned?'':'ng'}">自主練</div><div class="big">${sc}<small>点</small></div>`;
+    body=earned?`<div class="earn"><span class="coin"></span><span class="pixel">+${earned}</span>pt</div><div class="sub">ナイス！ ${BONUS_MAX-d.bonus?`あと${BONUS_MAX-d.bonus}回`:'今日の分は終了'}</div>`
+      :(d.bonus||0)>=BONUS_MAX?`<div class="sub">おつかれさま。今日の自主練ポイントは終了。</div>`
+      :`<div class="sub">80点以上で +${BONUS_PT}pt。もう一度！</div>`;
   }
   save();
   $('scoreBox').innerHTML=head+body;
@@ -1792,7 +1792,7 @@ function finish(){
   $('missBox').hidden=!miss.length;
   $('missBox').innerHTML=`<h3>まちがえた漢字</h3>`+miss.map(r=>{const b=BANK[r.id];return `<div class="miss"><span class="t">${esc(b.pre)}<b>［${esc(b.yomi)}］</b>${esc(b.post)}</span><span class="k">${esc(b.ans)}</span></div>`}).join('');
   const more=mode!=='free'&&d.pending.length;
-  $('resultBtns').innerHTML=(more?`<button class="btn" id="practiceBtn">まちがえた漢字を れんしゅう</button>`:'')+`<button class="btn ${more?'white':'green'}" id="homeBtn">${more?'あとで やる':'ホームへ'}</button>`;
+  $('resultBtns').innerHTML=(more?`<button class="btn" id="practiceBtn">書けるまで練習！</button>`:'')+`<button class="btn ${more?'white':'green'}" id="homeBtn">${more?'あとで':'ホームへ'}</button>`;
   $('homeBtn').onclick=()=>{renderHome();show('home')};
   if($('practiceBtn'))$('practiceBtn').onclick=openLearn;
   show('result');
@@ -1803,16 +1803,16 @@ function finish(){
 let suGrade=4,suSel=new Set();
 function openSetup(){suGrade=S.grade||4;suSel=new Set(S.grade?focusChars():[...defaultFocus(suGrade)]);renderSetup();show('setup')}
 function renderSetup(){
-  $('gradeRow').innerHTML=[1,2,3,4,5,6].map(g=>`<button class="${g===suGrade?'on':''}" data-grade="${g}">${g}<small>ねん</small></button>`).join('');
+  $('gradeRow').innerHTML=[1,2,3,4,5,6].map(g=>`<button class="${g===suGrade?'on':''}" data-grade="${g}">${g}<small>年</small></button>`).join('');
   const t=TERMS[suGrade],nt=nowTerm();
-  $('suNote').textContent=`いまは ${TERM_NAME[nt]}。学校で ならっている漢字を えらんでね（タップで えらぶ・はずす）。教科書は 光村図書の じゅんばん${suGrade>=5?'（5・6年の学期わけは めやす）':''}。`;
-  $('suQuick').innerHTML=`<button data-q="now">いまの学期を えらぶ</button><button data-q="upto">いまの学期まで ぜんぶ</button><button data-q="all">${suGrade}年 ぜんぶ</button><button data-q="none">ぜんぶ はずす</button>`;
-  $('suTerms').innerHTML=t.map((ks,i)=>!ks?'':`<div class="term"><div class="term-head"><span>${TERM_NAME[i]}（${ks.length}字）${i===nt?'<span class="now">いま</span>':''}</span><button data-term="${i}">${[...ks].every(c=>suSel.has(c))?'はずす':'ぜんぶ えらぶ'}</button></div>
+  $('suNote').textContent=`今は${TERM_NAME[nt]}。タップで選ぶ・外す。光村図書の順${suGrade>=5?'（5・6年の学期は目安）':''}。`;
+  $('suQuick').innerHTML=`<button data-q="now">今の学期</button><button data-q="upto">今の学期まで</button><button data-q="all">${suGrade}年ぜんぶ</button><button data-q="none">全部外す</button>`;
+  $('suTerms').innerHTML=t.map((ks,i)=>!ks?'':`<div class="term"><div class="term-head"><span>${TERM_NAME[i]}（${ks.length}字）${i===nt?'<span class="now">今</span>':''}</span><button data-term="${i}">${[...ks].every(c=>suSel.has(c))?'外す':'全部選ぶ'}</button></div>
     <div class="chips">${[...ks].map(c=>`<button class="chip ${suSel.has(c)?'on':''}" data-k="${c}">${c}</button>`).join('')}</div></div>`).join('');
   const gset=new Set(GRADE_KANJI[suGrade-1]);const extra=[...suSel].filter(c=>!gset.has(c));
   $('suExtra').innerHTML=extra.map(c=>`<button class="chip on" data-k="${c}" title="${KG[c]||'?'}年">${c}</button>`).join('');
   const sel=[...suSel],save=S.grade;S.grade=suGrade;const n=sel.length?idsFor(sel,sel).length:0;S.grade=save;
-  $('suCount').innerHTML=sel.length?`えらんだ漢字 <b>${sel.length}</b>字<br>もんだい ${n}もん`:`えらんでいない ときは<br>${suGrade}年の いまの学期までから 出るよ`;
+  $('suCount').innerHTML=sel.length?`<b>${sel.length}</b>字・${n}問`:`未選択：${suGrade}年の<br>今の学期までから出題`;
 }
 $('setup').addEventListener('click',e=>{const b=e.target.closest('button');if(!b)return;
   if(b.dataset.grade){const g=+b.dataset.grade;if(g!==suGrade){suGrade=g;suSel=new Set([...defaultFocus(g)])}}
@@ -1826,7 +1826,7 @@ $('setup').addEventListener('click',e=>{const b=e.target.closest('button');if(!b
   else return;
   renderSetup()});
 $('suAddBtn').onclick=()=>{const v=[...$('suAddInput').value].filter(c=>KG[c]);v.forEach(c=>suSel.add(c));$('suAddInput').value='';
-  if(!v.length)$('suAddInput').placeholder='小学校で ならう漢字を 入れてね';renderSetup()};
+  if(!v.length)$('suAddInput').placeholder='小学校の漢字を入力';renderSetup()};
 $('suSave').onclick=()=>{S.grade=suGrade;S.focus=[...suSel].join('');S.fkey='';S.forder=[];
   if(!(S.days[todayKey()]||{}).tries)S.today=null;save();sfx('reveal');renderHome();show('home')};
 $('setupBtn').onclick=openSetup;
@@ -1834,11 +1834,11 @@ $('setupBtn2').onclick=openSetup;
 /* ごほうび へんしゅう */
 let edDraft=[];
 function renderEd(){$('edList').innerHTML=edDraft.map((it,i)=>`<div class="ed-row">
-  <input class="full" data-f="name" data-i="${i}" value="${esc(it.name)}" placeholder="なまえ（れい：ゲーム 1じかん）" maxlength="20">
-  <input class="full" data-f="desc" data-i="${i}" value="${esc(it.desc||'')}" placeholder="せつめい（なくてもOK）" maxlength="30">
+  <input class="full" data-f="name" data-i="${i}" value="${esc(it.name)}" placeholder="名前（例：ゲーム 1時間）" maxlength="20">
+  <input class="full" data-f="desc" data-i="${i}" value="${esc(it.desc||'')}" placeholder="説明（なくてもOK）" maxlength="30">
   <input type="number" inputmode="numeric" min="1" max="99999" data-f="cost" data-i="${i}" value="${it.cost}" aria-label="ポイント">
   <select data-f="icon" data-i="${i}">${Object.entries(ICONS).map(([k,v])=>`<option value="${k}" ${k===it.icon?'selected':''}>${v[0]}</option>`).join('')}</select>
-  <button class="del full" data-del="${i}">けす</button></div>`).join('')}
+  <button class="del full" data-del="${i}">消す</button></div>`).join('')}
 $('editShopBtn').onclick=()=>{edDraft=S.shop.map(x=>({...x}));renderEd();$('shopEdit').hidden=false;$('editShopBtn').hidden=true};
 $('edList').addEventListener('input',e=>{const el=e.target,i=+el.dataset.i,f=el.dataset.f;if(!f)return;edDraft[i][f]=f==='cost'?Math.max(1,Math.round(+el.value||1)):el.value});
 $('edList').addEventListener('click',e=>{const b=e.target.closest('[data-del]');if(!b)return;edDraft.splice(+b.dataset.del,1);renderEd()});
@@ -1859,17 +1859,17 @@ function goalItem(){return S.shop.reduce((a,b)=>!a||b.cost>a.cost?b:a,null)}
 function renderShop(){
   $('pts2').textContent=S.points;
   $('items').innerHTML=S.shop.length?S.shop.map(it=>`<div class="panel item">${icon(it.icon)}<div><h3>${esc(it.name)}</h3><p>${esc(it.desc||'')}</p><div class="cost"><span class="coin"></span>${it.cost}pt</div></div>
-    <button class="btn ${S.points>=it.cost?'yellow':'white'}" data-buy="${it.id}" ${S.points>=it.cost?'':'disabled'}>こうかん</button></div>`).join('')
-    :`<div class="panel item"><div></div><div><h3>ごほうびが まだないよ</h3><p>「ごほうびを へんしゅう」で つくろう</p></div><div></div></div>`;
+    <button class="btn ${S.points>=it.cost?'yellow':'white'}" data-buy="${it.id}" ${S.points>=it.cost?'':'disabled'}>交換</button></div>`).join('')
+    :`<div class="panel item"><div></div><div><h3>ごほうびがありません</h3><p>「ごほうびを編集」で作れます</p></div><div></div></div>`;
   const own=S.tickets.slice().reverse();
-  $('ticketList').innerHTML=own.length?own.map(t=>{return `<div class="ticket ${t.used?'used':''}"><div class="name">${esc(t.name||'ごほうび')}<small>${t.date}${t.used?' ・ つかったよ':''}</small></div>${t.used?'':`<button class="btn green" data-use="${t.id}">つかった</button>`}</div>`}).join('')
-    :`<div class="empty">まだないよ。ポイントをためて こうかんしよう！</div>`;
+  $('ticketList').innerHTML=own.length?own.map(t=>{return `<div class="ticket ${t.used?'used':''}"><div class="name">${esc(t.name||'ごほうび')}<small>${t.date}${t.used?' ・ 使った':''}</small></div>${t.used?'':`<button class="btn green" data-use="${t.id}">使った</button>`}</div>`}).join('')
+    :`<div class="empty">まだありません。ポイントをためて交換しよう！</div>`;
 }
 $('items').addEventListener('click',e=>{const b=e.target.closest('[data-buy]');if(!b)return;const it=S.shop.find(s=>s.id===b.dataset.buy);if(!it)return;
-  ask(`${it.name}と ${it.cost}pt を こうかんする？`,'こうかん',()=>{if(S.points<it.cost)return;S.points-=it.cost;S.tickets.push({id:Date.now(),name:it.name,date:todayKey(),used:false});save();sfx('clear');renderShop()})});
+  ask(`${it.name}と${it.cost}ptを交換する？`,'交換',()=>{if(S.points<it.cost)return;S.points-=it.cost;S.tickets.push({id:Date.now(),name:it.name,date:todayKey(),used:false});save();sfx('clear');renderShop()})});
 $('ticketList').addEventListener('click',e=>{const b=e.target.closest('[data-use]');if(!b)return;const t=S.tickets.find(x=>String(x.id)===b.dataset.use);
-  ask('おうちの人：このチケットを つかったことにしますか？','つかった',()=>{t.used=true;save();renderShop()})});
-$('resetBtn').onclick=()=>ask('ポイント・きろく・チケットを ぜんぶ けします。もとにもどせません。','けす',()=>ask('ほんとうに けしますか？','ぜんぶけす',()=>{S=fresh();save();openSetup()}));
+  ask('このチケットを使った？','使った',()=>{t.used=true;save();renderShop()})});
+$('resetBtn').onclick=()=>ask('ポイント・記録・チケットを全部消します。元に戻せません。','消す',()=>ask('本当に消しますか？','全部消す',()=>{S=fresh();save();openSetup()}));
 
 /* ===== モーダル ===== */
 let mCb=null;
@@ -1893,7 +1893,7 @@ $('backBtn').onclick=()=>{renderHome();show('home')};
 $('undoBtn').onclick=()=>{strokes.pop();redraw();updateBtns()};
 $('clearBtn').onclick=()=>{strokes=[];redraw();updateBtns()};
 $('nextBtn').onclick=nextQ;
-$('quitBtn').onclick=()=>ask('テストを やめる？ このかいは カウントされないよ。','やめる',()=>{renderHome();show('home')});
+$('quitBtn').onclick=()=>ask('テストをやめる？ 今回は記録されません。','やめる',()=>{renderHome();show('home')});
 new ResizeObserver(()=>layout()).observe(stage);
 document.fonts.load('600 40px "Klee One"','漢').catch(()=>{});
 renderHome();
