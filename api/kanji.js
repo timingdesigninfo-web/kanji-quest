@@ -5,7 +5,7 @@
 // GET  /api/kanji  動作確認（APIキーが設定されているか）
 //
 // 環境変数：ANTHROPIC_API_KEY（必須）
-//           KANJI_MODEL（任意。省略時 claude-sonnet-5-5）
+//           KANJI_MODEL（任意。省略時 claude-haiku-5-5）
 //           KANJI_AI_PER_DAY（任意。サイト全体で1日に使える回数。省略時 40）
 // データベース（Upstash Redis）がつながっていれば、1日の回数制限に使う。
 
@@ -97,7 +97,7 @@ ${RULES}`,
       method: 'POST',
       headers: { 'x-api-key': key, 'anthropic-version': '2023-06-01', 'content-type': 'application/json' },
       body: JSON.stringify({
-        model: process.env.KANJI_MODEL || 'claude-sonnet-5-5',
+        model: process.env.KANJI_MODEL || 'claude-haiku-5-5',
         max_tokens: 1500,
         messages: [{ role: 'user', content }],
       }),

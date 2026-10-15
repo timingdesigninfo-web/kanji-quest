@@ -11,7 +11,7 @@
 |---|---|---|
 | `ANTHROPIC_API_KEY` | ○ | Claude の APIキー |
 | `KANJI_AI_PER_DAY` | | サイト全体で1日に使えるAI丸つけの回数（省略時 40） |
-| `KANJI_MODEL` | | 使うモデル（省略時 claude-sonnet-5-5） |
+| `KANJI_MODEL` | | 使うモデル（省略時 claude-haiku-5-5） |
 
 Upstash Redis をつなぐと、1日の回数制限が働きます（つながっていなければ、Anthropic の月の上限金額だけで止まります）。
 
