@@ -2192,17 +2192,17 @@ function renderWatchPills(){const h=S.watch.map((w,i)=>`<button class="wpill" da
 let famStep='';
 function renderFam(){const b=$('famBox'),sh=S.share;
   const wl=S.watch.length?`<h3>見ている記録</h3><div class="watch-list">${S.watch.map((w,i)=>`<div class="w"><button class="btn white" data-watch="${i}">${esc(wName(w))}</button><button class="x" data-unwatch="${i}" aria-label="外す">×</button></div>`).join('')}</div>`:'';
-  if(!sh&&famStep==='name'){
-    b.innerHTML=`<h3>家族と共有</h3><label for="famName">見る人の画面に出す名前</label>
+  if((!sh&&famStep==='name')||(sh&&!sh.name)){
+    b.innerHTML=`<h3>名前を入れてください</h3>
       <input class="nm" id="famName" maxlength="12" placeholder="例：たろう" autocomplete="off">
-      <p class="meta">ニックネームでOK。「〇〇さんの記録」と表示されます。</p>
+      <p class="meta">見る人の画面に「〇〇さんの記録」と出ます。ニックネームでOK。</p>
       ${syncErr?`<div class="err">${syncErr}</div>`:''}
-      <div class="row"><button class="btn white" id="famCancel">やめる</button><button class="btn" id="famGo" disabled>QRを出す</button></div>${wl}`;
+      <div class="row"><button class="btn white" id="famCancel">やめる</button><button class="btn green" id="famGo" disabled>OK</button></div>${wl}`;
     const inp=$('famName');inp.oninput=()=>{$('famGo').disabled=!inp.value.trim()};inp.focus();
     inp.onkeydown=e=>{if(e.key==='Enter'&&inp.value.trim())startShare(inp.value)};
     $('famGo').onclick=()=>startShare(inp.value);
-    $('famCancel').onclick=()=>{famStep='';syncErr='';renderFam()};}
-  else if(!sh){b.innerHTML=`<h3>家族と共有</h3><p>おうちの人のスマホなどから、この記録を見られるようにします。メールアドレスなどの登録はいりません。</p>${syncErr?`<div class="err">${syncErr}</div>`:''}<button class="btn" id="famStart">共有をはじめる</button>${wl}`;
+    $('famCancel').onclick=async()=>{famStep='';syncErr='';if(sh){const s0=sh;S.share=null;save();try{await fetch(SYNC_URL,{method:'DELETE',headers:{'Content-Type':'application/json'},body:JSON.stringify({id:s0.id,key:s0.key})})}catch(e){}}renderFam()};}
+  else if(!sh){b.innerHTML=`<h3>家族と共有</h3><p>おうちの人のスマホなどから、この記録を見られるようにします。メールアドレスなどの登録はいりません。</p>${syncErr?`<div class="err">${syncErr}</div>`:''}<button class="btn" id="famStart">共有する</button>${wl}`;
     $('famStart').onclick=()=>{famStep='name';syncErr='';renderFam()};}
   else{const url=viewURL(sh.id);
     b.innerHTML=`<h3>${esc(sh.name||'')}${sh.name?'さんの記録を':''}共有中</h3><p>見る人のスマホのカメラで、このQRを読みとってください。テストのたびに、自動で最新になります。</p>
@@ -2223,7 +2223,7 @@ function renderFam(){const b=$('famBox'),sh=S.share;
 }
 async function startShare(name){name=String(name||'').trim().slice(0,12);if(!name)return;
   const b=$('famGo');if(b){b.disabled=true;b.textContent='準備中…'}
-  S.share={id:rid(20),key:rid(40),name,at:0};save();
+  if(S.share)S.share.name=name;else S.share={id:rid(20),key:rid(40),name,at:0};save();
   if(!await syncNow()){S.share=null;save()}else famStep='';renderFam()}
 function stampsHTML(days){const row=[],now=new Date();
   for(let i=14;i>=0;i--){const dt=new Date(now);dt.setDate(now.getDate()-i);const k=dkey(dt),r=days[k];
@@ -2240,7 +2240,8 @@ function renderWatchHead(){const h=HS,el=$('wvHead');
   $('wvReload').onclick=()=>openWatch(h.id)}
 async function openWatch(id){
   hiFilter='all';$('hiTabs').querySelectorAll('button').forEach(x=>x.classList.toggle('on',x.dataset.f==='all'));
-  HS={id,log:[],days:{},loading:true};renderHistory();show('history');$('hiList').innerHTML='<div class="panel hi-empty">読みこみ中…</div>';
+  const w0=S.watch.find(w=>w.id===id)||{};
+  HS={id,name:w0.name,grade:w0.grade,log:[],days:{},loading:true};renderHistory();show('history');$('wvHead').hidden=true;$('hiList').innerHTML='<div class="panel hi-empty">読みこみ中…</div>';
   try{const r=await fetch(SYNC_URL+'?id='+encodeURIComponent(id),{cache:'no-store'});
     if(r.status===404){$('hiList').innerHTML='<div class="panel hi-empty">この共有は終了しています。</div>';$('wvHead').hidden=true;return}
     if(!r.ok)throw 0;const d=await r.json();HS={...d,id};
@@ -2362,9 +2363,10 @@ function renderOb(){const last=obStep===OB.length-1;
   if(obAdmin){
     $('obCard').innerHTML=`<div class="ob-pic">${OB_PHONE}</div><h2>管理する人へ</h2>
       <p>テストの結果は、あなたのスマホなどからも確認できます。</p>
-      <ol class="ob-steps"><li><span>この端末で<b>「きろく」→「共有をはじめる」</b>を押す</span></li>
+      <ol class="ob-steps"><li><span>この端末で<b>「きろく」→「共有する」</b>を押す</span></li>
+      <li><span><b>名前</b>を入れて「OK」</span></li>
       <li><span>出てきたQRを、<b>自分のスマホのカメラ</b>で読みとる</span></li>
-      <li><span>ポイント・カレンダー・まちがえた字が、いつでも見られます</span></li></ol>
+      <li><span>あなたのホームに「〇〇さんの記録」ボタンが出て、いつでも見られます</span></li></ol>
       <p class="small">見るだけで、書きかえはできません。名前やメールアドレスは使いません。</p>`;
   }else{const o=OB[obStep];$('obCard').innerHTML=`<div class="ob-pic">${o.pic()}</div><h2>${o.h}</h2><p>${o.p}</p>`}
   $('obDots').innerHTML=OB.map((_,i)=>`<i class="${i===obStep&&!obAdmin?'on':''}"></i>`).join('');
