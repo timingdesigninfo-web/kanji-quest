@@ -470,7 +470,10 @@ button:focus-visible{outline:4px solid var(--ink);outline-offset:3px}
 .doc-lead{font-weight:800}
 .doc a{color:var(--ink);font-weight:800}
 .doc-date{font-size:12px;opacity:.7;margin-top:8px!important}
-.agree{position:sticky;bottom:calc(env(safe-area-inset-bottom,0px) + 8px);padding:14px 16px;display:flex;flex-direction:column;gap:10px;z-index:5}
+.agree-wrap{position:sticky;bottom:0;z-index:5;margin-top:4px;padding:18px 0 calc(env(safe-area-inset-bottom,0px) + 14px);background:linear-gradient(to bottom,rgba(94,196,255,0),var(--sky) 22px)}
+.agree{padding:16px 18px;display:flex;flex-direction:column;gap:12px}
+#terms{gap:14px;padding-bottom:16px}
+#terms .doc{margin-bottom:2px}
 .agree-chk{display:flex;gap:10px;align-items:flex-start;font-size:15px;font-weight:800;line-height:1.5;cursor:pointer}
 .agree-chk input{width:24px;height:24px;flex:none;margin:1px 0 0;accent-color:var(--green)}
 .am-sub{font-size:14px!important;font-weight:500}
@@ -822,10 +825,10 @@ button:focus-visible{outline:4px solid var(--ink);outline-offset:3px}
     <p>データの取り扱いについてのご質問は、こちらへ。<br><a class="ml" data-u="info" data-d="timing.jp">（表示中…）</a></p>
     <p class="doc-date">2026年10月16日 制定</p>
   </section>
-  <section class="panel agree" id="tmAgree" hidden>
+  <div class="agree-wrap" id="tmAgree" hidden><section class="panel agree">
     <label class="agree-chk"><input type="checkbox" id="tmChk"><span>利用規約とプライバシーポリシーを読んで、同意します</span></label>
     <button class="btn green" id="tmGo" disabled>同意してはじめる</button>
-  </section>
+  </section></div>
 </main>
 
 <!-- ============ ショップ ============ -->
