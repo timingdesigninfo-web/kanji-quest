@@ -2564,8 +2564,8 @@ function amzKw(it){if(it.amz&&it.amz.trim())return it.amz.trim();const n=String(
 function renderAmzRw(){const seen=new Set(),rows=[];
   const add=(it,sub)=>{const kw=amzKw(it);if(!kw||seen.has(kw))return;seen.add(kw);rows.push({kw,name:it.name,sub})};
   S.tickets.filter(t=>!t.used).slice().reverse().forEach(t=>add({name:t.name,amz:(S.shop.find(x=>x.name===t.name)||{}).amz},'交換ずみ'));
-  S.shop.forEach(it=>add(it,`${it.cost}pt`));
-  const h=rows.length?`<h3>ごほうびをさがす</h3><div class="amz-links">${rows.slice(0,6).map(r=>`<a class="rw" href="${amzURL(r.kw)}" target="_blank" rel="sponsored noopener">${esc(r.name)}<small>${esc(r.sub)}</small></a>`).join('')}</div>`:'';
+  S.shop.forEach(it=>add(it,''));
+  const h=rows.length?`<h3>ごほうびをさがす</h3><div class="amz-links">${rows.slice(0,6).map(r=>`<a class="rw" href="${amzURL(r.kw)}" target="_blank" rel="sponsored noopener">${esc(r.name)}${r.sub?`<small>${esc(r.sub)}</small>`:''}</a>`).join('')}</div>`:'';
   document.querySelectorAll('.amz-rw').forEach(el=>el.innerHTML=h)}
 
 /* ===== おうちの人（PIN・おねがい） ===== */
