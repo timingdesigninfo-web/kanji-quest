@@ -27,6 +27,7 @@
 <meta name="claude:viewport-fit-sides" content="cover">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Klee+One:wght@600&family=M+PLUS+Rounded+1c:wght@500;800&display=swap">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=DotGothic16&text=0123456789%2B%2F%25.%2C&display=swap">
 <style>
 /* Layout: 横スクロールゲーム風。空 → カード → レンガの地面。テスト画面は「問題文＋大きな書き板」だけ */
 :root{
@@ -34,12 +35,13 @@
   --yellow:#FFCF1F; --yellow-d:#D49500; --green:#33B84A; --green-d:#1E8631;
   --brick:#D9692A; --brick-d:#8C3C10; --ink:#1C2A5C; --paper:#FFFFFF;
   --line:#9DBCEB; --violet:#7A4DFF; --violet-d:#4F25C9;
-  --f-pixel:"M PLUS Rounded 1c","Hiragino Maru Gothic ProN","Yu Gothic",sans-serif;
+  --f-pixel:"DotGothic16","M PLUS Rounded 1c","Hiragino Maru Gothic ProN","Yu Gothic",sans-serif; /* 数字だけドット（DotGothic16は数字だけ読み込む） */
   --f-body:"M PLUS Rounded 1c","Hiragino Maru Gothic ProN","Yu Gothic",sans-serif;
   --f-kanji:"Klee One","Hiragino Mincho ProN","Yu Mincho",serif;
   color-scheme:light;
 }
 html,body{height:100%}
+html{font-synthesis:none}
 body{background:var(--sky);color:var(--ink);font-family:var(--f-body);font-weight:800;
   padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));
   -webkit-tap-highlight-color:transparent;overflow-x:hidden}
