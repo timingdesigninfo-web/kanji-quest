@@ -254,7 +254,7 @@ button:focus-visible{outline:4px solid var(--ink);outline-offset:3px}
 /* ---- ホームの組み立て（スマホは1列、タブレット以上は2列） ---- */
 .home-main,.home-side{display:contents}
 @media (min-width:760px){
-  #home{max-width:1040px;display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);grid-template-rows:auto auto auto auto auto 1fr auto auto;column-gap:24px;row-gap:18px}
+  #home{max-width:1040px;display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);grid-template-rows:auto auto auto auto auto 1fr auto auto auto;column-gap:24px;row-gap:18px}
   #home>.top{grid-column:1/-1;grid-row:1}
   /* 左上：今のポイント／右上：今日のクエスト／左下：ごほうび・広告／右下：シェア */
   #home .goal{grid-column:1;grid-row:2}
@@ -264,6 +264,8 @@ button:focus-visible{outline:4px solid var(--ink);outline-offset:3px}
   #home .share-home{grid-column:2;grid-row:3/span 2;align-self:start}
   #home>.info{grid-column:1/-1;grid-row:5}
   #home>.news{grid-column:1/-1;grid-row:6;align-self:start}
+  #home>.legal{grid-column:1/-1;grid-row:7;align-self:start}
+  #home>.walk-space{grid-row:8!important}#home>.ground{grid-row:9!important}
   #home>.walk-space{grid-column:1/-1;grid-row:7}
   #home>.ground{grid-column:1/-1;grid-row:8}
   .bigstart{font-size:32px;padding:26px}
@@ -462,6 +464,18 @@ button:focus-visible{outline:4px solid var(--ink);outline-offset:3px}
 .amz h3{font-size:16px}
 .amz-links{display:grid;grid-template-columns:1fr 1fr;gap:8px}
 .amz-links a.rw{background:#FFF4CC;flex-direction:column;gap:2px}
+.doc{padding:16px 18px;display:flex;flex-direction:column;gap:8px;font-size:14px;font-weight:500;line-height:1.75}
+.doc h3{margin:10px 0 0;font-size:15px}
+.doc p,.doc ul{margin:0}.doc ul{padding-left:1.2em;display:flex;flex-direction:column;gap:4px}
+.doc-lead{font-weight:800}
+.doc-date{font-size:12px;opacity:.7;margin-top:8px!important}
+.agree{position:sticky;bottom:calc(env(safe-area-inset-bottom,0px) + 8px);padding:14px 16px;display:flex;flex-direction:column;gap:10px;z-index:5}
+.agree-chk{display:flex;gap:10px;align-items:flex-start;font-size:15px;font-weight:800;line-height:1.5;cursor:pointer}
+.agree-chk input{width:24px;height:24px;flex:none;margin:1px 0 0;accent-color:var(--green)}
+.am-sub{font-size:14px!important;font-weight:500}
+.am-links{display:flex;gap:8px}.am-links .btn{flex:1;font-size:14px;padding:10px 6px}
+.legal{display:flex;justify-content:center;gap:18px;font-size:13px;font-weight:800}
+.legal button{background:none;border:0;padding:4px;color:#fff;text-decoration:underline;text-shadow:1px 1px 0 var(--ink);font:inherit}
 .news{padding:12px 16px}
 .news summary{list-style:none;cursor:pointer;display:flex;align-items:center;gap:4px 8px;flex-wrap:wrap}
 .news-l{flex-basis:100%;font-size:14px;font-weight:800;padding-left:19px}
@@ -620,10 +634,12 @@ button:focus-visible{outline:4px solid var(--ink);outline-offset:3px}
           <li>問題数：1回 5・10・20問から選べます（「学年」の画面）。</li>
           <li>ごほうびをさがす：ごほうびに合わせたAmazonのリンクが出ます（広告）。</li>
           <li>キャラクターをタップすると、びっくりします。</li>
+          <li>利用規約とプライバシーポリシーを作りました（ホームの一番下からいつでも見られます）。</li>
         </ul>
       </div>
     </details>
   </section>
+  <div class="legal" id="legal"><button data-legal="tos">利用規約</button><button data-legal="pp">プライバシー</button></div>
   <div class="walk-space"></div>
   <div class="ground"><canvas class="walk"></canvas></div>
 </main>
@@ -737,6 +753,73 @@ button:focus-visible{outline:4px solid var(--ink);outline-offset:3px}
   <button class="btn white" id="hiHome">ホームへ</button>
 </main>
 
+<main id="terms" class="screen" hidden>
+  <div class="shop-head"><h2 id="tmTitle">利用規約</h2><button class="btn white small" id="tmBack">もどる</button></div>
+  <div class="hi-tabs" id="tmTabs"><button class="on" data-t="tos">利用規約</button><button data-t="pp">プライバシー</button></div>
+  <section class="panel doc" id="tmTos">
+    <p class="doc-lead">かんじクエスト（以下「本アプリ」）を使う前に、お読みください。本アプリを使うことで、この規約に同意したものとします。</p>
+    <h3>1. 本アプリについて</h3>
+    <p>本アプリは、小学校で習う漢字を練習するための無料のアプリです。現在はベータ版（試験公開）です。</p>
+    <h3>2. 問題と採点について</h3>
+    <ul>
+      <li>問題文・漢字・読みがな・学年や学期の分け方に、まちがいがふくまれることがあります。</li>
+      <li>AIによる採点は、正しくないことがあります。最後は、自分で○×を確かめて直せます。</li>
+      <li>本アプリは学習の参考です。学校のテストや成績の結果を保証するものではありません。</li>
+      <li>これらのまちがいによって生じたことについて、運営者は責任を負いません。</li>
+    </ul>
+    <h3>3. ポイントとごほうびについて</h3>
+    <ul>
+      <li>ポイントは本アプリの中だけのもので、お金や商品と交換できるものではありません。</li>
+      <li>ごほうびの内容は、利用者（ご家庭）が自由に決めるものです。ごほうびの用意・費用・家庭内での約束やトラブルについて、運営者は関与せず、責任を負いません。</li>
+    </ul>
+    <h3>4. データについて</h3>
+    <ul>
+      <li>ポイントや記録は、使っている端末のブラウザに保存されます。ブラウザのデータ削除、端末の故障・機種変更などで消えた場合、元に戻せません。</li>
+      <li>「家族と共有」のQRやリンクを知っている人は、記録を見ることができます。教える相手は、利用者が管理してください。</li>
+    </ul>
+    <h3>5. サービスの変更・停止</h3>
+    <p>AI採点は、回数や利用の上限によって使えないことがあります。本アプリの内容は、予告なく変更・停止することがあります。</p>
+    <h3>6. してはいけないこと</h3>
+    <p>本アプリやサーバーへの不正なアクセス、過度な負荷をかける行為、ほかの人の個人情報を入力する行為は、しないでください。</p>
+    <h3>7. 広告</h3>
+    <p>本アプリには、Amazonアソシエイト・プログラムによる広告リンクがあります。</p>
+    <h3>8. 保護者の方へ</h3>
+    <p>お子さんが使う場合は、保護者の方がこの規約とプライバシーポリシーを確認し、同意したうえでお使いください。</p>
+    <h3>9. 規約の変更</h3>
+    <p>この規約は変更することがあります。大きな変更は、アプリの中でお知らせします。</p>
+    <p class="doc-date">2026年10月16日 制定</p>
+  </section>
+  <section class="panel doc" id="tmPp" hidden>
+    <p class="doc-lead">本アプリは、名前・メールアドレス・電話番号・住所などの個人情報を集めません。アカウント登録も、アクセス解析もありません。</p>
+    <h3>1. 端末の中だけに保存するもの</h3>
+    <p>ポイント、テストの記録、書いた字の画像、ごほうびの設定、PIN（そのままではなく変換した形）。これらは使っている端末のブラウザの中だけに保存され、運営者には送られません。</p>
+    <h3>2. AI採点で送るもの</h3>
+    <p>AI採点のとき、<b>書いた字の画像</b>と<b>問題文・正しい答え</b>を、採点のためだけに Anthropic社（アメリカ）のAIに送ります。名前などはいっしょに送りません。送ったデータの扱いは、Anthropic社の規約に従います。AI採点を使わず、自分で採点することもできます。</p>
+    <h3>3. 「家族と共有」を使うときに保存するもの</h3>
+    <ul>
+      <li>保存するもの：表示名（ニックネーム）、学年、ポイント、記録（問題・○×・書いた字の画像）、ごほうびの設定と交換の記録。</li>
+      <li>置き場所：データ保存サービス Upstash（アメリカのサーバー）。</li>
+      <li>期間：最後に更新してから180日たつと自動で消えます。「共有をやめる」を押すと、すぐ消えます。</li>
+      <li>QRやリンクを知っている人は見られます。表示名には、本名ではなくニックネームをおすすめします。</li>
+    </ul>
+    <h3>4. 使っている外部サービス</h3>
+    <ul>
+      <li>Vercel：アプリの置き場所。ふつうのWebサイトと同じく、アクセスの記録（IPアドレスなど）が一時的に残ることがあります。</li>
+      <li>Google Fonts：文字の形を読みこむために使います。</li>
+      <li>Amazonアソシエイト：かんじクエストは、アマゾンジャパン合同会社またはその関連会社により実施されている「Amazonアソシエイト・プログラム」の参加者です。広告リンクを押すと、Amazonがクッキーを使うことがあります。</li>
+    </ul>
+    <h3>5. データを消すには</h3>
+    <p>「ごほうび」画面の一番下の「全部消す」で、端末のデータと共有のデータが消えます。共有だけやめるときは「きろく」→「共有をやめる」です。</p>
+    <h3>6. 変更</h3>
+    <p>この内容は変更することがあります。大きな変更は、アプリの中でお知らせします。</p>
+    <p class="doc-date">2026年10月16日 制定</p>
+  </section>
+  <section class="panel agree" id="tmAgree" hidden>
+    <label class="agree-chk"><input type="checkbox" id="tmChk"><span>利用規約とプライバシーポリシーを読んで、同意します</span></label>
+    <button class="btn green" id="tmGo" disabled>同意してはじめる</button>
+  </section>
+</main>
+
 <!-- ============ ショップ ============ -->
 <main id="shop" class="screen" hidden>
   <div class="shop-head">
@@ -778,6 +861,11 @@ button:focus-visible{outline:4px solid var(--ink);outline-offset:3px}
   <input id="pinIn" class="pin-in" type="password" inputmode="numeric" pattern="[0-9]*" maxlength="4" autocomplete="off" aria-label="PIN">
   <div class="pin-err" id="pinErr"></div>
   <div class="row"><button class="btn white" id="pinNo">やめる</button><button class="btn green" id="pinYes">OK</button></div></div></div>
+<div class="modal" id="agreeModal" hidden><div class="panel">
+  <p id="amMsg"></p>
+  <p class="am-sub">内容を確認して、同意してから使ってください。</p>
+  <div class="am-links"><button class="btn white" data-am="tos">利用規約を読む</button><button class="btn white" data-am="pp">プライバシーを読む</button></div>
+  <button class="btn green" id="amYes">同意して使う</button></div></div>
 <div class="modal" id="modal" hidden><div class="panel"><p id="mMsg"></p><div class="row"><button class="btn white" id="mNo">やめる</button><button class="btn green" id="mYes">OK</button></div></div></div>
 
 <script>
@@ -1923,13 +2011,13 @@ const day=()=>dayRec();
 
 /* ===== 画面切りかえ ===== */
 const $=id=>document.getElementById(id);
-function show(id){['home','quiz','learn','grading','review','result','shop','setup','welcome','onboard','history'].forEach(s=>$(s).hidden=s!==id);window.scrollTo(0,0);if(id==='quiz')requestAnimationFrame(layout)}
+function show(id){['home','quiz','learn','grading','review','result','shop','setup','welcome','onboard','history','terms'].forEach(s=>$(s).hidden=s!==id);window.scrollTo(0,0);if(id==='quiz')requestAnimationFrame(layout)}
 
 /* ===== ホーム ===== */
 function renderHome(){
   if(!S.onboarded){openWelcome();return}
   ensureToday();
-  $('gradeLabel').textContent=`${S.grade}年生の漢字`;renderWatchPills();refreshPending();checkDecisions();renderAmzRw();
+  $('gradeLabel').textContent=`${S.grade}年生の漢字`;renderWatchPills();refreshPending();checkDecisions();renderAmzRw();askAgree();
   const d=day();
   $('pts').textContent=S.points;$('ptsBig').textContent=S.points;updateHomeShare();
   const n=d.pending.length,nextRw=Math.min(d.rewrites+1,RW_MAX);
@@ -2501,8 +2589,29 @@ function openSetup(g){suQn=qn();if(g){suGrade=g;suSel=new Set(g===S.grade&&S.foc
   renderSetup();renderQn();show('setup')}
 /* はじめに（学年えらび）→ つかいかた → 範囲 */
 let obGrade=4,obStep=0,obFromHome=false;
+/* ===== 利用規約・プライバシー ===== */
+const TERMS_V='2026-10-16';
+const agreed=()=>S.agreed===TERMS_V;
+let tmNext=null; // 同意したあとに すること（null＝読むだけ）
+function openTerms(tab,next){tmNext=next||null;setTmTab(tab||'tos');
+  $('tmAgree').hidden=!tmNext;$('tmChk').checked=false;$('tmGo').disabled=true;show('terms')}
+function setTmTab(t){$('tmTos').hidden=t!=='tos';$('tmPp').hidden=t!=='pp';$('tmTitle').textContent=t==='tos'?'利用規約':'プライバシー';
+  $('tmTabs').querySelectorAll('button').forEach(b=>b.classList.toggle('on',b.dataset.t===t))}
+$('tmTabs').onclick=e=>{const b=e.target.closest('button');if(!b)return;setTmTab(b.dataset.t);window.scrollTo(0,0)};
+$('tmChk').onchange=()=>{$('tmGo').disabled=!$('tmChk').checked};
+$('tmGo').onclick=()=>{S.agreed=TERMS_V;save();sfx('clear');const n=tmNext;tmNext=null;n&&n()};
+$('tmBack').onclick=()=>{tmNext=null;if(!S.onboarded){openWelcome();return}renderHome();show('home')}; // 未同意なら ホームでまたモーダル
+$('legal').onclick=e=>{const b=e.target.closest('[data-legal]');if(!b)return;sfx('tap');openTerms(b.dataset.legal)};
+// すでに使っている人：規約ができた・変わったときは、同意するまでモーダルを出す
+function askAgree(){if(agreed()||!S.onboarded)return;
+  $('amMsg').textContent=S.agreed?'利用規約・プライバシーポリシーを変更しました。':'利用規約とプライバシーポリシーを作りました。';
+  $('agreeModal').hidden=false}
+$('agreeModal').addEventListener('click',e=>{const b=e.target.closest('[data-am]');if(!b)return;$('agreeModal').hidden=true;
+  openTerms(b.dataset.am,()=>{renderHome();show('home')})});
+$('amYes').onclick=()=>{S.agreed=TERMS_V;save();sfx('clear');$('agreeModal').hidden=true};
 function openWelcome(){renderWatchPills();refreshPending();$('wlGrades').innerHTML=[1,2,3,4,5,6].map(g=>`<button data-wg="${g}">${g}<small>年</small></button>`).join('');show('welcome')}
-$('wlGrades').addEventListener('click',e=>{const b=e.target.closest('[data-wg]');if(!b)return;sfx('reveal');obGrade=+b.dataset.wg;obFromHome=false;obStep=0;obAdmin=false;renderOb();show('onboard')});
+$('wlGrades').addEventListener('click',e=>{const b=e.target.closest('[data-wg]');if(!b)return;sfx('reveal');obGrade=+b.dataset.wg;obFromHome=false;obStep=0;obAdmin=false;
+  const go=()=>{renderOb();show('onboard')};if(agreed())go();else openTerms('tos',go)});
 const OB=[
   {pic:()=>`<div class="ob-board"><span>漢</span></div>`,h:'毎日10問、指で書く',p:'文の中の［よみがな］を漢字で書きます。書く場所は大きく、ほかには何も置いていません。'},
   {pic:()=>`<div class="ob-mark">80点</div>`,h:'AIが採点',p:'10問書いたら、AIがまとめて丸つけ。80点以上で一発合格です。使えないときは自分で○×をつけます。'},
