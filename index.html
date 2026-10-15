@@ -188,6 +188,11 @@ button:focus-visible{outline:4px solid var(--ink);outline-offset:3px}
 .fam .btn.small,.wv .btn.small{padding:8px 14px;font-size:14px;width:auto;flex:none}
 .fam .err{color:var(--red);font-size:13px;font-weight:800}
 .watch-list{display:flex;flex-direction:column;gap:8px}
+.watch-pills{flex-basis:100%;display:flex;flex-wrap:wrap;justify-content:center;gap:8px;position:relative;z-index:2}
+.watch-pills:empty{display:none}
+.wpill{font:800 15px var(--f-body);color:var(--ink);background:#fff;border:3px solid var(--ink);border-radius:999px;padding:8px 16px;box-shadow:0 4px 0 var(--ink)}
+.wpill:active{transform:translateY(3px);box-shadow:0 1px 0 var(--ink)}
+.fam label{font-size:13px;font-weight:800}
 .watch-list .w{display:flex;gap:8px;align-items:center}
 .watch-list .w .btn{flex:1;font-size:15px;padding:10px;text-align:left}
 .watch-list .w .x{flex:none;width:40px;height:40px;border-radius:10px;border:3px solid var(--ink);background:#fff;font-size:18px;color:var(--ink)}
@@ -456,6 +461,7 @@ button:focus-visible{outline:4px solid var(--ink);outline-offset:3px}
   <div class="wl-hero">
     <div class="logo wl-logo"><img class="logo-img" alt="かんじクエスト" width="1000" height="184"></div>
     <p class="wl-tag">小学生の漢字。書けますか？</p>
+    <div class="watch-pills" id="wlWatch"></div>
   </div>
   <section class="panel su-sec">
     <h2>何年生にする？</h2>
@@ -478,6 +484,7 @@ button:focus-visible{outline:4px solid var(--ink);outline-offset:3px}
   <div class="top">
     <i class="cloud hc1"></i><i class="cloud hc2"></i><i class="cloud hc3"></i>
     <div class="logo"><img class="logo-img" alt="かんじクエスト" width="1000" height="184"><small id="gradeLabel">4年生の漢字</small></div>
+    <div class="watch-pills" id="homeWatch"></div>
     <div class="wallet" hidden><span class="coin"></span><span class="num" id="pts">0</span><span class="unit">pt</span></div>
   </div>
 
@@ -1826,7 +1833,7 @@ function show(id){['home','quiz','learn','grading','review','result','shop','set
 function renderHome(){
   if(!S.onboarded){openWelcome();return}
   ensureToday();
-  $('gradeLabel').textContent=`${S.grade}年生の漢字`;
+  $('gradeLabel').textContent=`${S.grade}年生の漢字`;renderWatchPills();
   const d=day();
   $('pts').textContent=S.points;$('ptsBig').textContent=S.points;updateHomeShare();
   const n=d.pending.length,nextRw=Math.min(d.rewrites+1,5);
@@ -2118,11 +2125,11 @@ let HS=null; // ほかの端末の記録を見ているとき
 const hsrc=()=>HS?{log:HS.log||[],days:HS.days||{}}:{log:LOG,days:S.days};
 function dayTag(r){if(!r||!r.tries)return '';if(!r.passed)return '<span class="hi-tag">練習中</span>';
   const rw=r.passRw??(r.tries-1);return rw===0?'<span class="hi-tag gold">一発合格</span>':`<span class="hi-tag silver">書き直し${rw}回で合格</span>`}
-function openHistory(focus){HS=null;renderHistory();show('history');
+function openHistory(focus){HS=null;famStep='';syncErr='';renderHistory();show('history');
   if(focus){const el=document.querySelector(`.hi-day[data-d="${focus}"]`);if(el){el.scrollIntoView({block:'start'});const s=el.querySelector('details');if(s)s.open=true}}}
 function renderHistory(){
   const {log:LG,days:DY}=hsrc();
-  document.querySelector('#history .shop-head h2').textContent=HS?`${HS.name||(HS.grade?HS.grade+'年生':'')}のきろく`:'きろく';
+  document.querySelector('#history .shop-head h2').textContent=HS?wName(HS):'きろく';
   $('famBox').hidden=!!HS;$('wvHead').hidden=!HS;if(HS)renderWatchHead();else renderFam();
   const byDay={};LG.forEach((s,i)=>{(byDay[s.date]=byDay[s.date]||[]).push(i)});
   Object.keys(DY).forEach(k=>{if(DY[k].tries&&!byDay[k])byDay[k]=[]});
@@ -2151,7 +2158,7 @@ $('hiList').addEventListener('toggle',e=>{const d=e.target;if(d.matches&&d.match
 $('hiTabs').onclick=e=>{const b=e.target.closest('button');if(!b)return;hiFilter=b.dataset.f;
   $('hiTabs').querySelectorAll('button').forEach(x=>x.classList.toggle('on',x===b));sfx('reveal');renderHistory()};
 $('historyBtn').onclick=()=>{sfx('reveal');openHistory()};
-$('hiBack').onclick=$('hiHome').onclick=()=>{HS=null;renderHome();show('home')};
+$('hiBack').onclick=$('hiHome').onclick=()=>{HS=null;if(!S.onboarded){openWelcome();return}renderHome();show('home')};
 $('stampRow').addEventListener('click',e=>{const st=e.target.closest('.st');if(!st||!st.title)return;
   const k=st.title;if(LOG.some(s=>s.date===k)||(S.days[k]||{}).tries){sfx('reveal');openHistory(k)}});
 
@@ -2179,30 +2186,45 @@ async function syncNow(){if(!S.share)return false;
 let qrLib=null;
 function loadQR(){return qrLib||(qrLib=new Promise((ok,ng)=>{const sc=document.createElement('script');sc.src='qr.js';sc.onload=()=>ok(window.qrcode);sc.onerror=ng;document.head.appendChild(sc)}))}
 async function drawQR(el,text){try{const q=(await loadQR())(0,'M');q.addData(text);q.make();el.innerHTML=q.createSvgTag({cellSize:4,margin:2,scalable:true})}catch(e){el.textContent='QRを表示できませんでした'}}
+const wName=w=>w.name?`${w.name}さんの記録`:`${w.grade?w.grade+'年生の':''}記録`;
+function renderWatchPills(){const h=S.watch.map((w,i)=>`<button class="wpill" data-wp="${i}">${esc(wName(w))} ›</button>`).join('');
+  ['homeWatch','wlWatch'].forEach(id=>{const el=$(id);if(!el)return;el.innerHTML=h;el.querySelectorAll('[data-wp]').forEach(x=>x.onclick=()=>{sfx('reveal');openWatch(S.watch[+x.dataset.wp].id)})})}
+let famStep='';
 function renderFam(){const b=$('famBox'),sh=S.share;
-  const wl=S.watch.length?`<h3>見ている記録</h3><div class="watch-list">${S.watch.map((w,i)=>`<div class="w"><button class="btn white" data-watch="${i}">${esc(w.name||(w.grade?w.grade+'年生':'記録'))}のきろく</button><button class="x" data-unwatch="${i}" aria-label="外す">×</button></div>`).join('')}</div>`:'';
-  if(!sh){b.innerHTML=`<h3>家族と共有</h3><p>ほかのスマホやタブレットから、この記録を見られるようにします。名前やメールアドレスは使いません。</p>${syncErr?`<div class="err">${syncErr}</div>`:''}<button class="btn" id="famStart">共有をはじめる</button>${wl}`;
-    $('famStart').onclick=startShare;}
+  const wl=S.watch.length?`<h3>見ている記録</h3><div class="watch-list">${S.watch.map((w,i)=>`<div class="w"><button class="btn white" data-watch="${i}">${esc(wName(w))}</button><button class="x" data-unwatch="${i}" aria-label="外す">×</button></div>`).join('')}</div>`:'';
+  if(!sh&&famStep==='name'){
+    b.innerHTML=`<h3>家族と共有</h3><label for="famName">見る人の画面に出す名前</label>
+      <input class="nm" id="famName" maxlength="12" placeholder="例：たろう" autocomplete="off">
+      <p class="meta">ニックネームでOK。「〇〇さんの記録」と表示されます。</p>
+      ${syncErr?`<div class="err">${syncErr}</div>`:''}
+      <div class="row"><button class="btn white" id="famCancel">やめる</button><button class="btn" id="famGo" disabled>QRを出す</button></div>${wl}`;
+    const inp=$('famName');inp.oninput=()=>{$('famGo').disabled=!inp.value.trim()};inp.focus();
+    inp.onkeydown=e=>{if(e.key==='Enter'&&inp.value.trim())startShare(inp.value)};
+    $('famGo').onclick=()=>startShare(inp.value);
+    $('famCancel').onclick=()=>{famStep='';syncErr='';renderFam()};}
+  else if(!sh){b.innerHTML=`<h3>家族と共有</h3><p>おうちの人のスマホなどから、この記録を見られるようにします。メールアドレスなどの登録はいりません。</p>${syncErr?`<div class="err">${syncErr}</div>`:''}<button class="btn" id="famStart">共有をはじめる</button>${wl}`;
+    $('famStart').onclick=()=>{famStep='name';syncErr='';renderFam()};}
   else{const url=viewURL(sh.id);
-    b.innerHTML=`<h3>家族と共有中</h3><p>見る人のスマホでQRを読みとってください。テストのたびに、自動で最新になります。</p>
+    b.innerHTML=`<h3>${esc(sh.name||'')}${sh.name?'さんの記録を':''}共有中</h3><p>見る人のスマホのカメラで、このQRを読みとってください。テストのたびに、自動で最新になります。</p>
       <div class="qr" id="famQR"></div>
-      <input class="nm" id="famName" maxlength="12" placeholder="表示名（例：たろう）" value="${esc(sh.name||'')}">
       <div class="lnk"><input readonly value="${url}" id="famURL"><button class="btn white small" id="famCopy">コピー</button></div>
       ${syncErr?`<div class="err">${syncErr}</div>`:`<div class="meta">${sh.at?`最終更新 ${dLabel(dkey(new Date(sh.at)))} ${hhmm(sh.at)}`:''}</div>`}
       <div class="row"><button class="btn white" id="famSync">今すぐ更新</button><button class="btn white" id="famStop">共有をやめる</button></div>
+      <label for="famName">表示名</label><input class="nm" id="famName" maxlength="12" placeholder="例：たろう" value="${esc(sh.name||'')}">
       <p class="meta">QRやリンクを知っている人は誰でも見られます。家族だけに教えてください。</p>${wl}`;
     drawQR($('famQR'),url);
-    $('famName').onchange=e=>{sh.name=e.target.value.trim().slice(0,12);save();syncNow()};
+    $('famName').onchange=e=>{const v=e.target.value.trim().slice(0,12);if(!v){e.target.value=sh.name||'';return}sh.name=v;save();syncNow().then(()=>renderFam())};
     $('famCopy').onclick=()=>{navigator.clipboard?.writeText(url).then(()=>{$('famCopy').textContent='OK!'}).catch(()=>{$('famURL').select()})};
     $('famSync').onclick=()=>{$('famSync').textContent='更新中…';syncNow()};
     $('famStop').onclick=()=>ask('共有をやめる？ ほかの端末からは見られなくなります。','やめる',async()=>{const s0=S.share;S.share=null;save();
       try{await fetch(SYNC_URL,{method:'DELETE',headers:{'Content-Type':'application/json'},body:JSON.stringify({id:s0.id,key:s0.key})})}catch(e){}renderFam()});}
   b.querySelectorAll('[data-watch]').forEach(x=>x.onclick=()=>openWatch(S.watch[+x.dataset.watch].id));
-  b.querySelectorAll('[data-unwatch]').forEach(x=>x.onclick=()=>{S.watch.splice(+x.dataset.unwatch,1);save();renderFam()});
+  b.querySelectorAll('[data-unwatch]').forEach(x=>x.onclick=()=>{S.watch.splice(+x.dataset.unwatch,1);save();renderFam();renderWatchPills()});
 }
-async function startShare(){S.share={id:rid(20),key:rid(40),name:'',at:0};save();
-  const b=$('famStart');if(b)b.textContent='準備中…';
-  if(!await syncNow()){S.share=null;save()}renderFam()}
+async function startShare(name){name=String(name||'').trim().slice(0,12);if(!name)return;
+  const b=$('famGo');if(b){b.disabled=true;b.textContent='準備中…'}
+  S.share={id:rid(20),key:rid(40),name,at:0};save();
+  if(!await syncNow()){S.share=null;save()}else famStep='';renderFam()}
 function stampsHTML(days){const row=[],now=new Date();
   for(let i=14;i>=0;i--){const dt=new Date(now);dt.setDate(now.getDate()-i);const k=dkey(dt),r=days[k];
     const cls=r&&r.passed?((r.passRw??(r.tries-1))===0?'gold':'silver'):'';row.push(`<div class="st ${cls} ${i===0?'today':''}" title="${k}">${dt.getDate()}</div>`)}
@@ -2222,7 +2244,7 @@ async function openWatch(id){
   try{const r=await fetch(SYNC_URL+'?id='+encodeURIComponent(id),{cache:'no-store'});
     if(r.status===404){$('hiList').innerHTML='<div class="panel hi-empty">この共有は終了しています。</div>';$('wvHead').hidden=true;return}
     if(!r.ok)throw 0;const d=await r.json();HS={...d,id};
-    const w=S.watch.find(w=>w.id===id);if(w){w.name=d.name||'';w.grade=d.grade}else S.watch.push({id,name:d.name||'',grade:d.grade});save();
+    const w=S.watch.find(w=>w.id===id);if(w){w.name=d.name||'';w.grade=d.grade}else S.watch.push({id,name:d.name||'',grade:d.grade});save();renderWatchPills();
     renderHistory();
   }catch(e){$('hiList').innerHTML='<div class="panel hi-empty">読みこめませんでした。<br>電波のよいところで「最新にする」を押してください。</div>'}}
 
@@ -2326,7 +2348,7 @@ function openSetup(g){if(g){suGrade=g;suSel=new Set(g===S.grade&&S.focus?focusCh
   renderSetup();show('setup')}
 /* はじめに（学年えらび）→ つかいかた → 範囲 */
 let obGrade=4,obStep=0,obFromHome=false;
-function openWelcome(){$('wlGrades').innerHTML=[1,2,3,4,5,6].map(g=>`<button data-wg="${g}">${g}<small>年</small></button>`).join('');show('welcome')}
+function openWelcome(){renderWatchPills();$('wlGrades').innerHTML=[1,2,3,4,5,6].map(g=>`<button data-wg="${g}">${g}<small>年</small></button>`).join('');show('welcome')}
 $('wlGrades').addEventListener('click',e=>{const b=e.target.closest('[data-wg]');if(!b)return;sfx('reveal');obGrade=+b.dataset.wg;obFromHome=false;obStep=0;obAdmin=false;renderOb();show('onboard')});
 const OB=[
   {pic:()=>`<div class="ob-board"><span>漢</span></div>`,h:'毎日10問、指で書く',p:'文の中の［よみがな］を漢字で書きます。書く場所は大きく、ほかには何も置いていません。'},
