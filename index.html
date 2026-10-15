@@ -37,7 +37,8 @@ input,textarea,select{-webkit-user-select:text;user-select:text}
 #quiz,#quiz *{-webkit-user-select:none;user-select:none;-webkit-touch-callout:none;touch-action:manipulation}
 #quiz .board,#quiz canvas{touch-action:none}
 button:focus-visible{outline:4px solid var(--ink);outline-offset:3px}
-.screen{max-width:640px;margin:0 auto;min-height:100%;display:flex;flex-direction:column}
+.screen{position:relative;z-index:1;max-width:640px;margin:0 auto;min-height:100%;display:flex;flex-direction:column}
+#sky{position:fixed;inset:0;width:100%;height:100%;z-index:0;pointer-events:none}
 
 /* ---- 共通パーツ ---- */
 .btn{display:flex;align-items:center;justify-content:center;gap:8px;border-radius:16px;padding:14px 18px;
@@ -305,6 +306,7 @@ button:focus-visible{outline:4px solid var(--ink);outline-offset:3px}
 @media (prefers-reduced-motion:reduce){.pop,.fall{animation-duration:.01s}.btn{transition:none}}
 </style>
 
+<canvas id="sky" aria-hidden="true"></canvas>
 <!-- ============ はじめに（学年） ============ -->
 <main id="welcome" class="screen" hidden>
   <div class="cloud c1"></div><div class="cloud c2"></div>
@@ -2089,6 +2091,52 @@ document.fonts.load('600 40px "Klee One"','漢').catch(()=>{});
     new ResizeObserver(()=>{if(cv.clientWidth){size();if(!actors.length)seed()}}).observe(cv);
     requestAnimationFrame(step);
   });
+})();
+
+/* ===== 空をとぶ 漢字キャラ（鳥・雲） ===== */
+(function(){
+  const cv=$('sky'),ctx=cv.getContext('2d'),INK='#1C2A5C',reduce=matchMedia('(prefers-reduced-motion: reduce)').matches;
+  const cache={};
+  const ell=(x,cx,cy,rx,ry,f,st)=>{x.beginPath();x.ellipse(cx,cy,rx,ry,0,0,7);if(f){x.fillStyle=f;x.fill()}if(st){x.strokeStyle=INK;x.lineWidth=2;x.stroke()}};
+  function glyph(x,ch,col){x.font='800 44px "M PLUS Rounded 1c","Hiragino Maru Gothic ProN",sans-serif';x.textAlign='center';x.textBaseline='middle';x.lineJoin='round';
+    x.strokeStyle=INK;x.lineWidth=7;x.strokeText(ch,40,34);x.fillStyle=col;x.fillText(ch,40,34)}
+  function bird(fi,dir){const key='b'+fi+dir;if(cache[key])return cache[key];const q=2,c=document.createElement('canvas');c.width=80*q;c.height=64*q;const x=c.getContext('2d');x.scale(q,q);
+    if(dir<0){x.translate(80,0);x.scale(-1,1)}
+    // つばさ（うしろ）
+    x.fillStyle='#FFE08A';x.strokeStyle=INK;x.lineWidth=2.5;x.lineJoin='round';
+    x.beginPath();if(fi){x.moveTo(30,30);x.quadraticCurveTo(14,4,4,8);x.quadraticCurveTo(14,22,26,38)}else{x.moveTo(30,34);x.quadraticCurveTo(14,52,4,56);x.quadraticCurveTo(16,40,26,30)}x.closePath();x.fill();x.stroke();
+    glyph(x,'鳥','#FF9F1C');
+    // くちばし・目
+    x.fillStyle='#FFCF1F';x.beginPath();x.moveTo(60,30);x.lineTo(72,34);x.lineTo(60,39);x.closePath();x.fill();x.stroke();
+    ell(x,50,24,4.5,5,'#fff',1);ell(x,51.5,24.5,2,2.4,INK);ell(x,42,36,2.6,1.6,'rgba(255,111,168,.6)');
+    return cache[key]=c}
+  function cloud(fi){const key='c'+fi;if(cache[key])return cache[key];const q=2,c=document.createElement('canvas');c.width=80*q;c.height=64*q;const x=c.getContext('2d');x.scale(q,q);
+    // もこもこ
+    [[18,44,13],[34,50,14],[52,50,14],[66,43,11],[40,40,16]].forEach(([px,py,r])=>ell(x,px,py+(fi?1:0),r,r*.8,'#FFFFFF',1));
+    [[18,44,11],[34,50,12],[52,50,12],[66,43,9]].forEach(([px,py,r])=>ell(x,px,py+(fi?1:0),r,r*.75,'#FFFFFF'));
+    glyph(x,'雲','#E8F4FF');
+    // ねむそうな目
+    x.strokeStyle=INK;x.lineWidth=2.2;x.lineCap='round';[33,47].forEach(ex=>{x.beginPath();x.arc(ex,30,3.5,.1*Math.PI,.9*Math.PI);x.stroke()});
+    ell(x,27,37,2.6,1.6,'rgba(255,111,168,.55)');ell(x,53,37,2.6,1.6,'rgba(255,111,168,.55)');
+    return cache[key]=c}
+  document.fonts&&document.fonts.load('800 44px "M PLUS Rounded 1c"','鳥雲').then(()=>{for(const k in cache)delete cache[k]}).catch(()=>{});
+  let W=0,H=0,dpr=1,fl=[],last=0,spawnT=1;
+  function size(){dpr=Math.min(devicePixelRatio||1,2);W=innerWidth;H=innerHeight;cv.width=W*dpr;cv.height=H*dpr;ctx.setTransform(dpr,0,0,dpr,0,0)}
+  addEventListener('resize',size);size();
+  function spawn(kind,x){const dir=kind==='cloud'?(Math.random()<.5?1:-1):(Math.random()<.7?1:-1);
+    fl.push({kind,dir,x:x??(dir>0?-90:W+10),y:20+Math.random()*Math.max(60,H*.55),v:kind==='cloud'?10+Math.random()*8:45+Math.random()*25,t:Math.random()*1000,ph:Math.random()*6})}
+  spawn('cloud',W*.15);spawn('bird',W*.55);spawn('cloud',W*.7);
+  function step(ts){requestAnimationFrame(step);
+    const on=!$('home').hidden||!$('welcome').hidden;cv.style.display=on?'':'none';
+    const dt=Math.min(.05,(ts-last)/1000||0);last=ts;if(!on)return;
+    spawnT-=dt;if(spawnT<=0){spawnT=4+Math.random()*5;if(fl.length<5)spawn(Math.random()<.55?'bird':'cloud')}
+    ctx.clearRect(0,0,W,H);const sp=reduce?.4:1;
+    for(const f of fl){f.x+=f.dir*f.v*dt*sp;f.t+=dt*1000*sp;
+      const yy=f.y+(f.kind==='bird'?Math.sin(f.t/400+f.ph)*8:Math.sin(f.t/1500+f.ph)*3);
+      const img=f.kind==='bird'?bird(Math.floor(f.t/(reduce?400:180))%2,f.dir):cloud(Math.floor(f.t/900)%2);
+      const w=f.kind==='bird'?60:84;ctx.globalAlpha=f.kind==='cloud'?.95:1;ctx.drawImage(img,Math.round(f.x),Math.round(yy),w,w*64/80)}
+    ctx.globalAlpha=1;fl=fl.filter(f=>f.x>-120&&f.x<W+120)}
+  requestAnimationFrame(step);
 })();
 renderHome();
 </script>
