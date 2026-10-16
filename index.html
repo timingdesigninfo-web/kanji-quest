@@ -479,7 +479,7 @@ button:focus-visible{outline:4px solid var(--ink);outline-offset:3px}
 .am-links{display:flex;gap:8px}.am-links .btn{flex:1;font-size:14px;padding:10px 6px}
 .legal{display:flex;justify-content:center;gap:18px;font-size:13px;font-weight:800}
 .legal{flex-wrap:wrap;align-items:center}.legal .copy{flex-basis:100%;text-align:center;font-size:11px;color:#fff;text-shadow:1px 1px 0 var(--ink);opacity:.9}
-.legal button{background:none;border:0;padding:4px;color:#fff;text-decoration:underline;text-shadow:1px 1px 0 var(--ink);font:inherit}
+.legal button:not(.btn){background:none;border:0;padding:4px;color:#fff;text-decoration:underline;text-shadow:1px 1px 0 var(--ink);font:inherit}
 .news{padding:12px 16px}
 .news summary{list-style:none;cursor:pointer;display:flex;align-items:center;gap:4px 8px;flex-wrap:wrap}
 .news-l{flex-basis:100%;font-size:14px;font-weight:800;padding-left:19px}
@@ -516,7 +516,8 @@ button:focus-visible{outline:4px solid var(--ink);outline-offset:3px}
 .parent .row{display:flex;gap:8px}.parent .row .btn{flex:1;font-size:15px;padding:10px}
 #admin{gap:14px;padding-bottom:24px}
 .ad-danger{color:var(--red)!important;font-size:15px;padding:10px}
-.legal .ad-link{opacity:.85}
+.legal .admin-btn{flex-basis:100%;display:flex;flex-direction:column;align-items:center;gap:2px;padding:12px;font-size:17px;color:var(--ink);text-decoration:none;text-shadow:none}
+.legal .admin-btn small{font-size:11px;font-weight:500;opacity:.7}
 .rq .who{font-size:11px;font-weight:800;opacity:.7;white-space:nowrap}
 #wvEdHost:empty{display:none}
 .pop{position:fixed;left:50%;top:40%;transform:translate(-50%,-50%);font-family:var(--f-pixel);font-size:64px;color:#fff;
@@ -658,7 +659,7 @@ button:focus-visible{outline:4px solid var(--ink);outline-offset:3px}
       </div>
     </details>
   </section>
-  <div class="legal" id="legal"><button class="ad-link" id="adminBtn">管理メニュー</button><button data-legal="tos">利用規約</button><button data-legal="pp">プライバシー</button><span class="copy">© 2026 TIMING</span></div>
+  <div class="legal" id="legal"><button class="btn white admin-btn" id="adminBtn"><span>管理メニュー</span><small>PIN・家族と共有・機種変更・データ</small></button><button data-legal="tos">利用規約</button><button data-legal="pp">プライバシー</button><span class="copy">© 2026 TIMING</span></div>
   <div class="walk-space"></div>
   <div class="ground"><canvas class="walk"></canvas></div>
 </main>
@@ -756,6 +757,7 @@ button:focus-visible{outline:4px solid var(--ink);outline-offset:3px}
     <p class="su-note" id="qnNote"></p>
   </section>
   <div class="su-foot">
+    <button class="btn white" id="suBack">もどる</button>
     <div class="su-count" id="suCount"></div>
     <button class="btn green" id="suSave">はじめる</button>
   </div>
@@ -768,7 +770,7 @@ button:focus-visible{outline:4px solid var(--ink);outline-offset:3px}
   <div id="wvEdHost"></div>
   <div class="hi-tabs" id="hiTabs"><button class="on" data-f="all">ぜんぶ</button><button data-f="ng">まちがえた字だけ</button></div>
   <div class="hi-list" id="hiList"></div>
-  <button class="btn white" id="hiHome">ホームへ</button>
+  <button class="btn white" id="hiHome">もどる</button>
 </main>
 
 <main id="terms" class="screen" hidden>
@@ -842,6 +844,7 @@ button:focus-visible{outline:4px solid var(--ink);outline-offset:3px}
     <label class="agree-chk"><input type="checkbox" id="tmChk"><span>利用規約とプライバシーポリシーを読んで、同意します</span></label>
     <button class="btn green" id="tmGo" disabled>同意してはじめる</button>
   </section></div>
+  <button class="btn white" id="tmBack2">もどる</button>
 </main>
 
 <!-- ============ 管理メニュー ============ -->
@@ -857,6 +860,7 @@ button:focus-visible{outline:4px solid var(--ink);outline-offset:3px}
     <p>この端末のポイント・記録・ごほうびを全部消します（共有も終わります）。元に戻せません。</p>
     <button class="btn white ad-danger" id="resetBtn">全部消す</button>
   </section>
+  <button class="btn white" id="adBack2">もどる</button>
 </main>
 
 <!-- ============ ショップ ============ -->
@@ -891,7 +895,7 @@ button:focus-visible{outline:4px solid var(--ink);outline-offset:3px}
     </div>
     <p class="amz-note">※広告です。Amazonのアソシエイトとして、かんじクエストは適格販売により収入を得ています。</p>
   </section>
-  <button class="btn white" id="backBtn">戻る</button>
+  <button class="btn white" id="backBtn">もどる</button>
   <div class="shop-foot">チケットは使ったら「使った」を押してください。</div>
 </main>
 
@@ -2626,7 +2630,7 @@ let suQn=10;
 function renderQn(){$('qnRow').innerHTML=QN_OPTS.map(n=>`<button class="${n===suQn?'on':''}" data-qn="${n}">${n}<small>問</small></button>`).join('');
   $('qnNote').textContent=`1問 ${100/suQn}点。80点以上で合格。`}
 $('qnRow').addEventListener('click',e=>{const b=e.target.closest('[data-qn]');if(!b)return;suQn=+b.dataset.qn;sfx('tap');renderQn()});
-function openSetup(g){suQn=qn();if(g){suGrade=g;suSel=new Set(g===S.grade&&S.focus?focusChars():[...defaultFocus(g)])}
+function openSetup(g){suQn=qn();suFrom='home';if(g){suGrade=g;suSel=new Set(g===S.grade&&S.focus?focusChars():[...defaultFocus(g)])}
   else{suGrade=S.grade||4;suSel=new Set(S.grade?focusChars():[...defaultFocus(suGrade)])}
   renderSetup();renderQn();show('setup')}
 /* はじめに（学年えらび）→ つかいかた → 範囲 */
@@ -2650,8 +2654,11 @@ document.addEventListener('click',e=>{const b=e.target.closest('[data-legal]');i
 let tmFrom='home';
 function openAdmin(){famStep='';syncErr='';renderParent();renderFam();if(!mv)renderMove();show('admin')}
 $('adminBtn').onclick=()=>{sfx('tap');withPin('管理メニューを開くには、おうちの人のPINを入れてください',openAdmin)};
-$('adBack').onclick=()=>{renderHome();show('home')};
-$('adSetup').onclick=()=>openSetup();
+$('adBack').onclick=$('adBack2').onclick=()=>{renderHome();show('home')};
+$('tmBack2').onclick=()=>$('tmBack').onclick();
+$('suBack').onclick=()=>{if(S.onboarded){if(suFrom==='admin'){suFrom='home';openAdmin();return}renderHome();show('home')}else{obStep=OB.length-1;obAdmin=false;renderOb();show('onboard')}};
+let suFrom='home';
+$('adSetup').onclick=()=>{openSetup();suFrom='admin'};
 $('adHowto').onclick=()=>{obFromHome=true;obStep=0;obAdmin=false;renderOb();show('onboard')};
 // すでに使っている人：規約ができた・変わったときは、同意するまでモーダルを出す
 function askAgree(){if(agreed()||!S.onboarded||!$('moveModal').hidden)return;
