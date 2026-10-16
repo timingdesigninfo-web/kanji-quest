@@ -151,7 +151,7 @@ button:focus-visible{outline:4px solid var(--ink);outline-offset:3px}
 .tools .btn.small{flex:0 0 auto;min-width:76px}
 .tools .btn.grow{flex:1}
 .walk{position:absolute;left:0;bottom:100%;width:100%;height:60px;overflow:visible;pointer-events:none;image-rendering:pixelated}
-.ground .walk,.walk-space+.ground .walk{pointer-events:auto;cursor:pointer;touch-action:manipulation}
+
 .now-pt{display:flex;align-items:center;justify-content:space-between;gap:8px;padding-bottom:8px;border-bottom:2px dashed var(--line)}
 .now-l{font-size:15px}
 .now-v{display:flex;align-items:center;gap:6px;font-size:40px;line-height:1}
@@ -1682,16 +1682,19 @@ document.fonts&&document.fonts.load('500 40px "M PLUS Rounded 1c"','0123456789+�
         const fi=a.jump?0:Math.floor(a.t/170)%2,bob=a.jump?0:(fi?-1:0);
         ctx.drawImage(sprite(a.c,fi,a.dir),Math.round(a.x),Math.round(H-S*H0/W0+2+a.y+bob),S,S*H0/W0)}
       actors=actors.filter(a=>a.x>-S*2&&a.x<W+S*2)}
-    cv.addEventListener('pointerdown',e=>{const b=cv.getBoundingClientRect(),px=e.clientX-b.left,py=e.clientY-b.top,h=S*H0/W0;
-      const hit=actors.slice().reverse().find(a=>{const ay=H-h+2+a.y;return px>=a.x-6&&px<=a.x+S+6&&py>=ay-10&&py<=ay+h+6});
-      if(!hit)return;actors.splice(actors.indexOf(hit),1);
+    window.HQ_HIT=window.HQ_HIT||[];
+    HQ_HIT.push((X,Y)=>{if(cv.offsetParent===null)return false;const b=cv.getBoundingClientRect(),px=X-b.left,py=Y-b.top,h=S*H0/W0;
+      const hit=actors.slice().reverse().find(a=>{const ay=H-h+2+a.y;return px>=a.x-10&&px<=a.x+S+10&&py>=ay-14&&py<=ay+h+10});
+      if(!hit)return false;actors.splice(actors.indexOf(hit),1);
       sfx(hit.foe?'reveal':'coin');if(reduce&&!hit.foe)return;
-      launch(hit.c,hit.dir,hit.foe,b.left+hit.x,b.top+H-h+2+hit.y);spawnT=Math.min(spawnT,1.2)});
+      launch(hit.c,hit.dir,hit.foe,b.left+hit.x,b.top+H-h+2+hit.y);spawnT=Math.min(spawnT,1.2);return true});
     new ResizeObserver(()=>{if(cv.clientWidth){size();if(!actors.length)seed()}}).observe(cv);
     requestAnimationFrame(step);
   });
 })();
 
+document.addEventListener('pointerdown',e=>{if(e.target.closest('button,a,input,textarea,select,label,.panel,#ink,.modal,.board'))return;
+  for(const f of (window.HQ_HIT||[]))if(f(e.clientX,e.clientY))break},{passive:true});
 /* ===== 空をとぶ 数字キャラ（鳥・雲） ===== */
 (function(){
   const cv=$('sky'),ctx=cv.getContext('2d'),INK='#1C2A5C',reduce=matchMedia('(prefers-reduced-motion: reduce)').matches;
@@ -1731,11 +1734,14 @@ document.fonts&&document.fonts.load('500 40px "M PLUS Rounded 1c"','0123456789+�
     const dt=Math.min(.05,(ts-last)/1000||0);last=ts;if(!on)return;
     spawnT-=dt;if(spawnT<=0){spawnT=4+Math.random()*5;if(fl.length<5)spawn(Math.random()<.55?'bird':'cloud')}
     ctx.clearRect(0,0,W,H);const sp=reduce?.4:1;
-    for(const f of fl){f.x+=f.dir*f.v*dt*sp;f.t+=dt*1000*sp;
-      const yy=f.y+(f.kind==='bird'?Math.sin(f.t/400+f.ph)*8:Math.sin(f.t/1500+f.ph)*3);
+    for(const f of fl){if(f.flee){f.fv=(f.fv||0)+700*dt;f.y-=f.fv*dt;f.x+=f.dir*(f.v+120)*dt*sp}else f.x+=f.dir*f.v*dt*sp;f.t+=dt*1000*sp*(f.flee?3:1);
+      const yy=f.y+(f.kind==='bird'?Math.sin(f.t/400+f.ph)*8:Math.sin(f.t/1500+f.ph)*3);f.sy=yy;
       const img=f.kind==='bird'?bird(Math.floor(f.t/(reduce?400:180))%2,f.dir):cloud(Math.floor(f.t/900)%2);
       const w=f.kind==='bird'?60:84;ctx.globalAlpha=f.kind==='cloud'?.95:1;ctx.drawImage(img,Math.round(f.x),Math.round(yy),w,w*64/80)}
-    ctx.globalAlpha=1;fl=fl.filter(f=>f.x>-120&&f.x<W+120)}
+    ctx.globalAlpha=1;fl=fl.filter(f=>f.x>-120&&f.x<W+120&&f.y>-160)}
+  window.HQ_HIT=window.HQ_HIT||[];
+  HQ_HIT.push((X,Y)=>{if(cv.style.display==='none')return false;for(const f of fl.slice().reverse()){const w=f.kind==='bird'?60:84,h=w*64/80;
+    if(!f.flee&&X>=f.x-8&&X<=f.x+w+8&&Y>=(f.sy??f.y)-8&&Y<=(f.sy??f.y)+h+8){f.flee=1;sfx('coin');return true}}return false});
   requestAnimationFrame(step);
 })();
 
