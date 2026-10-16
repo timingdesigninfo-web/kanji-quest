@@ -70,6 +70,8 @@ button:focus-visible{outline:4px solid var(--ink);outline-offset:3px}
 .btn.violet{background:var(--violet);box-shadow:0 6px 0 var(--violet-d)}
 .btn.violet:active{box-shadow:0 1px 0 var(--violet-d)}
 .btn.white{background:var(--paper);color:var(--ink);box-shadow:0 6px 0 var(--line);text-shadow:none}
+.btn.navy{background:var(--ink);color:#fff;box-shadow:0 6px 0 #0D1638}
+.btn.navy:active{box-shadow:0 1px 0 #0D1638}
 .btn.white:active{box-shadow:0 1px 0 var(--line)}
 .btn[disabled]{filter:grayscale(.9);opacity:.55;cursor:not-allowed;transform:none}
 .coin{display:inline-block;width:1em;height:1em;border-radius:50%;background:var(--yellow);
@@ -516,8 +518,8 @@ button:focus-visible{outline:4px solid var(--ink);outline-offset:3px}
 .parent .row{display:flex;gap:8px}.parent .row .btn{flex:1;font-size:15px;padding:10px}
 #admin{gap:14px;padding-bottom:24px}
 .ad-danger{color:var(--red)!important;font-size:15px;padding:10px}
-.legal .admin-btn{flex-basis:100%;display:flex;flex-direction:column;align-items:center;gap:2px;padding:12px;font-size:17px;color:var(--ink);text-decoration:none;text-shadow:none}
-.legal .admin-btn small{font-size:11px;font-weight:500;opacity:.7}
+.legal .admin-btn{flex-basis:100%;display:flex;flex-direction:column;align-items:center;gap:2px;padding:12px;font-size:17px;color:#fff;text-decoration:none;text-shadow:none}
+.legal .admin-btn small{font-size:11px;font-weight:500;opacity:.8}
 .rq .who{font-size:11px;font-weight:800;opacity:.7;white-space:nowrap}
 #wvEdHost:empty{display:none}
 .pop{position:fixed;left:50%;top:40%;transform:translate(-50%,-50%);font-family:var(--f-pixel);font-size:64px;color:#fff;
@@ -659,7 +661,7 @@ button:focus-visible{outline:4px solid var(--ink);outline-offset:3px}
       </div>
     </details>
   </section>
-  <div class="legal" id="legal"><button class="btn white admin-btn" id="adminBtn"><span>管理メニュー</span><small>PIN・家族と共有・機種変更・データ</small></button><button data-legal="tos">利用規約</button><button data-legal="pp">プライバシー</button><span class="copy">© 2026 TIMING</span></div>
+  <div class="legal" id="legal"><button class="btn navy admin-btn" id="adminBtn"><span>管理メニュー</span><small>PIN・家族と共有・機種変更・データ</small></button><button data-legal="tos">利用規約</button><button data-legal="pp">プライバシー</button><span class="copy">© 2026 TIMING</span></div>
   <div class="walk-space"></div>
   <div class="ground"><canvas class="walk"></canvas></div>
 </main>
@@ -2817,7 +2819,7 @@ function renderMove(){const b=$('moveBox');
     $('mvCopy').onclick=()=>{navigator.clipboard?.writeText(mv.url).then(()=>{$('mvCopy').textContent='OK!'}).catch(()=>$('mvURL').select())};
     $('mvCancel').onclick=cancelMove;return}
   b.innerHTML=`<h3>機種変更（データの引っ越し）</h3><p>新しいスマホやタブレットに、ポイント・記録・ごほうびを全部移します。この端末でQRを出して、新しい端末で読みとるだけです。</p>
-    <button class="btn white" id="mvStart">新しい端末に移す</button>`;
+    <button class="btn violet" id="mvStart">新しい端末に移す</button>`;
   $('mvStart').onclick=()=>withPin('データを移すには、おうちの人のPINを入れてください',startMove)}
 async function startMove(){const bt=$('mvStart');if(bt){bt.disabled=true;bt.textContent='準備中…'}
   const code=rid(32);
@@ -2875,7 +2877,7 @@ $('reqBox').addEventListener('click',e=>{const b=e.target.closest('[data-lq]');i
 function renderParent(){const b=$('parentBox'),adm=!!(S.share&&S.share.admin);
   b.innerHTML=`<h3>おうちの人の設定</h3>`+(S.pin
     ?`<p>PINを設定ずみ。ごほうびの編集と、交換のOKにはPINが必要です。</p><div class="row"><button class="btn white" id="pinChg">PINを変える</button><button class="btn white" id="pinDel">PINを外す</button></div>`
-    :`<p>PIN（数字4けた）を決めると、ごほうびの編集と交換のOKを、おうちの人だけができるようになります。1台のスマホでも使えます。</p><button class="btn white" id="pinSet">PINを決める</button>`)
+    :`<p>PIN（数字4けた）を決めると、ごほうびの編集と交換のOKを、おうちの人だけができるようになります。1台のスマホでも使えます。</p><button class="btn yellow" id="pinSet">PINを決める</button>`)
     +(adm?`<p>共有先の「管理する人」のスマホからも、OKやごほうびの編集ができます。</p>`:'');
   const setNew=()=>pinAsk('新しいPIN（数字4けた）を入れてください',null,v1=>pinAsk('もう一度入れてください',v=>v===v1||'さっきとちがいます',()=>{S.pin=pinHash(v1);save();sfx('clear');renderParent()}));
   if($('pinSet'))$('pinSet').onclick=setNew;
