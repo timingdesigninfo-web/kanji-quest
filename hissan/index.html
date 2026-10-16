@@ -42,6 +42,11 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Klee+One:wght@600&family=M+PLUS+Rounded+1c:wght@500;800&display=swap">
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=DotGothic16&text=0123456789%2B%2F%25.%2C%C3%97%C3%B7%E2%88%92%3D%EF%BC%8B%E3%81%82%E3%81%BE%E3%82%8A%E7%82%B9&display=swap">
+<title>ひっさんクエスト</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Klee+One:wght@600&family=M+PLUS+Rounded+1c:wght@500;800&display=swap">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=DotGothic16&text=0123456789%2B%2F%25.%2C%C3%97%C3%B7%E2%88%92%3D%EF%BC%8B%E3%81%82%E3%81%BE%E3%82%8A%E7%82%B9&display=swap">
 </head>
 <body>
 <style>
@@ -1073,7 +1078,7 @@ const guide=$('guide'),ink=$('ink'),board=$('board'),stage=$('stage');
 const gctx=guide.getContext('2d'),ictx=ink.getContext('2d');
 let L=null,u=60,PADU=.5,dpr=1,extra=0,WU=0,HU=0; // WU・HU：板の大きさ（マス）
 // 問題は右に寄せ、左を自由に書ける場所にする。書いた線は 問題の左はし（OX）からの位置で持つので、画面の幅が変わってもずれない
-const originU=(Lp,wu)=>Math.max(PADU,wu-PADU-(Lp.cols+(Lp.left||0)));
+const originU=(Lp,wu)=>Math.max(PADU,Math.round((wu-(Lp.cols+(Lp.left||0)))/2)); // 問題は まん中（左右は 自由に書ける）
 let OX=PADU;
 const baseH=()=>L.rows.reduce((s,rw)=>s+rw.h,0);
 const totalH=()=>baseH()+extra;
@@ -1564,7 +1569,7 @@ $('resetBtn').onclick=()=>ask('ポイント・記録・チケットを全部消�
 
 /* ===== モーダル ===== */
 let mCb=null;
-function ask(msg,yes,cb){$('mMsg').textContent=msg;$('mYes').textContent=yes;mCb=cb;$('modal').hidden=false;$('mYes').focus()}
+function ask(msg,yes,cb,no){$('mMsg').textContent=msg;$('mYes').textContent=yes;$('mNo').textContent=no||'やめる';mCb=cb;$('modal').hidden=false;$('mYes').focus()}
 $('mNo').onclick=()=>{$('modal').hidden=true;mCb=null};
 $('mYes').onclick=()=>{$('modal').hidden=true;const c=mCb;mCb=null;c&&c()};
 
@@ -1587,7 +1592,7 @@ $('backBtn').onclick=()=>{renderHome();show('home')};
 $('undoBtn').onclick=()=>{strokes.pop();redraw();updateBtns()};
 $('clearBtn').onclick=()=>{strokes=[];redraw();updateBtns()};
 $('nextBtn').onclick=nextQ;
-$('quitBtn').onclick=()=>ask('テストをやめる？ 今回は記録されません。','やめる',()=>{renderHome();show('home')});
+$('quitBtn').onclick=()=>ask('テストをやめる？ 今回は記録されません。','やめる',()=>{renderHome();show('home')},'つづける');
 new ResizeObserver(()=>layout()).observe(stage);
 ['contextmenu','selectstart','dragstart'].forEach(t=>$('quiz').addEventListener(t,e=>e.preventDefault()));
 ink.addEventListener('touchstart',e=>e.preventDefault(),{passive:false});
