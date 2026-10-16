@@ -2366,7 +2366,7 @@ JSONの配列だけで答えてください。画像1つにつき1つ、順番�
 ×のときの why には、どこがちがうか（例:「てんが 1つ たりないよ」）を書いてください。`;
 function applyResults(res,idxs){
   if(!Array.isArray(res))throw {code:'invalid_json'};
-  res.forEach((r,k)=>{const idx=idxs[(Number(r?.n)||k+1)-1];if(idx==null)return;marks[idx]=r.ok===true;whys[idx]=String(r.why||'').slice(0,60)});
+  res.forEach((r,k)=>{const idx=idxs[(Number(r?.n)||k+1)-1];if(idx==null)return;marks[idx]=r.ok===true;whys[idx]=String(r.why||'').slice(0,60);if(typeof sures!=='undefined'&&sures.length)sures[idx]=r.sure!==false});
 }
 async function gradeClaude(signal){
   const chunks=[];for(let i=0;i<written.length;i+=aiMax)chunks.push(written.slice(i,i+aiMax).map((w,k)=>({w,i:i+k})));
@@ -2382,14 +2382,22 @@ ${RULES}`;
     applyResults(await sampleFn.json(prompt,{images:blobs,signal,modelTier:'default',cache:false}),ch.map(c=>c.i));
   }));
 }
+// まず速くて安いAIで採点 → ×・自信なし・採点できなかった字だけ ていねいなAIで採点しなおす（ひっさんと同じ方式）
+let sures=[];
 async function gradeWorker(signal){
-  // 10問ずつに分けて、同時に採点する
-  const idx=written.map((_,i)=>i),parts=[];for(let i=0;i<idx.length;i+=10)parts.push(idx.slice(i,i+10));
-  await Promise.all(parts.map(p=>gradeWorkerPart(signal,p)))}
-async function gradeWorkerPart(signal,part){
+  sures=written.map(()=>true);
+  const split=ix=>{const ps=[];for(let i=0;i<ix.length;i+=10)ps.push(ix.slice(i,i+10));return ps};
+  const all=written.map((_,i)=>i);
+  await Promise.all(split(all).map(p=>gradeWorkerPart(signal,p,false)));
+  const redo=all.filter(i=>marks[i]!==true||sures[i]===false);
+  if(redo.length&&!signal.aborted){const keep=redo.map(i=>[marks[i],whys[i]]);
+    try{await Promise.all(split(redo).map(p=>gradeWorkerPart(signal,p,true)))}
+    catch(e){if(signal.aborted)throw e;redo.forEach((i,k)=>{if(marks[i]==null){marks[i]=keep[k][0];whys[i]=keep[k][1]}})}}}
+async function gradeWorkerPart(signal,part,careful){
   const items=part.map(i=>{const w=written[i],q=BANK[w.id];return {ans:q.ans,q:`${q.pre}［${q.yomi}］${q.post}`,image:w.url}});
+  if(careful)part.forEach(i=>{marks[i]=null});
   // うまくいかなかったら 1回だけ やりなおす（上限に達したときは やりなおさない）
-  let r;for(let t=0;t<2;t++){r=await fetch(AI_URL,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({items}),signal}).catch(e=>{if(signal.aborted)throw e;return null});
+  let r;for(let t=0;t<2;t++){r=await fetch(AI_URL,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({careful:!!careful,items}),signal}).catch(e=>{if(signal.aborted)throw e;return null});
     if(r&&(r.ok||r.status===429||r.status===403))break;if(t===0)await new Promise(z=>setTimeout(z,800))}
   if(!r)throw {code:'network'};
   if(!r.ok)throw {code:'http_'+r.status};
