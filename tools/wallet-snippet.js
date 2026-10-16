@@ -1,64 +1,92 @@
-/* ===== 共通の財布（かんじクエスト・ひっさんクエストなど 同じサイトの教科アプリで共通） =====
+/* ===== 教科の連携（かんじクエスト・ひっさんクエストなど 同じサイトの教科アプリ） =====
    この部分は 各アプリに同じものを入れる（tools/wallet-snippet.js が元）。APP・APP_NAME・DEFAULT_SHOP・S・save・todayKey・dkey は 各アプリのもの。
-   W = {v,points,total,tickets,shop,shopV,reqs,pin, apps:{kanji:{name,last,days}}, days:{日付:{アプリ:{earned,cleared}, bonus}}}
+   連携は 自分で選ぶ（どちらか1つだけの人は 今までどおり）。2つの教科を使っている人にだけ「新しい機能」として知らせる。
+   連携すると「財布」が1つになる：W = {v,linked,points,total,tickets,shop,shopV,reqs,pin, apps:{kanji:{name,last,days,joined}}, days:{日付:{アプリ:{earned,cleared}, bonus}}}
    連携ルール（A案）：
-   - 最近14日に使った教科の数 n で、各教科のポイントを割る（2教科×1/2、3教科×1/3）
+   - 連携している教科の数 n で、各教科のポイントを割る（2教科×1/2、3教科×1/3）
    - その日にクリアした教科の数 k で、その日の合計に ×(1＋0.5×(k−1))。上乗せ分を「連携ボーナス」として足す
    - ごほうびの値段は変えない
-   はじめてつながるとき：ポイント・チケット・おねがいは足し合わせる。ごほうびの一覧は 長く使っていた教科のものを使い、もう一方にしかないものを下に足す */
+   つながるとき：ポイント・チケット・おねがいは足し合わせる。ごほうびの一覧は 長く使っていた教科のものを使い、もう一方にしかないものを下に足す */
 const WKEY='questWallet.v1',LINK_DAYS=14,WF=['points','total','tickets','shop','shopV','reqs','pin'];
-function emptyW(){return {v:1,points:0,total:0,tickets:[],shop:DEFAULT_SHOP.map(x=>({...x})),shopV:0,reqs:[],pin:'',apps:{},days:{}}}
-function readW(){try{const w=JSON.parse(localStorage.getItem(WKEY));if(w&&w.v===1){const e=emptyW();w.apps=w.apps||{};w.days=w.days||{};
-  WF.forEach(k=>{if(w[k]===undefined)w[k]=e[k]});return w}}catch(e){}return null}
+const FUNDS=()=>({points:0,total:0,tickets:[],shop:[],shopV:0,reqs:[],pin:''});
+function emptyW(){return {v:1,linked:false,...FUNDS(),apps:{},days:{},offerOff:{}}}
+function readW(){try{const w=JSON.parse(localStorage.getItem(WKEY));if(w&&w.v===1){const e=emptyW();
+  for(const k in e)if(w[k]===undefined)w[k]=e[k];return w}}catch(e){}return null}
 const isDefaultShop=sh=>JSON.stringify((sh||[]).map(x=>[x.name,x.cost]))===JSON.stringify(DEFAULT_SHOP.map(x=>[x.name,x.cost]));
-let W=readW();
-if(!S.walletJoined){
+let W=readW()||emptyW();
+function bindWallet(){WF.forEach(k=>{delete S[k];Object.defineProperty(S,k,{get:()=>W[k],set:v=>{W[k]=v},configurable:true,enumerable:false})})}
+// この教科のポイント・チケット・ごほうびを 財布にまぜる
+function joinWallet(){
   const mine={points:S.points||0,total:S.total||0,tickets:Array.isArray(S.tickets)?S.tickets:[],shop:Array.isArray(S.shop)?S.shop:DEFAULT_SHOP.map(x=>({...x})),
     shopV:S.shopV||0,reqs:Array.isArray(S.reqs)?S.reqs:[],pin:S.pin||''};
-  if(!W){W=emptyW();Object.assign(W,mine)}
-  else{
-    W.points+=mine.points;W.total+=mine.total;W.tickets=W.tickets.concat(mine.tickets);W.reqs=W.reqs.concat(mine.reqs);
-    const myDays=Object.keys(S.days||{}).length,others=Math.max(0,...Object.values(W.apps).map(a=>a.days||0));
-    let base=W.shop,add=mine.shop;if(myDays>others&&!isDefaultShop(mine.shop)){base=mine.shop;add=W.shop}
+  W.points+=mine.points;W.total+=mine.total;W.tickets=W.tickets.concat(mine.tickets);W.reqs=W.reqs.concat(mine.reqs);
+  if(!W.shop.length)W.shop=mine.shop;
+  else{const myDays=Object.keys(S.days||{}).length,others=Math.max(0,...Object.entries(W.apps).filter(([id,a])=>id!==APP&&a.joined).map(([,a])=>a.days||0));
+    let base=W.shop,add=mine.shop;if((myDays>others||isDefaultShop(W.shop))&&!isDefaultShop(mine.shop)){base=mine.shop;add=W.shop} // 自分で決めた一覧があれば そちらを優先
     if(isDefaultShop(add)&&!isDefaultShop(base))add=[]; // 何も変えていない一覧は まぜない
-    const names=new Set(base.map(x=>x.name));W.shop=base.concat(add.filter(x=>!names.has(x.name)));
-    W.shopV=Math.max(W.shopV||0,mine.shopV);if(!W.pin)W.pin=mine.pin}
-  S.walletJoined=true;
-}
+    const names=new Set(base.map(x=>x.name));W.shop=base.concat(add.filter(x=>!names.has(x.name)))}
+  W.shopV=Math.max(W.shopV||0,mine.shopV);if(!W.pin)W.pin=mine.pin;
+  S.walletJoined=true;W.apps[APP]={...(W.apps[APP]||{}),name:APP_NAME,joined:true};bindWallet()}
+if(W.linked){if(S.walletJoined)bindWallet();else{joinWallet();save()}} // まぜたら すぐ保存（このあと読みなおしても 消えないように）
+else if(S.walletJoined&&S.points===undefined){S.walletJoined=false;S.points=0;S.total=0} // 検証中の前の版のデータ
 W.apps[APP]={...(W.apps[APP]||{}),name:APP_NAME};
-function bindWallet(){WF.forEach(k=>{delete S[k];Object.defineProperty(S,k,{get:()=>W[k],set:v=>{W[k]=v},configurable:true,enumerable:false})})}
-bindWallet();
 function saveW(){try{localStorage.setItem(WKEY,JSON.stringify(W))}catch(e){}}
 function freshW(){const w=readW();if(w)W=w} // ほかのタブで 変わっているかもしれないので 読みなおす
-addEventListener('storage',e=>{if(e.key===WKEY){freshW();try{if(typeof onWalletChange==='function')onWalletChange()}catch(_){}}});
+addEventListener('storage',e=>{if(e.key===WKEY){freshW();if(W.linked&&!S.walletJoined){joinWallet();save()}try{if(typeof onWalletChange==='function')onWalletChange()}catch(_){}}});
 function touchApp(){W.apps[APP]={...(W.apps[APP]||{}),name:APP_NAME,last:todayKey(),days:Object.keys(S.days||{}).length};save()}
-function linkedApps(){const lim=new Date();lim.setDate(lim.getDate()-LINK_DAYS);const k=dkey(lim);
-  return Object.entries(W.apps).filter(([id,a])=>id===APP||(a.last||'')>=k).map(([id,a])=>({id,name:a.name||id}))}
+const recent=a=>{const lim=new Date();lim.setDate(lim.getDate()-LINK_DAYS);return (a.last||'')>=dkey(lim)};
+// 連携している教科（自分をふくむ）。連携していなければ 自分だけ
+function linkedApps(){if(!W.linked)return [{id:APP,name:APP_NAME}];
+  return Object.entries(W.apps).filter(([id,a])=>id===APP||(a.joined&&recent(a))).map(([id,a])=>({id,name:a.name||id}))}
+const otherApps=()=>Object.entries(W.apps).filter(([id,a])=>id!==APP&&recent(a)).map(([id,a])=>({id,name:a.name||id}));
 const linkN=()=>Math.max(1,linkedApps().length);
 const linkMul=k=>1+.5*Math.max(0,k-1);
 const linkPt=v=>Math.max(1,Math.round(v/linkN()));
 function wDay(){const t=todayKey();return W.days[t]||(W.days[t]={bonus:0})}
 let linkGot=0;
-function earn(e){freshW();const v=linkPt(e);const d=wDay();const me=d[APP]||(d[APP]={earned:0,cleared:false});
+// ポイントをもらう（連携中は 教科の数で割って 財布へ）
+function earn(e){if(!W.linked){S.points+=e;S.total+=e;return e}
+  freshW();const v=linkPt(e);const d=wDay();const me=d[APP]||(d[APP]={earned:0,cleared:false});
   me.earned+=v;W.points+=v;W.total+=v;return v}
-function markCleared(){const d=wDay();(d[APP]||(d[APP]={earned:0,cleared:false})).cleared=true}
-function settleLink(){linkGot=0;const d=wDay();const apps=Object.keys(d).filter(k=>k!=='bonus'&&d[k]&&typeof d[k]==='object');
+function markCleared(){if(!W.linked)return;const d=wDay();(d[APP]||(d[APP]={earned:0,cleared:false})).cleared=true}
+function settleLink(){linkGot=0;if(!W.linked)return 0;const d=wDay();const apps=Object.keys(d).filter(k=>k!=='bonus'&&d[k]&&typeof d[k]==='object');
   const k=apps.filter(a=>d[a].cleared).length,sum=apps.reduce((s,a)=>s+(d[a].earned||0),0);
   const want=Math.round(sum*(linkMul(k)-1)),add=want-(d.bonus||0);
   if(add>0&&linkN()>1){d.bonus=want;W.points+=add;W.total+=add;linkGot=add}return linkGot}
-function renderLink(){const box=document.getElementById('linkBox');if(!box)return;const ap=linkedApps(),n=ap.length;
-  if(n<2){box.hidden=true;return}
-  const d=W.days[todayKey()]||{},k=ap.filter(a=>d[a.id]&&d[a.id].cleared).length;
-  const e=s=>String(s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
-  box.hidden=false;
-  box.innerHTML=`<div class="link-h">${n}教科 連携中</div>
-    <div class="link-row">${ap.map(a=>`<span class="lk ${d[a.id]&&d[a.id].cleared?'done':''}">${e(a.name)}${d[a.id]&&d[a.id].cleared?' ✓':''}</span>`).join('')}</div>
-    <div class="link-note">${k>=n?`今日は全部クリア！ 連携ボーナス ×${linkMul(k)}`:(k?`あと${n-k}教科クリアで ×${linkMul(n)}${k>1?`（今は ×${linkMul(k)}）`:''}`:`${n===2?'両方':'全部'} クリアで ×${linkMul(n)}`)}</div>`}
-// はじめて つながったとき（教科がふえたとき）だけ、しくみを1回 説明する
-function linkIntro(){const n=linkN();if(n<2||(W.linkIntro||0)>=n)return;W.linkIntro=n;saveW();
-  const names=linkedApps().map(a=>a.name).join('と');const m=document.createElement('div');m.className='modal link-intro';
-  m.innerHTML=`<div class="panel"><p style="font-size:20px;font-weight:800">${names}が つながりました！</p>
-    <p style="font-size:15px;font-weight:500;line-height:1.7;text-align:left">ポイントは ${n}つの教科で わけあいます。そのかわり、同じ日に ${n===2?'両方':'全部'} クリアすると <b>連携ボーナス ×${linkMul(n)}</b>！ ごほうびの ポイントは そのままです。</p>
-    <div class="row"><button class="btn green">わかった！</button></div></div>`;
-  m.querySelector('button').onclick=()=>m.remove();document.body.appendChild(m)}
-function resetWallet(){W=emptyW();W.apps[APP]={name:APP_NAME};bindWallet();saveW()}
+const wesc=s=>String(s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+function renderLink(){const box=document.getElementById('linkBox');if(!box)return;
+  if(W.linked){const ap=linkedApps(),n=ap.length;if(n<2){box.hidden=true;return}
+    const d=W.days[todayKey()]||{},k=ap.filter(a=>d[a.id]&&d[a.id].cleared).length;
+    box.hidden=false;box.className='linkbox';
+    box.innerHTML=`<div class="link-h">${n}教科 連携中</div>
+      <div class="link-row">${ap.map(a=>`<span class="lk ${d[a.id]&&d[a.id].cleared?'done':''}">${wesc(a.name)}${d[a.id]&&d[a.id].cleared?' ✓':''}</span>`).join('')}</div>
+      <div class="link-note">${k>=n?`今日は全部クリア！ 連携ボーナス ×${linkMul(k)}`:(k?`あと${n-k}教科クリアで ×${linkMul(n)}${k>1?`（今は ×${linkMul(k)}）`:''}`:`${n===2?'両方':'全部'} クリアで ×${linkMul(n)}`)}</div>`;return}
+  // 連携していない：ほかの教科も使っている人にだけ、新しい機能として知らせる（「今はしない」で消える）
+  const ot=otherApps();if(!ot.length||(W.offerOff||{})[APP]){box.hidden=true;return}
+  box.hidden=false;box.className='linkbox offer';
+  box.innerHTML=`<div class="link-h"><span><span class="new">NEW</span> 教科の連携ができました</span></div>
+    <div class="link-note">${wesc(APP_NAME)}と${ot.map(a=>wesc(a.name)).join('・')}の ポイントと ごほうびを 1つにできます。</div>
+    <button class="btn white link-more">くわしく</button>`;
+  box.querySelector('.link-more').onclick=openLinkOffer}
+function linkModal(html,btns){const m=document.createElement('div');m.className='modal link-intro';
+  m.innerHTML=`<div class="panel">${html}<div class="row">${btns.map((b,i)=>`<button class="btn ${b.cls||'green'}" data-i="${i}">${b.t}</button>`).join('')}</div></div>`;
+  m.addEventListener('click',e=>{const b=e.target.closest('[data-i]');if(!b)return;m.remove();btns[+b.dataset.i].on&&btns[+b.dataset.i].on()});
+  document.body.appendChild(m)}
+const LINK_TEXT=n=>`<p style="font-size:15px;font-weight:500;line-height:1.7;text-align:left;margin:0">・ポイントと ごほうび・チケットが 1つになります。<br>・ポイントは ${n}つの教科で わけあいます（1つの教科で もらえるポイントは へります）。<br>・そのかわり、同じ日に ${n===2?'両方':'全部'} クリアすると <b>連携ボーナス ×${linkMul(n)}</b>。<br>・ごほうびの ポイントは そのままです。</p>`;
+function openLinkOffer(){
+  if(W.linked){linkModal(`<p style="font-size:20px;font-weight:800;margin:0">${linkN()}教科 連携中</p>${LINK_TEXT(Math.max(2,linkN()))}`,[{t:'とじる'}]);return}
+  const ot=otherApps(),names=[APP_NAME,...ot.map(a=>a.name)].join('と');
+  linkModal(`<p style="font-size:20px;font-weight:800;margin:0">新しい機能：教科の連携</p><p style="font-size:15px;font-weight:500;margin:0">${wesc(names)}を つなげると…</p>${LINK_TEXT(Math.max(2,ot.length+1))}
+    <p style="font-size:13px;font-weight:500;margin:0;text-align:left">どちらか だけで いい人は、つなげなくても だいじょうぶです。あとから つなげることも できます。</p>`,
+    [{t:'今はしない',cls:'white',on:()=>{W.offerOff=W.offerOff||{};W.offerOff[APP]=todayKey();saveW();renderLink()}},
+     {t:'連携する',on:startLink}])}
+function startLink(){freshW();if(!W.linked){Object.assign(W,FUNDS());W.linked=true;W.linkAt=todayKey()}
+  if(!S.walletJoined)joinWallet();W.apps[APP].introSeen=true;save();
+  try{if(typeof onWalletChange==='function')onWalletChange()}catch(_){}
+  linkModal(`<p style="font-size:20px;font-weight:800;margin:0">連携しました！</p><p style="font-size:15px;font-weight:500;margin:0">ほかの教科を ひらくと、そちらも つながります。</p>`,[{t:'OK'}])}
+// あとから つながった教科で 1回だけ 知らせる
+function linkIntro(){if(!W.linked||!S.walletJoined||W.apps[APP].introSeen)return;W.apps[APP].introSeen=true;saveW();
+  if(linkN()<2)return;
+  linkModal(`<p style="font-size:20px;font-weight:800;margin:0">${wesc(linkedApps().map(a=>a.name).join('と'))}が つながりました！</p>${LINK_TEXT(linkN())}`,[{t:'わかった！'}])}
+function resetWallet(){if(W.linked){Object.assign(W,FUNDS());W.shop=DEFAULT_SHOP.map(x=>({...x}));S.walletJoined=true;W.apps[APP]={...(W.apps[APP]||{}),joined:true};bindWallet()}
+  else S.walletJoined=false;saveW()}
