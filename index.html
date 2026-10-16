@@ -720,7 +720,7 @@ button:focus-visible{outline:4px solid var(--ink);outline-offset:3px}
         <ul>
           <li>一発合格 +50</li>
           <li>書き直し1回で合格 +40・2回 +30・3回 +20・4回以上 +10</li>
-          <li>合格のあとの自主練：80点以上で +10（1日4回まで）</li>
+          <li>合格のあとの復習：80点以上で +10（1日4回まで）</li>
           <li>15日連続で +100（今までどおり）</li>
         </ul>
         <div class="news-s">そのほかの新しいこと</div>
@@ -2074,8 +2074,8 @@ const toScore=(c,n)=>n?Math.round(c*100/n):0;
 const PTS=[50,40,30,20,10]; // 一発合格・書き直し1回・2回・3回・4回以上
 const RW_MAX=PTS.length-1;
 const PTS_LABEL=['一発合格','書き直し1回で合格','2回で合格','3回で合格','4回以上で合格'];
-const BONUS_MAX=4; // クリア後の 自主練：80点以上で 1回目+20pt、2回目から+10pt（1日4回まで）
-const bonusPt=n=>10; // 自主練は いつも+10（1日の最大＝50＋10×4＝90pt）
+const BONUS_MAX=4; // クリア後の 復習：80点以上で 1回目+20pt、2回目から+10pt（1日4回まで）
+const bonusPt=n=>10; // 復習は いつも+10（1日の最大＝50＋10×4＝90pt）
 const bonusSum=n=>{let t=0;for(let i=0;i<n;i++)t+=bonusPt(i);return t};
 // ごほうびは 使う人が 自由に へんしゅうできる（S.shop）。これは さいしょの 例
 const ICONS={snack:['おかし','#FF8FB8'],game:['ゲーム','#33B84A'],gem:['宝石','#7A4DFF'],star:['星','#FFCF1F'],book:['本','#2F8CFF'],cup:['飲み物','#F0402F']};
@@ -2294,8 +2294,8 @@ function renderHome(){
     const bl=BONUS_MAX-(d.bonus||0);
     $('qTitle').textContent='今日のクエスト クリア！';
     $('status').innerHTML=`${d.passRw?`書き直し${d.passRw}回で`:'一発'}合格！ <b>+${d.earned+bonusSum(d.bonus||0)+(d.streakBonus||0)}pt</b><br>`
-      +(bl>0?`自主練で80点以上なら <b>+${linkPt(bonusPt(d.bonus||0))}pt</b>（あと${bl}回）`:'今日の自主練ポイントは終了。練習は続けられます。');
-    $('startBtn').textContent=bl>0?`自主練（+${linkPt(bonusPt(d.bonus||0))}pt）`:'もう一度テスト';$('startBtn').className=bl>0?'btn yellow bigstart':'btn white bigstart';
+      +(bl>0?`復習で80点以上なら <b>+${linkPt(bonusPt(d.bonus||0))}pt</b>（あと${bl}回）`:'今日の復習ポイントは終了。練習は続けられます。');
+    $('startBtn').textContent=bl>0?`復習（+${linkPt(bonusPt(d.bonus||0))}pt）`:'もう一度テスト';$('startBtn').className=bl>0?'btn yellow bigstart':'btn white bigstart';
   }
   $('rule').innerHTML=PTS.map((p,i)=>`<div class="${cur===i?'on':''}"><span>${PTS_LABEL[i]}</span><strong>+${linkPt(p)}</strong></div>`).join('');
   const fc=focusChars();
@@ -2502,7 +2502,7 @@ const STREAK_DAYS=15,STREAK_PT=100; // 15日連続で +100pt
 
 // ポイントの説明（連携中は じっさいにもらえる量で出す）
 function renderPtNote(){const el=$('ptNote');if(!el)return;const n=linkN();
-  el.innerHTML=`まちがえた漢字は書けるまで練習！ クリア後の自主練は80点以上で+${linkPt(10)}pt（1日4回）。15日連続で+${linkPt(STREAK_PT)}pt。`
+  el.innerHTML=`まちがえた漢字は書けるまで練習！ クリア後の復習は80点以上で+${linkPt(10)}pt（1日4回）。15日連続で+${linkPt(STREAK_PT)}pt。`
     +(n>1?`<br><b>${n}教科 連携中</b>：ポイントは${n}教科で分けあうので、1教科でもらえるのは ${n===2?'半分':n+'分の1'} です。${n===2?'両方':'全部'}クリアした日は、その日のポイントが ×${linkMul(n)} になります。`:'')}
 function streakNow(){let st=0;const dt=new Date();if(!(S.days[todayKey()]||{}).passed)dt.setDate(dt.getDate()-1);
   while((S.days[dkey(dt)]||{}).passed){st++;dt.setDate(dt.getDate()-1)}return st}
@@ -2533,9 +2533,9 @@ function finish(){
   }else{
     const sc=toScore(correct,total);
     if(sc>=PASS&&(d.bonus||0)<BONUS_MAX){earned=earn(bonusPt(d.bonus||0));d.bonus=(d.bonus||0)+1}
-    head=`<div class="badge ${earned?'':'ng'}">自主練</div><div class="big">${sc}<small>点</small></div>`;
+    head=`<div class="badge ${earned?'':'ng'}">復習</div><div class="big">${sc}<small>点</small></div>`;
     body=earned?`<div class="earn"><span class="coin"></span><span class="pixel">+${earned}</span>pt</div><div class="sub">ナイス！ ${BONUS_MAX-d.bonus?`あと${BONUS_MAX-d.bonus}回`:'今日の分は終了'}</div>`
-      :(d.bonus||0)>=BONUS_MAX?`<div class="sub">おつかれさま。今日の自主練ポイントは終了。</div>`
+      :(d.bonus||0)>=BONUS_MAX?`<div class="sub">おつかれさま。今日の復習ポイントは終了。</div>`
       :`<div class="sub">80点以上で +${linkPt(bonusPt(d.bonus||0))}pt。もう一度！</div>`;
   }
   settleLink();body=body.replace(/合計 \d+pt/,`合計 ${S.points}pt`);
@@ -2581,7 +2581,7 @@ function dLabel(k){const [y,m,d]=k.split('-').map(Number);const dt=new Date(y,m-
 const hhmm=t=>{const d=new Date(t);return `${d.getHours()}:${pad(d.getMinutes())}`};
 let hiFilter='all';
 function sTitle(s){const c=s.items.filter(i=>i.ok).length,n=s.items.length;
-  return s.mode==='test'?`テスト ${toScore(c,n)}点`:s.mode==='practice'?`書けるまで練習${s.rw?`（${s.rw}回目）`:''} ${c}/${n}`:`自主練 ${toScore(c,n)}点`}
+  return s.mode==='test'?`テスト ${toScore(c,n)}点`:s.mode==='practice'?`書けるまで練習${s.rw?`（${s.rw}回目）`:''} ${c}/${n}`:`復習 ${toScore(c,n)}点`}
 let HS=null; // ほかの端末の記録を見ているとき
 const hsrc=()=>HS?{log:HS.log||[],days:HS.days||{}}:{log:LOG,days:S.days};
 function dayTag(r){if(!r||!r.tries)return '';if(!r.passed)return '<span class="hi-tag">練習中</span>';
@@ -2591,7 +2591,7 @@ function openHistory(focus){HS=null;famStep='';syncErr='';renderHistory();show('
 function renderHissanLog(){const h=wvH(),LG=(h.log||[]).slice().reverse(),DY=h.days||{};
   $('hiTabs').querySelector('[data-f="ng"]').textContent='まちがえた問題だけ';
   const byDay={};LG.forEach(s=>{(byDay[s.date]=byDay[s.date]||[]).push(s)});Object.keys(DY).forEach(k=>{if(DY[k].tries&&!byDay[k])byDay[k]=[]});
-  const md={test:'テスト',practice:'とけるまで練習',free:'自主練'};let html='';
+  const md={test:'テスト',practice:'とけるまで練習',free:'復習'};let html='';
   for(const k of Object.keys(byDay).sort().reverse()){const ss=byDay[k].filter(x=>hiFilter!=='ng'||x.items.some(it=>!it.ok));if(hiFilter==='ng'&&!ss.length)continue;
     html+=`<section class="panel hi-day"><div class="hi-dh"><b>${dLabel(k)}</b>${dayTag(DY[k])}</div>`
       +(ss.length?ss.map(x=>{const its=hiFilter==='ng'?x.items.filter(it=>!it.ok):x.items,ng=x.items.filter(it=>!it.ok).length;
@@ -2798,13 +2798,13 @@ function makeShare(d,correct,total){
     comment=sc===100?'全問正解！ 今日は完ぺき。':sc>=PASS?'一発合格！':`まちがえた${total-correct}字は、書けるまで練習します。`}
   else if(mode==='practice'){line=`${g}年生の漢字：書けるまで練習 ${correct}/${total}`;
     comment=d.pending.length?`あと${d.pending.length}字、がんばります。`:`書き直し${d.rewrites}回で合格！`}
-  else{line=`${g}年生の漢字 自主練：${toScore(correct,total)}点`;comment='自主練もがんばった！'}
+  else{line=`${g}年生の漢字 復習：${toScore(correct,total)}点`;comment='復習もがんばった！'}
   const extra=st>=2?` ${st}日連続クリア中！`:'';
   $('shareText').value=`${line}\n${comment}${extra}\nポイントを貯めてごほうびと交換中！（いま${S.points}pt）\n#かんじクエスト #まなびのクエスト\n${SHARE_URL}`;
   updateShareLinks();
   const sc=toScore(correct,total),isTest=mode!=='practice';
   shareBlob=null;$('shareImg').removeAttribute('src');
-  shareCard({sub:`${g}年生の漢字`+(mode==='free'?'・自主練':mode==='practice'?'・書けるまで練習':''),
+  shareCard({sub:`${g}年生の漢字`+(mode==='free'?'・復習':mode==='practice'?'・書けるまで練習':''),
     big:isTest?`${sc}点`:`${correct}/${total}`,badge:comment.replace(/。$/,''),line2:st>=2?`${st}日連続クリア中！`:'',
     thumbs:written.map((w,i)=>({url:w.url,ok:!!(results[i]&&results[i].ok)}))}).then(b=>{shareBlob=b;if(b)$('shareImg').src=URL.createObjectURL(b)})}
 /* シェア画像（1080x1080）をつくる */
@@ -2965,7 +2965,7 @@ const OB=[
   {pic:()=>`<div class="ob-board"><span>漢</span></div>`,h:'毎日10問、指で書く',p:'文の中の［よみがな］を漢字で書きます。書く場所は大きく、ほかには何も置いていません。'},
   {pic:()=>`<div class="ob-mark">80点</div>`,h:'AIが採点',p:'10問書いたら、AIがまとめて丸つけ。80点以上で一発合格です。使えないときは自分で○×をつけます。'},
   {pic:()=>icon('star'),h:'書けるまで練習！',p:'まちがえた漢字は、答えを見て覚えて、書けるまでくり返します。書き直しが少ないほどポイントアップ。'},
-  {pic:()=>icon('gem'),h:'ポイントでごほうび',p:'ためたポイントで、自分で決めたごほうびと交換。合格のあとの自主練でも+'+linkPt(10)+'pt（1日4回）。'},
+  {pic:()=>icon('gem'),h:'ポイントでごほうび',p:'ためたポイントで、自分で決めたごほうびと交換。合格のあとの復習でも+'+linkPt(10)+'pt（1日4回）。'},
 ];
 let obAdmin=false;
 const OB_PHONE=`<svg viewBox="0 0 120 120"><rect x="34" y="8" width="52" height="104" rx="10" fill="#fff" stroke="#1C2A5C" stroke-width="5"/><rect x="44" y="30" width="32" height="32" fill="#fff" stroke="#1C2A5C" stroke-width="3"/><rect x="48" y="34" width="9" height="9" fill="#1C2A5C"/><rect x="63" y="34" width="9" height="9" fill="#1C2A5C"/><rect x="48" y="49" width="9" height="9" fill="#1C2A5C"/><rect x="63" y="51" width="5" height="5" fill="#1C2A5C"/><rect x="68" y="56" width="4" height="4" fill="#1C2A5C"/><rect x="44" y="72" width="32" height="8" rx="4" fill="#FFCF1F"/><rect x="44" y="86" width="22" height="8" rx="4" fill="#C9DAF5"/></svg>`;
