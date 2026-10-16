@@ -426,6 +426,9 @@ body{overflow-x:hidden;overflow-x:clip}
 .amz-links a{display:flex;align-items:center;justify-content:center;min-height:48px;padding:8px;border:3px solid var(--ink);border-radius:12px;font-size:15px;font-weight:800;color:var(--ink);text-decoration:none;background:var(--sky-lite);box-shadow:0 3px 0 var(--ink);text-align:center}
 .amz-links a:active{transform:translateY(2px);box-shadow:0 1px 0 var(--ink)}
 .amz-note{margin:0;font-size:10px;font-weight:500;opacity:.7}
+.amz-rw{display:flex;flex-direction:column;gap:8px}.amz-rw:empty{display:none}
+.amz-links a.rw{background:#FFF4CC;flex-direction:column;gap:2px}
+.amz-links a.rw small{display:block;font-size:11px;font-weight:500;opacity:.75}
 /* ---- モーダル / 演出 ---- */
 .modal{position:fixed;inset:0;background:rgba(28,42,92,.55);display:flex;align-items:center;justify-content:center;z-index:50;
   padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px))}
@@ -665,6 +668,7 @@ body:has(#quiz:not([hidden])){background-image:none!important;background-color:#
     <button class="btn white" id="setupBtn" style="flex:0 0 auto">学年</button>
   </div>
   <section class="panel amz">
+    <div class="amz-rw"></div>
     <h3>おすすめ勉強ツール</h3>
     <div class="amz-links">
       <a href="https://www.amazon.co.jp/s?k=%E8%A8%88%E7%AE%97%E3%83%89%E3%83%AA%E3%83%AB+%E5%B0%8F%E5%AD%A6%E7%94%9F&tag=timing-22" target="_blank" rel="sponsored noopener">計算ドリル</a>
@@ -873,6 +877,19 @@ body:has(#quiz:not([hidden])){background-image:none!important;background-color:#
     <div class="ed-btns"><button class="btn white" id="edCancel">やめる</button><button class="btn green" id="edSave">保存</button></div>
   </section>
   <button class="btn white" id="setupBtn2">学年</button>
+  <section class="panel amz">
+    <div class="amz-rw"></div>
+    <h3>おすすめ勉強ツール</h3>
+    <div class="amz-links">
+      <a href="https://www.amazon.co.jp/s?k=%E8%A8%88%E7%AE%97%E3%83%89%E3%83%AA%E3%83%AB+%E5%B0%8F%E5%AD%A6%E7%94%9F&tag=timing-22" target="_blank" rel="sponsored noopener">計算ドリル</a>
+      <a href="https://www.amazon.co.jp/s?k=%E7%AE%97%E6%95%B0%E3%83%8E%E3%83%BC%E3%83%88+%E6%96%B9%E7%9C%BC&tag=timing-22" target="_blank" rel="sponsored noopener">算数ノート（方眼）</a>
+      <a href="https://www.amazon.co.jp/s?k=%E3%81%88%E3%82%93%E3%81%B4%E3%81%A4+2B&tag=timing-22" target="_blank" rel="sponsored noopener">えんぴつ・ペン</a>
+      <a href="https://www.amazon.co.jp/s?k=%E3%82%BF%E3%83%83%E3%83%81%E3%83%9A%E3%83%B3+%E3%82%BF%E3%83%96%E3%83%AC%E3%83%83%E3%83%88&tag=timing-22" target="_blank" rel="sponsored noopener">タッチペン</a>
+      <a href="https://www.amazon.co.jp/s?k=%E5%AE%9A%E8%A6%8F+%E5%B0%8F%E5%AD%A6%E7%94%9F&tag=timing-22" target="_blank" rel="sponsored noopener">定規</a>
+      <a href="https://www.amazon.co.jp/s?k=%E3%82%BF%E3%83%96%E3%83%AC%E3%83%83%E3%83%88+%E3%82%B9%E3%82%BF%E3%83%B3%E3%83%89&tag=timing-22" target="_blank" rel="sponsored noopener">タブレットスタンド</a>
+    </div>
+    <p class="amz-note">※広告です。Amazonのアソシエイトとして、ひっさんクエストは適格販売により収入を得ています。</p>
+  </section>
   <button class="btn white" id="backBtn">戻る</button>
   <div class="parent">チケットは使ったら「使った」を押してください。</div>
 </main>
@@ -1637,6 +1654,30 @@ $('rvList').addEventListener('click',e=>{const b=e.target.closest('[data-mark]')
   marks[i]=v;sfx(v?'coin':'miss');
   b.parentNode.querySelectorAll('.mk').forEach(x=>x.classList.toggle('on',x===b));updateReviewScore()});
 $('decideBtn').onclick=()=>{results=written.map((w,i)=>({p:w.p,ok:marks[i]===true,read:reads[i]?judge(w.p,reads[i]).read:''}));finish()};
+
+/* ===== ごほうびに合わせた Amazon リンク ===== */
+const AMZ_TAG='timing-22';
+const amzURL=kw=>`https://www.amazon.co.jp/s?k=${encodeURIComponent(kw)}&tag=${AMZ_TAG}`;
+const AMZ_RULES=[
+  [/robux|ロブロックス|ロブロ/i,'Roblox ギフトカード'],[/コーヒー|カフェ|珈琲/,'ドリップコーヒー'],[/紅茶/,'紅茶 ティーバッグ'],
+  [/ビール/,'ビール'],[/ワイン/,'ワイン'],[/ジュース/,'ジュース'],[/アイス/,'アイス 詰め合わせ'],[/ケーキ|スイーツ/,'スイーツ ギフト'],
+  [/チョコ/,'チョコレート'],[/おやつ|お菓子|おかし|駄菓子/,'お菓子 詰め合わせ'],[/マンガ|漫画|まんが|コミック/,'マンガ 人気'],
+  [/本|小説|図鑑/,'児童書 人気'],[/ポケモン|ポケカ/,'ポケモンカード'],[/レゴ|LEGO/i,'レゴ'],[/プラモ/,'プラモデル'],
+  [/スイッチ|Switch/i,'Nintendo Switch ソフト'],[/ゲーム/,'ゲームソフト'],[/映画館|映画に行/,null],[/映画/,'映画 ブルーレイ'],[/おもちゃ|オモチャ/,'おもちゃ 人気'],
+  [/文房具|文具|ペン|ノート|シール/,'文房具 かわいい'],[/ガチャ|カプセル/,'カプセルトイ'],[/ゲームセンター|ゲーセン/,null],[/お出かけ|外食|旅行|公園/,null]];
+function amzKw(it){if(it.amz&&it.amz.trim())return it.amz.trim();const n=String(it.name||'');
+  for(const [re,kw] of AMZ_RULES)if(re.test(n))return kw;
+  const c=n.replace(/チケット|ごほうび|とっておきの|[0-9０-９]+\s*(杯|個|こ|つ|枚|まい|回|かい|時間|じかん|分|ふん|冊|さつ|本|ほん|箱|袋)?|[・、。！!？?]/g,' ').replace(/\s+/g,' ').trim();
+  return c.length>=2?c:''}
+// ごほうび（もっているチケット→ショップのごほうび）に合わせたリンクを、おすすめの上に出す
+function renderAmzRw(){const seen=new Set(),rows=[];
+  const add=(it,sub)=>{const kw=amzKw(it);if(!kw||seen.has(kw))return;seen.add(kw);rows.push({kw,name:it.name,sub})};
+  S.tickets.filter(t=>!t.used).slice().reverse().forEach(t=>add({name:t.name,amz:(S.shop.find(x=>x.name===t.name)||{}).amz},'交換ずみ'));
+  S.shop.forEach(it=>add(it,''));
+  const h=rows.length?`<h3>ごほうびをさがす</h3><div class="amz-links">${rows.slice(0,6).map(r=>`<a class="rw" href="${amzURL(r.kw)}" target="_blank" rel="sponsored noopener">${esc(r.name)}${r.sub?`<small>${esc(r.sub)}</small>`:''}</a>`).join('')}</div>`:'';
+  document.querySelectorAll('.amz-rw').forEach(el=>el.innerHTML=h)}
+// ホーム・ごほうび画面を出すたびに 作りなおす
+{const _rh=renderHome,_rs=renderShop;renderHome=function(...a){const r=_rh.apply(this,a);try{renderAmzRw()}catch(e){}return r};renderShop=function(...a){const r=_rs.apply(this,a);try{renderAmzRw()}catch(e){}return r}}
 
 /* ===== 読めなかった理由を 製作者に送る（押した人だけ。画像は30日で消える） ===== */
 let rpSent=false;
