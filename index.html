@@ -262,9 +262,10 @@ button:focus-visible{outline:4px solid var(--ink);outline-offset:3px}
 .wv{padding:14px 16px;display:flex;flex-direction:column;gap:10px}
 .wv .wv-top{display:flex;align-items:center;justify-content:space-between;gap:8px}
 .wv .wv-top b{font-size:18px}
-.wv-tabs{display:grid;grid-template-columns:1fr 1fr;gap:6px}
-.wv-tabs button{border:3px solid var(--ink);border-radius:999px;padding:6px;font:800 15px var(--f-body);background:#fff;color:var(--ink)}
-.wv-tabs button.on{background:var(--yellow)}
+.wv-edhost{display:flex;flex-direction:column}.wv-edhost:empty{display:none}
+.wv-tabs{display:flex;gap:6px;align-items:flex-end;border-bottom:3px solid var(--ink);margin-top:6px;padding:0 4px}
+.wv-tabs button{flex:1;border:3px solid var(--ink);border-bottom:0;border-radius:14px 14px 0 0;padding:8px 6px 6px;font:800 16px var(--f-body);background:var(--sky-lite);color:var(--ink);opacity:.75;margin-bottom:0}
+.wv-tabs button.on{background:#fff;opacity:1;padding-bottom:10px;margin-bottom:-3px;position:relative}
 .hs-it{display:flex;gap:10px;align-items:flex-start;border-top:2px dashed var(--line);padding:8px 0;font-size:14px;line-height:1.5}
 .hs-it .hs-mk{flex:none;font:800 22px/1.2 var(--f-body);width:24px;text-align:center}
 .hs-it.ok .hs-mk{color:var(--red)}.hs-it.ng .hs-mk{color:#2F8CFF}
@@ -2618,7 +2619,8 @@ $('hiList').addEventListener('toggle',e=>{const d=e.target;if(d.matches&&d.match
 $('hiTabs').onclick=e=>{const b=e.target.closest('button');if(!b)return;hiFilter=b.dataset.f;
   $('hiTabs').querySelectorAll('button').forEach(x=>x.classList.toggle('on',x===b));sfx('reveal');renderHistory()};
 $('historyBtn').onclick=()=>{sfx('reveal');openHistory()};
-$('hiBack').onclick=$('hiHome').onclick=()=>{HS=null;if(edTarget==='remote')edClose();if(!S.onboarded){openWelcome();return}renderHome();show('home')};
+let backToHissan=false; // ひっさんから来たときは、もどるで ひっさんへ
+$('hiBack').onclick=$('hiHome').onclick=()=>{if(backToHissan&&HS){location.href='/hissan/';return}HS=null;if(edTarget==='remote')edClose();if(!S.onboarded){openWelcome();return}renderHome();show('home')};
 $('stampRow').addEventListener('click',e=>{const st=e.target.closest('.st');if(!st||!st.title)return;
   const k=st.title;if(LOG.some(s=>s.date===k)||(S.days[k]||{}).tries){sfx('reveal');openHistory(k)}});
 
@@ -2741,20 +2743,21 @@ const wvH=()=>HS&&HS.hissan&&wvTab==='hissan'?HS.hissan:null;
 function renderWatchHead(){const h=HS,el=$('wvHead'),hh=wvH();
   const g=h.goal,left=g?Math.max(0,g.cost-h.points):0;
   const pend=pendingOf(h,h.dec||{}),w=S.watch.find(w=>w.id===h.id)||{},isAdm=!!w.admin;
-  el.innerHTML=`${h.hissan?`<div class="wv-tabs" role="tablist"><button data-wt="kanji" class="${hh?'':'on'}" role="tab" aria-selected="${!hh}">かんじ</button><button data-wt="hissan" class="${hh?'on':''}" role="tab" aria-selected="${!!hh}">ひっさん</button></div>`:''}
-    <div class="wv-top"><b>${esc(h.name||'')}${(hh||h).grade?` ${(hh||h).grade}年生`:''}</b><button class="btn white small" id="wvReload">最新にする</button></div>
+  el.innerHTML=`<div class="wv-top"><b>${esc(h.name||'')}${(hh||h).grade?` ${(hh||h).grade}年生`:''}</b><button class="btn white small" id="wvReload">最新にする</button></div>
     ${isAdm?`<div class="adm">このスマホが「管理する人」です。ごほうびのOKと編集ができます。</div>`:''}
     ${pend.length?`<div class="reqs" style="padding:0"><h3>ごほうびのおねがい</h3>${pend.map((q,i)=>`<div class="rq"><div class="t">${esc(q.name)}<small>${q.cost}pt・${dLabel(dkey(new Date(q.at)))} ${hhmm(q.at)}</small></div>
       ${isAdm?`<button class="btn white" data-dq="${i}" data-ok="0">ダメ</button><button class="btn green" data-dq="${i}" data-ok="1">OK</button>`:`<span class="st wait">OKまち</span>`}</div>`).join('')}</div>`:''}
     <div class="now-pt"><span class="now-l">今のポイント</span><span class="now-v"><span class="coin"></span><span class="pixel">${h.points||0}</span><small>pt</small></span></div>
     ${g?`<div class="goal-head"><span>${esc(g.name)} まで</span><span class="pixel">${left?`あと ${left}pt`:'交換できる！'}</span></div><div class="bar"><i style="width:${Math.min(100,(h.points||0)/g.cost*100)}%"></i><span>${h.points||0} / ${g.cost}</span></div>`:''}
-    <div class="cal-head"><span>15日カレンダー${h.hissan?(hh?'（ひっさん）':'（かんじ）'):''}</span><span>${(hh||h).streak?`${(hh||h).streak}日連続！`:''}</span></div>
-    <div class="stamp-row">${stampsHTML((hh||h).days||{})}</div>
     ${tkHTML(h)}
+    <div class="wv-edhost"></div>
+    ${h.hissan?`<div class="wv-tabs" role="tablist"><button data-wt="kanji" class="${hh?'':'on'}" role="tab" aria-selected="${!hh}">かんじ</button><button data-wt="hissan" class="${hh?'on':''}" role="tab" aria-selected="${!!hh}">ひっさん</button></div>`:''}
+    <div class="cal-head"><span>15日カレンダー</span><span>${(hh||h).streak?`${(hh||h).streak}日連続！`:''}</span></div>
+    <div class="stamp-row">${stampsHTML((hh||h).days||{})}</div>
     <div class="meta">${h.at?`${dLabel(dkey(new Date(h.at)))} ${hhmm(h.at)} の記録`:''}</div>`;
   $('wvReload').onclick=()=>openWatch(h.id);
   el.querySelectorAll('[data-wt]').forEach(b=>b.onclick=()=>{wvTab=b.dataset.wt;sfx('tap');renderHistory()});
-  if(isAdm){const eb=document.createElement('button');eb.className='btn white';eb.textContent='ごほうびを編集';eb.onclick=()=>edOpen('remote',h.shop||[]);el.appendChild(eb)}
+  if(isAdm){const eb=document.createElement('button');eb.className='btn white';eb.textContent='ごほうびを編集';eb.onclick=()=>edOpen('remote',h.shop||[]);el.querySelector('.wv-edhost').appendChild(eb)}
   el.querySelectorAll('[data-dq]').forEach(b=>b.onclick=()=>{const q=pend[+b.dataset.dq],ok=b.dataset.ok==='1';
     if(ok)decide(q,true);else ask(`${q.name}のおねがいをことわる？ ポイントは戻ります。`,'ことわる',()=>decide(q,false))})}
 async function openWatch(id){
@@ -2766,7 +2769,7 @@ async function openWatch(id){
     if(!r.ok)throw 0;const d=await r.json();
     let w=S.watch.find(w=>w.id===id);if(w){w.name=d.name||'';w.grade=d.grade}else{w={id,name:d.name||'',grade:d.grade};S.watch.push(w)}
     let dd=await fetchDec(id);if(!dd.admin&&!w.admin&&await claimAdmin(w))dd=await fetchDec(id);
-    HS={...d,id,dec:dd.dec||{}};wvTab=HS.noKanji?'hissan':(HS.hissan&&wvTab==='hissan'?'hissan':'kanji');if(dd.shop&&dd.shop.v>(d.shopV||0)){HS.shop=dd.shop.list;HS.shopV=dd.shop.v;const g=HS.shop.reduce((a,b)=>!a||b.cost>a.cost?b:a,null);HS.goal=g?{name:g.name,cost:g.cost}:null}w.pend=pendingOf(HS,HS.dec).length;save();renderWatchPills();
+    HS={...d,id,dec:dd.dec||{}};wvTab=HS.noKanji||(HS.hissan&&wvTab==='hissan')?'hissan':'kanji';if(dd.shop&&dd.shop.v>(d.shopV||0)){HS.shop=dd.shop.list;HS.shopV=dd.shop.v;const g=HS.shop.reduce((a,b)=>!a||b.cost>a.cost?b:a,null);HS.goal=g?{name:g.name,cost:g.cost}:null}w.pend=pendingOf(HS,HS.dec).length;save();renderWatchPills();
     renderHistory();
   }catch(e){$('hiList').innerHTML='<div class="panel hi-empty">読みこめませんでした。<br>電波のよいところで「最新にする」を押してください。</div>'}}
 
@@ -3351,7 +3354,7 @@ document.addEventListener('pointerdown',e=>{if(e.target.closest('button,a,input,
 })();
 {const m=/view=([A-Za-z0-9]{16,32})/.exec(location.hash),mm=/move=([A-Za-z0-9]{24,40})/.exec(location.hash);
   if(mm){history.replaceState(null,'',location.pathname+location.search);if(S.onboarded){renderHome();show('home')}else openWelcome();$('agreeModal').hidden=true;receiveMove(mm[1])}
-  else if(m){history.replaceState(null,'',location.pathname+location.search);openWatch(m[1])}else renderHome();
+  else if(m){if(/[&?]t=hissan/.test(location.hash))wvTab='hissan';if(/[&?]from=hissan/.test(location.hash))backToHissan=true;history.replaceState(null,'',location.pathname+location.search);openWatch(m[1])}else renderHome();
   if(S.share)syncSoon();}
 </script>
 

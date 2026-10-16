@@ -453,6 +453,11 @@ body{overflow-x:hidden;overflow-x:clip}
 .watch-list .w .btn{flex:1;font-size:15px;padding:10px;text-align:left}
 .watch-list .w .x{flex:none;width:40px;height:40px;border-radius:10px;border:3px solid var(--ink);background:#fff;font-size:18px;color:var(--ink)}
 .rq .who{font-size:11px;font-weight:800;opacity:.7;white-space:nowrap}
+.watch-pills{flex-basis:100%;display:flex;flex-wrap:wrap;justify-content:center;gap:8px;position:relative;z-index:2}
+.watch-pills:empty{display:none}
+.wpill{font:800 15px var(--f-body);color:var(--ink);background:#fff;border:3px solid var(--ink);border-radius:999px;padding:8px 16px;box-shadow:0 4px 0 var(--ink)}
+.wpill:active{transform:translateY(3px);box-shadow:0 1px 0 var(--ink)}
+.wpill .bdg{display:inline-block;margin-left:6px;background:var(--red);color:#fff;border-radius:999px;padding:0 8px;font-size:13px;line-height:20px}
 .amz-rw{display:flex;flex-direction:column;gap:8px}.amz-rw:empty{display:none}
 .amz-links a.rw{background:#FFF4CC;flex-direction:column;gap:2px}
 .amz-links a.rw small{display:block;font-size:11px;font-weight:500;opacity:.75}
@@ -675,6 +680,7 @@ body:has(#quiz:not([hidden])){background-image:none!important;background-color:#
     <nav class="subjects" id="subjects" aria-label="教科"><a href="/" data-app="kanji">かんじ</a><a href="/hissan/" data-app="hissan" aria-current="page">ひっさん</a></nav>
     <i class="cloud hc1"></i><i class="cloud hc2"></i><i class="cloud hc3"></i>
     <div class="logo"><img class="logo-img" alt="ひっさんクエスト" width="1000" height="351"><small id="gradeLabel">4年生の計算</small></div>
+    <div class="watch-pills" id="homeWatch"></div>
   </div>
 
   <div class="home-main">
@@ -1811,6 +1817,14 @@ $('reqBox').addEventListener('click',e=>{const b=e.target.closest('[data-lq]');i
   withPin(`${q.name}（${q.cost}pt）を${ok?'OK':'ことわる'}には、管理する人のPINを入れてください`,()=>{applyDecision(q,ok);save();sfx(ok?'clear':'miss');renderShop()})});
 {const _rs2=renderShop;renderShop=function(...a){const r=_rs2.apply(this,a);try{renderReqs();checkDecisions()}catch(e){}return r}}
 {const _oa=openAdmin;openAdmin=function(...a){famStep='';syncErr='';const r=_oa.apply(this,a);try{renderFam()}catch(e){}return r}}
+
+/* --- 管理する人：見ている記録（かんじクエストで登録したものと共通）。押すと 記録の画面（ひっさんのタブ）へ --- */
+function renderWatchPills(){const el=$('homeWatch');if(!el)return;let ws=[];
+  try{const k=JSON.parse(localStorage.getItem('kanjiQuest4.v1')||'null');ws=Array.isArray(k&&k.watch)?k.watch:[]}catch(e){}
+  const nm=w=>w.name?`${w.name}さんの記録`:`${w.grade?w.grade+'年生の':''}記録`;
+  el.innerHTML=ws.map(w=>`<button class="wpill" data-wid="${esc(w.id)}">${esc(nm(w))}${w.pend?`<span class="bdg">おねがい${w.pend}</span>`:''} ›</button>`).join('');
+  el.querySelectorAll('[data-wid]').forEach(b=>b.onclick=()=>{sfx('reveal');location.href=`${SITE_ROOT}/#view=${b.dataset.wid}&t=hissan&from=hissan`})}
+{const _rh3=renderHome;renderHome=function(...a){const r=_rh3.apply(this,a);try{renderWatchPills()}catch(e){}return r}}
 
 /* ===== 読めなかった理由を 製作者に送る（押した人だけ。画像は30日で消える） ===== */
 let rpSent=false;
