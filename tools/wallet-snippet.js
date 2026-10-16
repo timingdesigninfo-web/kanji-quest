@@ -66,7 +66,8 @@ function linkModal(html,btns){const m=document.createElement('div');m.className=
   m.innerHTML=`<div class="panel">${html}<div class="row">${btns.map((b,i)=>`<button class="btn ${b.cls||'green'}" data-i="${i}">${b.t}</button>`).join('')}</div></div>`;
   m.addEventListener('click',e=>{const b=e.target.closest('[data-i]');if(!b)return;m.remove();btns[+b.dataset.i].on&&btns[+b.dataset.i].on()});
   document.body.appendChild(m)}
-const LINK_TEXT=n=>`<p style="font-size:15px;font-weight:500;line-height:1.7;text-align:left;margin:0">・ポイントと ごほうび・チケットが 1つになります。<br>・ポイントは ${n}つの教科で わけあいます（1つの教科で もらえるポイントは へります）。<br>・そのかわり、同じ日に ${n===2?'両方':'全部'} クリアすると <b>連携ボーナス ×${linkMul(n)}</b>。<br>・ごほうびの ポイントは そのままです。</p>`;
+const LINK_TEXT=n=>`<p style="font-size:15px;font-weight:500;line-height:1.7;text-align:left;margin:0">・ポイントと ごほうび・チケットが 1つになります。<br>・ポイントは ${n}つの教科で わけあいます（1つの教科で もらえるポイントは へります）。<br>・そのかわり、同じ日に ${n===2?'両方':'全部'} クリアすると <b>連携ボーナス ×${linkMul(n)}</b>。</p>
+  <div class="link-warn"><b>ご注意</b><br>・連携すると、もらえるポイントの量が かわります。<br>・ごほうびの中身と ひつようなポイントは そのままです。連携したあとに 一度 確認してください。</div>`;
 // 新しく できた教科（ほかの教科のホームの上に「リリース」として出す）
 const NEW_APPS={hissan:{name:'ひっさんクエスト（筆算）',short:'ひっさん',desc:'計算の筆算を 指で書いて、AIが まるつけ。毎日10問、学年ごとの計算に チャレンジ！'}};
 const appName=id=>(W.apps[id]&&W.apps[id].name)||(NEW_APPS[id]&&NEW_APPS[id].short)||((document.querySelector(`.subjects a[data-app="${id}"]`)||{}).textContent||'').trim()||id;
@@ -98,7 +99,7 @@ function startLink(id){freshW();if(!W.linked){Object.assign(W,FUNDS());W.linked=
   if(id)W.apps[id]={...(W.apps[id]||{}),introSeen:true}; // 自分で選んで つないだので、相手の教科でも 説明は出さない
   save();try{if(typeof onWalletChange==='function')onWalletChange()}catch(_){}renderNav();
   const nm=id?appName(id):'';
-  linkModal(`<p style="font-size:20px;font-weight:800;margin:0">連携しました！</p><p style="font-size:15px;font-weight:500;margin:0">上の ボタンで、いつでも 教科を 切りかえられます。</p>`,
+  linkModal(`<p style="font-size:20px;font-weight:800;margin:0">連携しました！</p><p style="font-size:15px;font-weight:500;margin:0">上の ボタンで、いつでも 教科を 切りかえられます。</p><p style="font-size:14px;font-weight:500;margin:0">ごほうびの中身と ひつようなポイントを、「ごほうび」から 一度 確認してください。</p>`,
     id?[{t:'あとで',cls:'white'},{t:`${wesc(nm)}へ`,on:()=>goApp(id)}]:[{t:'OK'}])}
 // あとから つながった教科で 1回だけ 知らせる
 function linkIntro(){if(!W.linked||!S.walletJoined||W.apps[APP].introSeen)return;W.apps[APP].introSeen=true;saveW();
