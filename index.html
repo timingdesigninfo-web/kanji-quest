@@ -2145,7 +2145,7 @@ function linkModal(html,btns){const m=document.createElement('div');m.className=
   m.innerHTML=`<div class="panel">${html}<div class="row">${btns.map((b,i)=>`<button class="btn ${b.cls||'green'}" data-i="${i}">${b.t}</button>`).join('')}</div></div>`;
   m.addEventListener('click',e=>{const b=e.target.closest('[data-i]');if(!b)return;m.remove();btns[+b.dataset.i].on&&btns[+b.dataset.i].on()});
   document.body.appendChild(m)}
-const LINK_TEXT=n=>`<p style="font-size:15px;font-weight:500;line-height:1.7;text-align:left;margin:0">・ポイントと ごほうび・チケットが 1つになります。<br>・同じ日に ${n===2?'両方':'全部'} クリアすると <b>連携ボーナス ×${linkMul(n)}</b>。</p>
+const LINK_TEXT=n=>`<p style="font-size:15px;font-weight:500;line-height:1.7;text-align:left;margin:0">・ポイント・ごほうび・チケットを 教科どうしで 共有します。<br>・同じ日に ${n===2?'両方':'全部'} クリアすると <b>連携ボーナス ×${linkMul(n)}</b>。</p>
   <div class="link-warn"><b>ご注意</b><br>・ポイントは ${n}つの教科で わけあうので、1つの教科で もらえるポイントは へります。<br>・ごほうびの中身と ひつようなポイントは そのままです。連携したあとに 一度 確認してください。<br>・連携は あとからでも できます。</div>`;
 // 新しく できた教科（ほかの教科のホームの上に「リリース」として出す）
 const NEW_APPS={hissan:{name:'ひっさんクエスト（筆算）',short:'ひっさん',desc:'計算の筆算を 指で書いて、AIが まるつけ。毎日10問、学年ごとの計算に チャレンジ！'}};
@@ -2168,8 +2168,7 @@ function openRelease(id){const r=NEW_APPS[id];
 function openLinkOffer(id){
   if(W.linked){linkModal(`<p style="font-size:20px;font-weight:800;margin:0">${linkN()}教科 連携中</p>${LINK_TEXT(Math.max(2,linkN()))}`,[{t:'とじる'}]);return}
   id=id||Object.keys(W.apps).find(k=>k!==APP)||Object.keys(NEW_APPS).find(k=>k!==APP);const nm=appName(id);
-  linkModal(`<p style="font-size:20px;font-weight:800;margin:0">${wesc(nm)}と 連携しますか？</p>${LINK_TEXT(2)}
-    <p style="font-size:13px;font-weight:500;margin:0;text-align:left">${wesc(APP_NAME)}だけで いい人は、連携しなくても だいじょうぶです。</p>`,
+  linkModal(`<p style="font-size:20px;font-weight:800;margin:0">${wesc(nm)}と 連携しますか？</p>${LINK_TEXT(2)}`,
     [{t:'今はしない',cls:'white'},{t:'連携する',on:()=>startLink(id)}])}
 function goApp(id){const a=document.querySelector(`.subjects a[data-app="${id}"]`);if(a){a.classList.remove('off');a.onclick=null;a.click()}}
 function startLink(id){freshW();if(!W.linked){Object.assign(W,FUNDS());W.linked=true;W.linkAt=todayKey()}
