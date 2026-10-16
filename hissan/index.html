@@ -67,6 +67,11 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Klee+One:wght@600&family=M+PLUS+Rounded+1c:wght@500;800&display=swap">
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=DotGothic16&text=0123456789%2B%2F%25.%2C%C3%97%C3%B7%E2%88%92%3D%EF%BC%8B%E3%81%82%E3%81%BE%E3%82%8A%E7%82%B9&display=swap">
+<title>ひっさんクエスト</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Klee+One:wght@600&family=M+PLUS+Rounded+1c:wght@500;800&display=swap">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=DotGothic16&text=0123456789%2B%2F%25.%2C%C3%97%C3%B7%E2%88%92%3D%EF%BC%8B%E3%81%82%E3%81%BE%E3%82%8A%E7%82%B9&display=swap">
 </head>
 <body>
 <style>
@@ -1223,7 +1228,7 @@ ink.addEventListener('pointermove',e=>{
     ictx.strokeStyle='#1C2A5C';ictx.lineWidth=penW(u);ictx.lineCap='round';ictx.beginPath();ictx.moveTo((a[0]+OX)*u,a[1]*u);ictx.lineTo((p[0]+OX)*u,p[1]*u);ictx.stroke()}});
 ['pointerup','pointercancel'].forEach(t=>ink.addEventListener(t,e=>{touches.delete(e.pointerId);
   if(scrolling){if(touches.size>=2)lastMid=mid();if(!touches.size)scrolling=false;return}
-  if(erLast){erLast=null;redraw();if(hist.length&&hist[hist.length-1].length===strokes.length&&hist[hist.length-1].every((s,i)=>s===strokes[i]))hist.pop();updateBtns()}
+  if(erLast){erLast=null;redraw();if(hist.length&&hist[hist.length-1].length===strokes.length&&hist[hist.length-1].every((s,i)=>s===strokes[i]))hist.pop();else showToast();updateBtns()}
   drawing=null}));
 $('growBtn').onclick=()=>{extra+=2;layout();$('growBtn').scrollIntoView({block:'nearest',behavior:'smooth'})};
 /* 向き：たて向き（タッチの端末）なら 横向きをすすめる */
@@ -1648,8 +1653,9 @@ $('shopBtn').onclick=()=>{renderShop();show('shop')};
 $('backBtn').onclick=()=>{renderHome();show('home')};
 $('undoBtn').onclick=()=>{if(hist.length)strokes=hist.pop();redraw();updateBtns()};
 let toastT=0;const hideToast=()=>{clearTimeout(toastT);$('undoToast').hidden=true};
-$('clearBtn').onclick=()=>{hist.push(strokes.slice());strokes=[];redraw();updateBtns();$('undoToast').hidden=false;clearTimeout(toastT);toastT=setTimeout(hideToast,6000)};
-$('undoToast').onclick=e=>{e.stopPropagation();if(hist.length)strokes=hist.pop();hideToast();redraw();updateBtns()};
+function showToast(){$('undoToast').hidden=false;clearTimeout(toastT);toastT=setTimeout(hideToast,6000)}
+$('clearBtn').onclick=()=>{hist.push(strokes.slice());strokes=[];redraw();updateBtns();showToast()};
+$('undoToast').onclick=e=>{e.stopPropagation();if(hist.length)strokes=hist.pop();if(hist.length)showToast();else hideToast();redraw();updateBtns()}; // 続けて押すと もっと前に もどる
 $('eraseBtn').onclick=()=>setEraser(!erasing);
 $('quitBtn2').onclick=()=>$('quitBtn').onclick();
 $('nextBtn').onclick=nextQ;
