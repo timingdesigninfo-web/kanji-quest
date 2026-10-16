@@ -1,7 +1,8 @@
-// かんじクエスト：家族と共有（記録を ほかの端末から見られるようにする）
+// かんじクエスト・ひっさんクエスト：家族と共有（記録を ほかの端末から見られるようにする）
 //
 // 名前やメールアドレスは使わない。ランダムな ID と、書きこみ用のカギだけ。
 // POST   /api/sync {id, key, data}  記録を保存（最初に使ったカギの持ち主だけが上書きできる）
+// POST   /api/sync {id, key, part:"hissan", data}  ひっさんクエストの記録（同じ共有の中に 教科ごとに保存し、見るときに合わせる）
 // GET    /api/sync?id=...           記録を見る（読みとり専用）
 // DELETE /api/sync {id, key}        共有をやめる（記録を消す）
 // ごほうびの交換を おうちの人がOKする：
@@ -62,9 +63,16 @@ module.exports = async (req, res) => {
       let shop = null; try { shop = sh.result ? JSON.parse(sh.result) : null; } catch {}
       return send(res, 200, { admin: Number(a.result) > 0, dec, shop });
     }
-    const [d] = await db([['GET', 'kq:data:' + id]]);
-    if (!d.result) return send(res, 404, { error: 'not_found' });
-    return send(res, 200, d.result);
+    const [d, hs] = await db([['GET', 'kq:data:' + id], ['GET', 'kq:data:' + id + ':hissan']]);
+    if (!d.result && !hs.result) return send(res, 404, { error: 'not_found' });
+    if (!hs.result) return send(res, 200, d.result);
+    let main = {}, h = {};
+    try { main = d.result ? JSON.parse(d.result) : {}; } catch {}
+    try { h = JSON.parse(hs.result); } catch {}
+    // かんじの記録がまだない（ひっさんだけ）ときは、ひっさんの名前・ポイントなどを使う
+    if (!d.result) main = { v: 1, at: h.at, name: h.name, grade: h.grade, points: h.points, reqs: h.reqs, tickets: h.tickets, shop: h.shop, shopV: h.shopV, streak: 0, goal: h.goal, days: {}, log: [], noKanji: true };
+    main.hissan = h;
+    return send(res, 200, main);
   }
 
   // 書きこみは このサイトからだけ
@@ -79,7 +87,7 @@ module.exports = async (req, res) => {
   if (req.method === 'POST' && (b.act === 'claim' || b.act === 'decide' || b.act === 'shop')) {
     const admin = String(b.admin || '');
     if (!KEY_RE.test(admin)) return send(res, 400, { error: 'bad_admin' });
-    const [ex] = await db([['EXISTS', 'kq:data:' + id]]);
+    const [ex] = await db([['EXISTS', 'kq:data:' + id, 'kq:data:' + id + ':hissan']]);
     if (!Number(ex.result)) return send(res, 404, { error: 'not_found' });
     const mine = sha(admin);
     if (b.act === 'claim') {
@@ -113,13 +121,14 @@ module.exports = async (req, res) => {
     if (data.length > MAX) return send(res, 413, { error: 'too_big' });
     const [set, cur] = await db([['SET', 'kq:own:' + id, owner, 'NX', 'EX', TTL], ['GET', 'kq:own:' + id]]);
     if (cur.result !== owner) return send(res, 403, { error: 'not_owner' });
-    await db([['SET', 'kq:data:' + id, data, 'EX', TTL], ['EXPIRE', 'kq:own:' + id, TTL], ['EXPIRE', 'kq:adm:' + id, TTL], ['EXPIRE', 'kq:dec:' + id, TTL], ['EXPIRE', 'kq:shop:' + id, TTL]]);
+    const dk = 'kq:data:' + id + (b.part === 'hissan' ? ':hissan' : '');
+    await db([['SET', dk, data, 'EX', TTL], ['EXPIRE', 'kq:data:' + id, TTL], ['EXPIRE', 'kq:data:' + id + ':hissan', TTL], ['EXPIRE', 'kq:own:' + id, TTL], ['EXPIRE', 'kq:adm:' + id, TTL], ['EXPIRE', 'kq:dec:' + id, TTL], ['EXPIRE', 'kq:shop:' + id, TTL]]);
     return send(res, 200, { ok: true });
   }
   if (req.method === 'DELETE') {
     const [cur] = await db([['GET', 'kq:own:' + id]]);
     if (cur.result && cur.result !== owner) return send(res, 403, { error: 'not_owner' });
-    await db([['DEL', 'kq:data:' + id, 'kq:own:' + id, 'kq:adm:' + id, 'kq:dec:' + id, 'kq:shop:' + id]]);
+    await db([['DEL', 'kq:data:' + id, 'kq:data:' + id + ':hissan', 'kq:own:' + id, 'kq:adm:' + id, 'kq:dec:' + id, 'kq:shop:' + id]]);
     return send(res, 200, { ok: true });
   }
   return send(res, 405, { error: 'method' });

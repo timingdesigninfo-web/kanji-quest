@@ -262,6 +262,13 @@ button:focus-visible{outline:4px solid var(--ink);outline-offset:3px}
 .wv{padding:14px 16px;display:flex;flex-direction:column;gap:10px}
 .wv .wv-top{display:flex;align-items:center;justify-content:space-between;gap:8px}
 .wv .wv-top b{font-size:18px}
+.wv-tabs{display:grid;grid-template-columns:1fr 1fr;gap:6px}
+.wv-tabs button{border:3px solid var(--ink);border-radius:999px;padding:6px;font:800 15px var(--f-body);background:#fff;color:var(--ink)}
+.wv-tabs button.on{background:var(--yellow)}
+.hs-it{display:flex;gap:10px;align-items:flex-start;border-top:2px dashed var(--line);padding:8px 0;font-size:14px;line-height:1.5}
+.hs-it .hs-mk{flex:none;font:800 22px/1.2 var(--f-body);width:24px;text-align:center}
+.hs-it.ok .hs-mk{color:var(--red)}.hs-it.ng .hs-mk{color:#2F8CFF}
+.hs-it .q{font-weight:800}.hs-it .a{font-size:12px;font-weight:500;opacity:.8}
 .wv .meta{font-size:12px;font-weight:500;opacity:.7}
 .wv .stamp-row{margin:0}
 
@@ -2091,8 +2098,17 @@ function eligible(b,fc){return [...b.ans].every(c=>!KG[c]||KG[c]<=S.grade||fc.in
 function idsFor(kanji,fc){return BANK.filter(b=>eligible(b,fc)&&[...b.ans].some(c=>kanji.includes(c))).map(b=>b.id)}
 function focusIds(){const fc=focusChars();if(!fc.length)return [];return idsFor(fc,fc)}
 function shuffle(a){for(let i=a.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[a[i],a[j]]=[a[j],a[i]]}return a}
-function save(){try{localStorage.setItem(KEY,JSON.stringify(S))}catch(e){}saveW()}
+function save(){try{localStorage.setItem(KEY,JSON.stringify(S));localStorage.setItem(SHARE_KEY,JSON.stringify(S.share||null))}catch(e){}saveW()}
 let S=load();
+
+/* 家族と共有のID・カギは 教科をまたいだ共通の場所（questShare.v1）に置く。子ども（この端末）1人に共有1つ */
+const SHARE_KEY='questShare.v1';
+function adoptShare(){try{const raw=localStorage.getItem(SHARE_KEY);
+  if(raw===null){if(!S.share){const o=JSON.parse(localStorage.getItem('kanjiQuest4.v1')||'null');if(o&&o.share)S.share=o.share}
+    localStorage.setItem(SHARE_KEY,JSON.stringify(S.share||null))}
+  else S.share=JSON.parse(raw)}catch(e){}}
+adoptShare();
+addEventListener('storage',e=>{if(e.key===SHARE_KEY){try{S.share=JSON.parse(e.newValue||'null')}catch(_){}}});
 const APP='kanji',APP_NAME='かんじ';
 /* ===== 教科の連携（かんじクエスト・ひっさんクエストなど 同じサイトの教科アプリ） =====
    この部分は 各アプリに同じものを入れる（tools/wallet-snippet.js が元）。APP・APP_NAME・DEFAULT_SHOP・S・save・todayKey・dkey は 各アプリのもの。
@@ -2558,7 +2574,20 @@ function dayTag(r){if(!r||!r.tries)return '';if(!r.passed)return '<span class="h
   const rw=r.passRw??(r.tries-1);return rw===0?'<span class="hi-tag gold">一発合格</span>':`<span class="hi-tag silver">書き直し${rw}回で合格</span>`}
 function openHistory(focus){HS=null;famStep='';syncErr='';renderHistory();show('history');
   if(focus){const el=document.querySelector(`.hi-day[data-d="${focus}"]`);if(el){el.scrollIntoView({block:'start'});const s=el.querySelector('details');if(s)s.open=true}}}
+function renderHissanLog(){const h=wvH(),LG=(h.log||[]).slice().reverse(),DY=h.days||{};
+  $('hiTabs').querySelector('[data-f="ng"]').textContent='まちがえた問題だけ';
+  const byDay={};LG.forEach(s=>{(byDay[s.date]=byDay[s.date]||[]).push(s)});Object.keys(DY).forEach(k=>{if(DY[k].tries&&!byDay[k])byDay[k]=[]});
+  const md={test:'テスト',practice:'とけるまで練習',free:'自主練'};let html='';
+  for(const k of Object.keys(byDay).sort().reverse()){const ss=byDay[k].filter(x=>hiFilter!=='ng'||x.items.some(it=>!it.ok));if(hiFilter==='ng'&&!ss.length)continue;
+    html+=`<section class="panel hi-day"><div class="hi-dh"><b>${dLabel(k)}</b>${dayTag(DY[k])}</div>`
+      +(ss.length?ss.map(x=>{const its=hiFilter==='ng'?x.items.filter(it=>!it.ok):x.items,ng=x.items.filter(it=>!it.ok).length;
+        return `<details class="hi-s"><summary>${md[x.mode]||''} ${x.mode==='practice'?`${x.items.length-ng}/${x.items.length}`:`${x.score}点`}${ng?`<span class="ng">×${ng}</span>`:''}<span class="r">${hhmm(x.t)}</span></summary>
+          <div class="hi-items">${its.map(it=>`<div class="hs-it ${it.ok?'ok':'ng'}"><span class="hs-mk">${it.ok?'○':'×'}</span><div><div class="q">${esc(it.q)}</div><div class="a">答え：${esc(it.a)}${!it.ok&&it.rd?`<br>書いた答え：${esc(it.rd)}`:''}</div></div></div>`).join('')}</div></details>`}).join('')
+      :`<div class="hi-old">${(DY[k]||{}).best||0}点</div>`)+`</section>`}
+  $('hiList').innerHTML=html||`<div class="panel hi-empty">${hiFilter==='ng'?'まちがえた問題はありません。':'まだ ひっさんの記録がありません。'}</div>`}
 function renderHistory(){
+  if(wvH()){document.querySelector('#history .shop-head h2').textContent=wName(HS);$('wvHead').hidden=false;renderWatchHead();renderHissanLog();return}
+  if($('hiTabs'))$('hiTabs').querySelector('[data-f="ng"]').textContent='まちがえた字だけ';
   const {log:LG,days:DY}=hsrc();
   document.querySelector('#history .shop-head h2').textContent=HS?wName(HS):'きろく';
   $('wvHead').hidden=!HS;if(HS)renderWatchHead();
@@ -2698,20 +2727,24 @@ function tkHTML(h){const md=k=>{const [,m,d]=String(k||'').split('-');return m?`
       +(rows.length>5?`<details class="tk"><summary>もっと見る（あと${rows.length-5}件）</summary><div class="tkl">${rows.slice(5).map(row).join('')}</div></details>`:'')
     :`<div class="meta">まだありません。</div>`)
     +(old?`<div class="meta">※${esc(h.name||'')}${h.name?'さんの':''}端末のアプリを開き直すと、くわしく表示されます。</div>`:'')}
-function renderWatchHead(){const h=HS,el=$('wvHead');
+let wvTab='kanji'; // 見る画面：かんじ／ひっさん
+const wvH=()=>HS&&HS.hissan&&wvTab==='hissan'?HS.hissan:null;
+function renderWatchHead(){const h=HS,el=$('wvHead'),hh=wvH();
   const g=h.goal,left=g?Math.max(0,g.cost-h.points):0;
   const pend=pendingOf(h,h.dec||{}),w=S.watch.find(w=>w.id===h.id)||{},isAdm=!!w.admin;
-  el.innerHTML=`<div class="wv-top"><b>${esc(h.name||'')}${h.grade?` ${h.grade}年生`:''}</b><button class="btn white small" id="wvReload">最新にする</button></div>
+  el.innerHTML=`${h.hissan?`<div class="wv-tabs" role="tablist"><button data-wt="kanji" class="${hh?'':'on'}" role="tab" aria-selected="${!hh}">かんじ</button><button data-wt="hissan" class="${hh?'on':''}" role="tab" aria-selected="${!!hh}">ひっさん</button></div>`:''}
+    <div class="wv-top"><b>${esc(h.name||'')}${(hh||h).grade?` ${(hh||h).grade}年生`:''}</b><button class="btn white small" id="wvReload">最新にする</button></div>
     ${isAdm?`<div class="adm">このスマホが「管理する人」です。ごほうびのOKと編集ができます。</div>`:''}
     ${pend.length?`<div class="reqs" style="padding:0"><h3>ごほうびのおねがい</h3>${pend.map((q,i)=>`<div class="rq"><div class="t">${esc(q.name)}<small>${q.cost}pt・${dLabel(dkey(new Date(q.at)))} ${hhmm(q.at)}</small></div>
       ${isAdm?`<button class="btn white" data-dq="${i}" data-ok="0">ダメ</button><button class="btn green" data-dq="${i}" data-ok="1">OK</button>`:`<span class="st wait">OKまち</span>`}</div>`).join('')}</div>`:''}
     <div class="now-pt"><span class="now-l">今のポイント</span><span class="now-v"><span class="coin"></span><span class="pixel">${h.points||0}</span><small>pt</small></span></div>
     ${g?`<div class="goal-head"><span>${esc(g.name)} まで</span><span class="pixel">${left?`あと ${left}pt`:'交換できる！'}</span></div><div class="bar"><i style="width:${Math.min(100,(h.points||0)/g.cost*100)}%"></i><span>${h.points||0} / ${g.cost}</span></div>`:''}
-    <div class="cal-head"><span>15日カレンダー</span><span>${h.streak?`${h.streak}日連続！`:''}</span></div>
-    <div class="stamp-row">${stampsHTML(h.days||{})}</div>
+    <div class="cal-head"><span>15日カレンダー${h.hissan?(hh?'（ひっさん）':'（かんじ）'):''}</span><span>${(hh||h).streak?`${(hh||h).streak}日連続！`:''}</span></div>
+    <div class="stamp-row">${stampsHTML((hh||h).days||{})}</div>
     ${tkHTML(h)}
     <div class="meta">${h.at?`${dLabel(dkey(new Date(h.at)))} ${hhmm(h.at)} の記録`:''}</div>`;
   $('wvReload').onclick=()=>openWatch(h.id);
+  el.querySelectorAll('[data-wt]').forEach(b=>b.onclick=()=>{wvTab=b.dataset.wt;sfx('tap');renderHistory()});
   if(isAdm){const eb=document.createElement('button');eb.className='btn white';eb.textContent='ごほうびを編集';eb.onclick=()=>edOpen('remote',h.shop||[]);el.appendChild(eb)}
   el.querySelectorAll('[data-dq]').forEach(b=>b.onclick=()=>{const q=pend[+b.dataset.dq],ok=b.dataset.ok==='1';
     if(ok)decide(q,true);else ask(`${q.name}のおねがいをことわる？ ポイントは戻ります。`,'ことわる',()=>decide(q,false))})}
@@ -2724,7 +2757,7 @@ async function openWatch(id){
     if(!r.ok)throw 0;const d=await r.json();
     let w=S.watch.find(w=>w.id===id);if(w){w.name=d.name||'';w.grade=d.grade}else{w={id,name:d.name||'',grade:d.grade};S.watch.push(w)}
     let dd=await fetchDec(id);if(!dd.admin&&!w.admin&&await claimAdmin(w))dd=await fetchDec(id);
-    HS={...d,id,dec:dd.dec||{}};if(dd.shop&&dd.shop.v>(d.shopV||0)){HS.shop=dd.shop.list;HS.shopV=dd.shop.v;const g=HS.shop.reduce((a,b)=>!a||b.cost>a.cost?b:a,null);HS.goal=g?{name:g.name,cost:g.cost}:null}w.pend=pendingOf(HS,HS.dec).length;save();renderWatchPills();
+    HS={...d,id,dec:dd.dec||{}};wvTab=HS.noKanji?'hissan':(HS.hissan&&wvTab==='hissan'?'hissan':'kanji');if(dd.shop&&dd.shop.v>(d.shopV||0)){HS.shop=dd.shop.list;HS.shopV=dd.shop.v;const g=HS.shop.reduce((a,b)=>!a||b.cost>a.cost?b:a,null);HS.goal=g?{name:g.name,cost:g.cost}:null}w.pend=pendingOf(HS,HS.dec).length;save();renderWatchPills();
     renderHistory();
   }catch(e){$('hiList').innerHTML='<div class="panel hi-empty">読みこめませんでした。<br>電波のよいところで「最新にする」を押してください。</div>'}}
 

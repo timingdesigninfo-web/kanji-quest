@@ -426,6 +426,33 @@ body{overflow-x:hidden;overflow-x:clip}
 .amz-links a{display:flex;align-items:center;justify-content:center;min-height:48px;padding:8px;border:3px solid var(--ink);border-radius:12px;font-size:15px;font-weight:800;color:var(--ink);text-decoration:none;background:var(--sky-lite);box-shadow:0 3px 0 var(--ink);text-align:center}
 .amz-links a:active{transform:translateY(2px);box-shadow:0 1px 0 var(--ink)}
 .amz-note{margin:0;font-size:10px;font-weight:500;opacity:.7}
+.fam{padding:14px 16px;display:flex;flex-direction:column;gap:10px}
+.fam h3{margin:0;font-size:16px}
+.fam p{margin:0;font-size:13px;font-weight:500;line-height:1.6}
+.fam .qr{align-self:center;background:#fff;border:3px solid var(--ink);border-radius:14px;padding:8px;line-height:0}
+.fam .qr svg{width:200px;height:200px;display:block}
+.fam .lnk{display:flex;gap:8px;align-items:center}
+.fam .lnk input{flex:1;min-width:0;border:3px solid var(--ink);border-radius:10px;padding:8px;font:500 13px var(--f-body);color:var(--ink);background:#fff}
+.fam .row{display:flex;gap:8px;flex-wrap:wrap}
+.fam .row .btn{flex:1;font-size:15px;padding:10px}
+.fam .nm{border:3px solid var(--ink);border-radius:10px;padding:8px 10px;font:500 15px var(--f-body);color:var(--ink);background:#fff;width:100%;box-sizing:border-box}
+.fam .meta{font-size:12px;font-weight:500;opacity:.7}
+.fam .btn.small,.wv .btn.small{padding:8px 14px;font-size:14px;width:auto;flex:none}
+.fam .err{color:var(--red);font-size:13px;font-weight:800}
+.watch-list{display:flex;flex-direction:column;gap:8px}
+.fam label{font-size:13px;font-weight:800}
+.reqs{padding:14px 16px;display:flex;flex-direction:column;gap:8px}
+.reqs h3{margin:0;font-size:16px}
+.rq{display:flex;align-items:center;gap:10px;border-top:2px dashed var(--line);padding-top:8px}
+.rq .t{flex:1;min-width:0;font-size:15px;font-weight:800;line-height:1.4}
+.rq .t small{display:block;font-size:12px;font-weight:500;opacity:.75}
+.rq .st{font-size:13px;font-weight:800;white-space:nowrap}
+.rq .st.wait{color:#8A6D00}.rq .st.ok{color:var(--green)}.rq .st.ng{color:var(--red)}
+.rq .btn{flex:none;font-size:15px;padding:8px 14px;width:auto}
+.watch-list .w{display:flex;gap:8px;align-items:center}
+.watch-list .w .btn{flex:1;font-size:15px;padding:10px;text-align:left}
+.watch-list .w .x{flex:none;width:40px;height:40px;border-radius:10px;border:3px solid var(--ink);background:#fff;font-size:18px;color:var(--ink)}
+.rq .who{font-size:11px;font-weight:800;opacity:.7;white-space:nowrap}
 .amz-rw{display:flex;flex-direction:column;gap:8px}.amz-rw:empty{display:none}
 .amz-links a.rw{background:#FFF4CC;flex-direction:column;gap:2px}
 .amz-links a.rw small{display:block;font-size:11px;font-weight:500;opacity:.75}
@@ -872,6 +899,7 @@ body:has(#quiz:not([hidden])){background-image:none!important;background-color:#
     <h2>ごほうび</h2>
     <div class="wallet"><span class="coin"></span><span class="num" id="pts2">0</span><span class="unit">pt</span></div>
   </div>
+  <section class="panel reqs" id="reqBox" hidden></section>
   <div class="items" id="items"></div>
   <section class="panel tickets"><h3>持っているチケット</h3><div id="ticketList" style="display:flex;flex-direction:column;gap:8px"></div></section>
   <button class="btn white" id="editShopBtn">ごほうびを編集</button>
@@ -904,6 +932,7 @@ body:has(#quiz:not([hidden])){background-image:none!important;background-color:#
 <main id="admin" class="screen" hidden>
   <div class="shop-head"><h2>管理メニュー</h2><button class="btn white small" id="adBack">もどる</button></div>
   <section class="panel adp" id="parentBox"></section>
+  <section class="panel fam adp" id="famBox"></section>
   <section class="panel adp" id="moveBox"></section>
   <section class="panel adp">
     <h3>そのほか</h3>
@@ -1063,11 +1092,20 @@ const DEFAULT_SHOP=[
 
 /* ===== 保存 ===== */
 const KEY='hissanQuest.v1';
-function fresh(){return {v:1,points:0,total:0,days:{},today:null,weak:[],tickets:[],grade:null,onboarded:false,units:[],shop:DEFAULT_SHOP.map(x=>({...x}))}}
-function load(){try{const s=JSON.parse(localStorage.getItem(KEY));if(s&&s.v===1){if(!Array.isArray(s.units))s.units=[];return s}}catch(e){}return fresh()}
-function save(){try{localStorage.setItem(KEY,JSON.stringify(S));localStorage.setItem(WKEY,JSON.stringify(W))}catch(e){}}
+function fresh(){return {v:1,reqs:[],share:null,points:0,total:0,days:{},today:null,weak:[],tickets:[],grade:null,onboarded:false,units:[],shop:DEFAULT_SHOP.map(x=>({...x}))}}
+function load(){try{const s=JSON.parse(localStorage.getItem(KEY));if(s&&s.v===1){if(!Array.isArray(s.units))s.units=[];if(!Array.isArray(s.reqs))s.reqs=[];if(s.share===undefined)s.share=null;return s}}catch(e){}return fresh()}
+function save(){try{localStorage.setItem(KEY,JSON.stringify(S));localStorage.setItem(WKEY,JSON.stringify(W));localStorage.setItem(SHARE_KEY,JSON.stringify(S.share||null))}catch(e){}if(S.share&&typeof syncSoon==='function')syncSoon()}
 function shuffle(a){for(let i=a.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[a[i],a[j]]=[a[j],a[i]]}return a}
 let S=load();
+
+/* 家族と共有のID・カギは 教科をまたいだ共通の場所（questShare.v1）に置く。子ども（この端末）1人に共有1つ */
+const SHARE_KEY='questShare.v1';
+function adoptShare(){try{const raw=localStorage.getItem(SHARE_KEY);
+  if(raw===null){if(!S.share){const o=JSON.parse(localStorage.getItem('kanjiQuest4.v1')||'null');if(o&&o.share)S.share=o.share}
+    localStorage.setItem(SHARE_KEY,JSON.stringify(S.share||null))}
+  else S.share=JSON.parse(raw)}catch(e){}}
+adoptShare();
+addEventListener('storage',e=>{if(e.key===SHARE_KEY){try{S.share=JSON.parse(e.newValue||'null')}catch(_){}}});
 
 const APP='hissan',APP_NAME='ひっさん';
 /* ===== 教科の連携（かんじクエスト・ひっさんクエストなど 同じサイトの教科アプリ） =====
@@ -1694,6 +1732,86 @@ function renderAmzRw(){const seen=new Set(),rows=[];
 // ホーム・ごほうび画面を出すたびに 作りなおす
 {const _rh=renderHome,_rs=renderShop;renderHome=function(...a){const r=_rh.apply(this,a);try{renderAmzRw()}catch(e){}return r};renderShop=function(...a){const r=_rs.apply(this,a);try{renderAmzRw()}catch(e){}return r}}
 
+/* ===== 家族と共有（かんじクエストと共通。子ども1人に共有1つ。ひっさんの記録は 同じ共有の「ひっさん」の欄に入る） ===== */
+const SYNC_URL='/api/sync';
+const SITE_ROOT=/^https?:/.test(location.protocol)&&!/claude|usercontent/.test(location.host)?location.origin:'https://kanji-quest-black.vercel.app';
+const viewURL=id=>`${SITE_ROOT}/#view=${id}`; // 見る画面は かんじクエストの中にある
+const WD=['日','月','火','水','木','金','土'];
+function dLabel(k){const [y,m,d]=k.split('-').map(Number);const dt=new Date(y,m-1,d);return `${y!==new Date().getFullYear()?y+'年':''}${m}月${d}日（${WD[dt.getDay()]}）`}
+const hhmm=t=>{const d=new Date(t);return `${d.getHours()}:${String(d.getMinutes()).padStart(2,'0')}`};
+function syncPayload(){
+  const cut=dkey(new Date(Date.now()-90*864e5)),days={};
+  for(const k in S.days)if(k>=cut){const d=S.days[k];days[k]={tries:d.tries,passed:d.passed,passRw:d.passRw,best:d.best,earned:d.earned,bonus:d.bonus,streakBonus:d.streakBonus}}
+  const g=goalItem();
+  return JSON.stringify({v:1,at:Date.now(),name:(S.share&&S.share.name)||'',grade:S.grade,qn:qn(),points:S.points,reqs:(S.reqs||[]).slice(-30),tickets:(S.tickets||[]).slice(-50),shop:S.shop,shopV:S.shopV||0,
+    streak:streakNow(),goal:g?{name:g.name,cost:g.cost}:null,days,log:(S.hlog||[]).filter(x=>x.date>=cut)})}
+let syncT=0,syncErr='';
+function syncSoon(){if(!S.share)return;clearTimeout(syncT);syncT=setTimeout(syncNow,1500)}
+async function syncNow(){if(!S.share)return false;
+  try{const r=await fetch(SYNC_URL,{method:'POST',headers:{'Content-Type':'application/json'},body:`{"id":"${S.share.id}","key":"${S.share.key}","part":"hissan","data":${syncPayload()}}`});
+    if(r.ok){S.share.at=Date.now();syncErr='';try{localStorage.setItem(KEY,JSON.stringify(S));localStorage.setItem(SHARE_KEY,JSON.stringify(S.share))}catch(e){}if(!$('admin').hidden)renderFam();return true}
+    syncErr=r.status===503?'共有の準備がまだできていません。':'うまく送れませんでした。';}catch(e){syncErr='つながりませんでした。'}
+  if(!$('admin').hidden)renderFam();return false}
+let famStep='';
+function renderFam(){const b=$('famBox'),sh=S.share;
+  const wl='';
+  if((!sh&&famStep==='name')||(sh&&!sh.name)){
+    b.innerHTML=`<h3>名前を入れてください</h3>
+      <input class="nm" id="famName" maxlength="12" placeholder="例：たろう" autocomplete="off">
+      <p class="meta">見る人の画面に「〇〇さんの記録」と出ます。ニックネームでOK。</p>
+      ${syncErr?`<div class="err">${syncErr}</div>`:''}
+      <div class="row"><button class="btn white" id="famCancel">やめる</button><button class="btn green" id="famGo" disabled>OK</button></div>${wl}`;
+    const inp=$('famName');inp.oninput=()=>{$('famGo').disabled=!inp.value.trim()};inp.focus();
+    inp.onkeydown=e=>{if(e.key==='Enter'&&inp.value.trim())startShare(inp.value)};
+    $('famGo').onclick=()=>startShare(inp.value);
+    $('famCancel').onclick=async()=>{famStep='';syncErr='';if(sh){const s0=sh;S.share=null;save();try{await fetch(SYNC_URL,{method:'DELETE',headers:{'Content-Type':'application/json'},body:JSON.stringify({id:s0.id,key:s0.key})})}catch(e){}}renderFam()};}
+  else if(!sh){b.innerHTML=`<h3>家族と共有</h3><p>管理する人のスマホなどから、この記録を見られるようにします。かんじクエストと共通で、管理する人のスマホでは「かんじ／ひっさん」を切りかえて見られます。メールアドレスなどの登録はいりません。</p>${syncErr?`<div class="err">${syncErr}</div>`:''}<button class="btn" id="famStart">共有する</button>${wl}`;
+    $('famStart').onclick=()=>{famStep='name';syncErr='';renderFam()};}
+  else{const url=viewURL(sh.id);
+    b.innerHTML=`<h3>${esc(sh.name||'')}${sh.name?'さんの記録を':''}共有中</h3><p>見る人のスマホのカメラで、このQRを読みとってください。テストのたびに、自動で最新になります。</p>
+      <div class="qr" id="famQR"></div>
+      <div class="lnk"><input readonly value="${url}" id="famURL"><button class="btn white small" id="famCopy">コピー</button></div>
+      ${syncErr?`<div class="err">${syncErr}</div>`:`<div class="meta">${sh.at?`最終更新 ${dLabel(dkey(new Date(sh.at)))} ${hhmm(sh.at)}`:''}</div>`}
+      <div class="row"><button class="btn white" id="famSync">今すぐ更新</button><button class="btn white" id="famStop">共有をやめる</button></div>
+      <p class="meta">${sh.admin?'管理する人が登録済み。ごほうびの交換は、管理する人のOKで決まります。':'最初にQRを読みとったスマホが「管理する人」になり、ごほうびの交換をOKできます。'}</p>
+      <label for="famName">表示名</label><input class="nm" id="famName" maxlength="12" placeholder="例：たろう" value="${esc(sh.name||'')}">
+      <p class="meta">QRやリンクを知っている人は誰でも見られます。家族だけに教えてください。</p>${wl}`;
+    drawQR($('famQR'),url);
+    $('famName').onchange=e=>{const v=e.target.value.trim().slice(0,12);if(!v){e.target.value=sh.name||'';return}sh.name=v;save();syncNow().then(()=>renderFam())};
+    $('famCopy').onclick=()=>{navigator.clipboard?.writeText(url).then(()=>{$('famCopy').textContent='OK!'}).catch(()=>{$('famURL').select()})};
+    $('famSync').onclick=()=>{$('famSync').textContent='更新中…';syncNow()};
+    $('famStop').onclick=()=>ask('共有をやめる？ ほかの端末からは見られなくなります。','やめる',async()=>{const s0=S.share;S.share=null;save();
+      try{await fetch(SYNC_URL,{method:'DELETE',headers:{'Content-Type':'application/json'},body:JSON.stringify({id:s0.id,key:s0.key})})}catch(e){}renderFam()});}
+}
+async function startShare(name){name=String(name||'').trim().slice(0,12);if(!name)return;
+  const b=$('famGo');if(b){b.disabled=true;b.textContent='準備中…'}
+  if(S.share)S.share.name=name;else S.share={id:rid(20),key:rid(40),name,at:0};save();
+  if(!await syncNow()){S.share=null;save()}else famStep='';renderFam()}
+/* --- ごほうびのおねがい：管理する人の OK/ダメ を取りにいく（かんじと同じ） --- */
+let decT=0;
+async function checkDecisions(){if(!S.share||Date.now()-decT<5000)return;decT=Date.now();
+  try{const r=await fetch(SYNC_URL+'?dec=1&id='+S.share.id,{cache:'no-store'});if(!r.ok)return;const d=await r.json();
+    let ch=false;if(!!d.admin!==!!S.share.admin){S.share.admin=!!d.admin;ch=true}
+    for(const q of S.reqs){if(q.st!=='wait')continue;const v=d.dec&&d.dec[q.rid];
+      if(v==='1'||v==='0'){applyDecision(q,v==='1');ch=true;if(v==='1')sfx('clear')}}
+    if(d.shop&&Array.isArray(d.shop.list)&&d.shop.v>(S.shopV||0)){S.shop=d.shop.list;S.shopV=d.shop.v;ch=true}
+    if(ch){save();if(!$('shop').hidden)renderShop();else if(!$('home').hidden)renderHome();if(!$('admin').hidden)renderFam()}}catch(e){}}
+setInterval(()=>{if(S.share&&(S.reqs||[]).some(q=>q.st==='wait')&&!document.hidden){decT=0;checkDecisions()}},30000);
+const needOK=()=>!!S.pin||!!(S.share&&S.share.admin);
+function applyDecision(q,ok){if(q.st!=='wait')return;
+  if(ok){q.st='ok';S.tickets.push({id:Date.now()+Math.random(),name:q.name,cost:q.cost,date:todayKey(),used:false})}else{q.st='ng';S.points+=q.cost}}
+function renderReqs(){if(!Array.isArray(S.reqs))S.reqs=[];const rs=S.reqs.filter(r=>r.st==='wait'||Date.now()-r.at<7*864e5).slice(-6).reverse();
+  $('reqBox').hidden=!rs.length;
+  $('reqBox').innerHTML=`<h3>おねがい</h3>`+rs.map(r=>`<div class="rq"><div class="t">${esc(r.name)}<small>${r.cost}pt・${dLabel(dkey(new Date(r.at)))}</small></div>
+    ${r.st!=='wait'?`<span class="st ${r.st}">${r.st==='ok'?'OK！ チケットに':'ダメ（ポイントは戻りました）'}</span>`
+      :S.pin?`<span class="who">管理する人</span><button class="btn white" data-lq="${r.rid}" data-ok="0">ダメ</button><button class="btn green" data-lq="${r.rid}" data-ok="1">OK</button>`
+      :`<span class="st wait">OKまち</span>`}</div>`).join('')
+    +(S.reqs.some(r=>r.st==='wait')&&!S.pin?`<p class="meta" style="margin:0;font-size:12px">管理する人のスマホでOKが出ると、チケットになります。</p>`:'')}
+$('reqBox').addEventListener('click',e=>{const b=e.target.closest('[data-lq]');if(!b)return;const q=S.reqs.find(r=>r.rid===b.dataset.lq);if(!q)return;const ok=b.dataset.ok==='1';
+  withPin(`${q.name}（${q.cost}pt）を${ok?'OK':'ことわる'}には、管理する人のPINを入れてください`,()=>{applyDecision(q,ok);save();sfx(ok?'clear':'miss');renderShop()})});
+{const _rs2=renderShop;renderShop=function(...a){const r=_rs2.apply(this,a);try{renderReqs();checkDecisions()}catch(e){}return r}}
+{const _oa=openAdmin;openAdmin=function(...a){famStep='';syncErr='';const r=_oa.apply(this,a);try{renderFam()}catch(e){}return r}}
+
 /* ===== 読めなかった理由を 製作者に送る（押した人だけ。画像は30日で消える） ===== */
 let rpSent=false;
 // 送る問題：全部失敗したときは全部、一部だけ読めなかったときは その問題だけ（最大10）
@@ -1743,6 +1861,7 @@ function award(d,rw){const e=earn(PTS[Math.min(rw,RW_MAX)]);d.passed=true;d.earn
   streakGot=0;const st=streakNow();if(st>0&&st%STREAK_DAYS===0&&!d.streakBonus){d.streakBonus=earn(STREAK_PT);streakGot=d.streakBonus}
   return e}
 function finish(){
+  try{const c=results.filter(r=>r.ok).length;S.hlog=(S.hlog||[]).concat([{date:todayKey(),t:Date.now(),mode,score:score100(c,results.length),items:results.map(r=>({q:String(probText(r.p)).slice(0,90),a:ansText(r.p),ok:!!r.ok,rd:String(r.read||'').slice(0,40),w:r.p.kind==='word'}))}]).slice(-40)}catch(e){}
   const d=dayRec();
   const correct=results.filter(r=>r.ok).length,wrong=results.filter(r=>!r.ok).map(r=>({...r.p,read:r.read})),total=results.length;
   let earned=0,head='',body='';streakGot=0;const wasPassed=d.passed;
@@ -1981,7 +2100,7 @@ function goalItem(){return S.shop.reduce((a,b)=>!a||b.cost>a.cost?b:a,null)}
 function renderShop(){
   $('pts2').textContent=S.points;
   $('items').innerHTML=S.shop.length?S.shop.map(it=>`<div class="panel item">${icon(it.icon)}<div><h3>${esc(it.name)}</h3><p>${esc(it.desc||'')}</p><div class="cost"><span class="coin"></span>${it.cost}pt</div></div>
-    <button class="btn ${S.points>=it.cost?'yellow':'white'}" data-buy="${it.id}" ${S.points>=it.cost?'':'disabled'}>交換</button></div>`).join('')
+    <button class="btn ${S.points>=it.cost?'yellow':'white'}" data-buy="${it.id}" ${S.points>=it.cost?'':'disabled'}>${needOK()?'おねがい':'交換'}</button></div>`).join('')
     :`<div class="panel item"><div></div><div><h3>ごほうびがありません</h3><p>「ごほうびを編集」で作れます</p></div><div></div></div>`;
   const own=S.tickets.slice().reverse();
   $('ticketList').innerHTML=own.length?own.map(t=>{return `<div class="ticket ${t.used?'used':''}"><div class="name">${esc(t.name||'ごほうび')}<small>${t.date}${t.used?' ・ 使った':''}</small></div>${t.used?'':`<button class="btn green" data-use="${t.id}">使った</button>`}</div>`}).join('')
@@ -1989,7 +2108,8 @@ function renderShop(){
 }
 $('items').addEventListener('click',e=>{const b=e.target.closest('[data-buy]');if(!b)return;const it=S.shop.find(s=>s.id===b.dataset.buy);if(!it)return;
   const doIt=()=>{if(S.points<it.cost)return;S.points-=it.cost;S.tickets.push({id:Date.now(),name:it.name,cost:it.cost,date:todayKey(),used:false});save();sfx('clear');renderShop()};
-  if(S.pin)withPin(`${it.name}（${it.cost}pt）と交換するには、管理する人のPINを入れてください`,doIt); // PINがあれば 管理する人のOK＝PIN
+  if(needOK())ask(`${it.name}（${it.cost}pt）を、管理する人におねがいする？ OKが出たらチケットになります。`,'おねがい',()=>{if(S.points<it.cost)return;
+    S.points-=it.cost;S.reqs.push({rid:rid(10),name:it.name,cost:it.cost,at:Date.now(),st:'wait'});S.reqs=S.reqs.slice(-50);save();syncNow();sfx('coin');renderShop()});
   else ask(`${it.name}と${it.cost}ptを交換する？`,'交換',doIt)});
 $('ticketList').addEventListener('click',e=>{const b=e.target.closest('[data-use]');if(!b)return;const t=S.tickets.find(x=>String(x.id)===b.dataset.use);
   ask('このチケットを使った？','使った',()=>{t.used=true;save();renderShop()})});
@@ -2094,7 +2214,7 @@ function receiveMove(code){$('mvMsg').textContent='データを受けとりま�
       $('mvMsg').textContent='引っ越しが終わりました！';$('mvSub').textContent=`${(d.W&&d.W.linked?d.W:d.S).points||0}pt と記録が、この端末に移りました。`;
       $('mvYes').hidden=true;$('mvNo').textContent='はじめる';$('mvNo').onclick=()=>location.replace(location.pathname);sfx('clear')}
     catch(e){$('mvYes').disabled=false;$('mvYes').textContent='受けとる';$('mvSub').textContent='うまく受けとれませんでした。電波のよいところで、もう一度おしてください。'}}}
-$('resetBtn').onclick=()=>ask('ポイント・記録・チケットを全部消します。'+(linkN()>1?'連携しているほかの教科と共通のポイントも消えます。':'')+'元に戻せません。','消す',()=>ask('本当に消しますか？','全部消す',()=>{S=fresh();resetWallet();save();openWelcome()}));
+$('resetBtn').onclick=()=>ask('ポイント・記録・チケットを全部消します。'+(linkN()>1?'連携しているほかの教科と共通のポイントも消えます。':'')+'元に戻せません。','消す',()=>ask('本当に消しますか？','全部消す',()=>{const sh=S.share;S=fresh();S.share=sh;resetWallet();save();openWelcome()})); // 家族と共有は かんじと共通なので 残す
 
 /* ===== モーダル ===== */
 let mCb=null;
@@ -2320,6 +2440,7 @@ function askAgree(){if(S.agreed===TERMS_V||!$('moveModal').hidden)return;
   $('amMsg').textContent=S.agreed?'利用規約・プライバシーポリシーを変更しました':'利用規約とプライバシーポリシー';$('amChk').checked=false;$('amYes').disabled=true;$('agreeModal').hidden=false}
 $('amChk').onchange=()=>{$('amYes').disabled=!$('amChk').checked};
 $('amYes').onclick=()=>{S.agreed=TERMS_V;save();sfx('clear');$('agreeModal').hidden=true};
+if(S.share){syncSoon();setTimeout(checkDecisions,1500)} // かんじで始めた共有にも、ひっさんの記録を入れる
 {const mm=location.hash.match(/^#move=([A-Za-z0-9]{16,64})$/);if(mm){history.replaceState(null,'',location.pathname+location.search);receiveMove(mm[1])}else askAgree()}
 </script>
 
