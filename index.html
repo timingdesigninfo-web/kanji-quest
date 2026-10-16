@@ -2722,7 +2722,7 @@ function makeShare(d,correct,total){
     comment=d.pending.length?`あと${d.pending.length}字、がんばります。`:`書き直し${d.rewrites}回で合格！`}
   else{line=`${g}年生の漢字 自主練：${toScore(correct,total)}点`;comment='自主練もがんばった！'}
   const extra=st>=2?` ${st}日連続クリア中！`:'';
-  $('shareText').value=`${line}\n${comment}${extra}\nポイントを貯めてごほうびと交換中！（いま${S.points}pt）\n#かんじクエスト\n${SHARE_URL}`;
+  $('shareText').value=`${line}\n${comment}${extra}\nポイントを貯めてごほうびと交換中！（いま${S.points}pt）\n#かんじクエスト #まなびのクエスト\n${SHARE_URL}`;
   updateShareLinks();
   const sc=toScore(correct,total),isTest=mode!=='practice';
   shareBlob=null;$('shareImg').removeAttribute('src');
@@ -2815,7 +2815,7 @@ $('shareLine').addEventListener('click',e=>{e.preventDefault();shareOut('result'
 // トップ用：アプリの紹介と 今の がんばり
 function homeShareText(){const st=streakNow();
   const me=S.grade?`\n\nただいま${S.grade}年生の漢字に挑戦中！${st>=2?`（${st}日連続クリア）`:''}`:'';
-  return `小学生の漢字、書けますか？\n毎日10問、指で書いてAIが採点！\n\nご褒美を設定すれば、ポイントを貯めてごほうびと交換できる！（ご褒美は自分で買ってね）${me}\n\n#かんじクエスト\n${SHARE_URL}`}
+  return `小学生の漢字、書けますか？\n毎日10問、指で書いてAIが採点！\n\nご褒美を設定すれば、ポイントを貯めてごほうびと交換できる！（ご褒美は自分で買ってね）${me}\n\n#かんじクエスト #まなびのクエスト\n${SHARE_URL}`}
 let hsTimer=0;
 function updateHomeShare(){const t=homeShareText();hsBlob=null;
   clearTimeout(hsTimer);hsTimer=setTimeout(()=>homeCard().then(b=>{hsBlob=b;if(b)$('hsImg').src=URL.createObjectURL(b)}),300);
