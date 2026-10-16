@@ -434,9 +434,9 @@ body{overflow-x:hidden;overflow-x:clip}
 .rp-btn:disabled{text-decoration:none;opacity:.6}
 .thanks{position:fixed;left:50%;bottom:calc(24px + env(safe-area-inset-bottom,0px));z-index:70;display:flex;align-items:flex-end;gap:6px;transform:translateX(-50%);pointer-events:auto;cursor:pointer}
 .thanks canvas{width:96px;height:auto;flex:none;image-rendering:auto;animation:th-hop .7s cubic-bezier(.3,1.6,.5,1) both,th-bob 1.1s ease-in-out .7s infinite}
-.thanks .bub{position:relative;max-width:min(62vw,300px);background:#fff;border:3px solid var(--ink);border-radius:18px;padding:10px 14px;font-size:15px;font-weight:800;line-height:1.5;color:var(--ink);box-shadow:0 4px 0 var(--ink);margin-bottom:46px;transform-origin:0 100%;animation:th-pop .45s cubic-bezier(.3,1.7,.5,1) .35s both}
-.thanks .bub::before{content:"";position:absolute;left:-13px;bottom:14px;border:8px solid transparent;border-right:12px solid var(--ink)}
-.thanks .bub::after{content:"";position:absolute;left:-7px;bottom:16px;border:6px solid transparent;border-right:9px solid #fff}
+.thanks .bub{position:relative;max-width:min(62vw,300px);margin-left:22px;background:#fff;border:3px solid var(--ink);border-radius:18px;padding:10px 14px;font-size:15px;font-weight:800;line-height:1.5;color:var(--ink);box-shadow:0 4px 0 var(--ink);margin-bottom:46px;transform-origin:0 100%;animation:th-pop .45s cubic-bezier(.3,1.7,.5,1) .35s both}
+.thanks .bub::before{content:"";position:absolute;left:-33px;bottom:6px;border:14px solid transparent;border-right:30px solid var(--ink);border-left:0}
+.thanks .bub::after{content:"";position:absolute;left:-26px;bottom:10.5px;border:9.5px solid transparent;border-right:27px solid #fff;border-left:0}
 .thanks .bub small{display:block;font-size:12px;font-weight:500;opacity:.75}
 .thanks .spark{position:absolute;width:8px;height:8px;border-radius:50%;background:var(--yellow);border:2px solid var(--ink);animation:th-spark .9s ease-out both}
 .thanks.out{animation:th-out .4s ease-in forwards}
@@ -1636,12 +1636,12 @@ $('rpBtn').onclick=()=>{const n=reportTargets().length;$('rpCount').textContent=
 $('rpNo').onclick=()=>{$('rpModal').hidden=true};
 // 送ったあと：数字のなかま（毎回ちがう）が ぴょんと出てきて 吹き出しで お礼（タップか 数秒で きえる）
 function showThanks(ch){document.querySelector('.thanks')?.remove();
-  ch=ch||'01234678'[Math.floor(Math.random()*8)]; // 数字のなかまから 毎回ちがうキャラ
+  ch=ch||'0123456789'[Math.floor(Math.random()*10)]; // 数字のなかま（0〜9）から 毎回ランダム
   const box=document.createElement('div');box.className='thanks';box.setAttribute('role','status');
   let cv=null;try{cv=window.kanjiSprite?window.kanjiSprite(ch,1,0):null}catch(e){}
   const img=document.createElement('canvas');
   if(cv){img.width=cv.width;img.height=cv.height;img.getContext('2d').drawImage(cv,0,0)}
-  box.innerHTML=`<div class="bub">ありがとうございます！<br>読みとりを よくするのに 役立てます。<small>タップで とじる</small></div>`;
+  box.innerHTML=`<div class="bub">ありがとうございます！<br>読みとりを よくするのに 役立てます。</div>`;
   if(cv)box.prepend(img);
   // きらきら
   for(let i=0;i<8;i++){const sp=document.createElement('i');sp.className='spark';const a=i/8*6.28;
