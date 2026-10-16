@@ -2637,10 +2637,19 @@ function syncPayload(){
   while(j.length>800000&&log.length){log.splice(0,10);j=JSON.stringify(out)}
   return j}
 let syncT=0,syncErr='';
+// ひっさんの記録も 同じ共有に入れる（同じ端末の ひっさんクエストのデータを読んで送る。ひっさんを開かなくても見られるように）
+async function syncHissanPart(){if(!S.share)return;
+  try{const h=JSON.parse(localStorage.getItem('hissanQuest.v1')||'null');if(!h||!h.onboarded)return;
+    const cut=dkey(new Date(Date.now()-90*864e5)),days={};for(const k in (h.days||{}))if(k>=cut){const d=h.days[k];days[k]={tries:d.tries,passed:d.passed,passRw:d.passRw,best:d.best,earned:d.earned}}
+    let st=0;{const dt=new Date();if(!(days[todayKey()]||{}).passed)dt.setDate(dt.getDate()-1);while((h.days||{})[dkey(dt)]?.passed){st++;dt.setDate(dt.getDate()-1)}}
+    const wl=h.walletJoined&&W.linked,g=goalItem();
+    const data={v:1,at:Date.now(),name:S.share.name||'',grade:h.grade,points:wl?S.points:h.points,reqs:(wl?S.reqs:h.reqs||[]).slice(-30),tickets:(wl?S.tickets:h.tickets||[]).slice(-50),
+      shop:wl?S.shop:h.shop,shopV:(wl?S.shopV:h.shopV)||0,streak:st,goal:g?{name:g.name,cost:g.cost}:null,days,log:(h.hlog||[]).filter(x=>x.date>=cut)};
+    await fetch(SYNC_URL,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({id:S.share.id,key:S.share.key,part:'hissan',data})})}catch(e){}}
 function syncSoon(){if(!S.share)return;clearTimeout(syncT);syncT=setTimeout(syncNow,800)}
 async function syncNow(){if(!S.share)return false;
   try{const r=await fetch(SYNC_URL,{method:'POST',headers:{'Content-Type':'application/json'},body:`{"id":"${S.share.id}","key":"${S.share.key}","data":${syncPayload()}}`});
-    if(r.ok){S.share.at=Date.now();syncErr='';save();if(!$('admin').hidden)renderFam();return true}
+    if(r.ok){S.share.at=Date.now();syncErr='';save();syncHissanPart();if(!$('admin').hidden)renderFam();return true}
     syncErr=r.status===503?'共有の準備がまだできていません。':'うまく送れませんでした。';}catch(e){syncErr='つながりませんでした。'}
   if(!$('admin').hidden)renderFam();return false}
 let qrLib=null;
