@@ -626,9 +626,16 @@ button:focus-visible{outline:4px solid var(--ink);outline-offset:3px}
   </section>
   <section class="panel news" id="news">
     <details>
-      <summary><span class="news-h">アップデートのお知らせ</span><span class="news-v">ベータ版 1.1</span>
-        <span class="news-l">管理メニューと、機種変更（データの引っ越し）ができました。<small>タップでくわしく</small></span></summary>
+      <summary><span class="news-h">アップデートのお知らせ</span><span class="news-v">ベータ版 1.1.1</span>
+        <span class="news-l">XやLINEでシェアすると、結果の画像がカードで出るようになりました。<small>タップでくわしく</small></span></summary>
       <div class="news-body">
+        <div class="news-d">ベータ版 1.1.1（2026年10月16日）</div>
+        <ul>
+          <li>「X」「LINE」「コピー」でシェアすると、リンクに結果の画像がカードで出ます。</li>
+          <li>そのため、カードの画像を最大30日保存するようにしました。プライバシーポリシーに書き足したので、もう一度同意をお願いします。</li>
+          <li>管理メニューのボタンを大きく・色分けし、どの画面も一番下に「もどる」を置きました。</li>
+        </ul>
+        <div class="news-d news-old">ベータ版 1.1（2026年10月16日）：管理メニューと、機種変更ができました</div>
         <div class="news-d">ベータ版 1.1（2026年10月16日）</div>
         <ul>
           <li>ホームの一番下に「管理メニュー」を作りました。PIN・家族と共有・機種変更・全部消す は、ここにまとめました（PINを決めているときは、開くときにPINが必要です）。</li>
@@ -827,20 +834,22 @@ button:focus-visible{outline:4px solid var(--ink);outline-offset:3px}
       <li>期間：最後に更新してから180日たつと自動で消えます。「共有をやめる」を押すと、すぐ消えます。</li>
       <li>QRやリンクを知っている人は見られます。表示名には、本名ではなくニックネームをおすすめします。</li>
     </ul>
-    <h3>4. 使っている外部サービス</h3>
+    <h3>4. X・LINEで共有するときに保存するもの</h3>
+    <p>「X」「LINE」「コピー」で共有するとき、リンクにカードの画像（結果の画像。書いた字の小さな画像をふくみます）を出すために、その画像を最大30日保存します。共有したリンクを知っている人は見られます。名前などは保存しません。</p>
+    <h3>5. 使っている外部サービス</h3>
     <ul>
       <li>Vercel：アプリの置き場所。ふつうのWebサイトと同じく、アクセスの記録（IPアドレスなど）が一時的に残ることがあります。</li>
       <li>Google Fonts：文字の形を読みこむために使います。</li>
       <li>Amazonアソシエイト：かんじクエストは、アマゾンジャパン合同会社またはその関連会社により実施されている「Amazonアソシエイト・プログラム」の参加者です。広告リンクを押すと、Amazonがクッキーを使うことがあります。</li>
     </ul>
-    <h3>5. データを消すには</h3>
+    <h3>6. データを消すには</h3>
     <p>ホームの一番下の「管理メニュー」→「全部消す」で、端末のデータと共有のデータが消えます。共有だけやめるときは「管理メニュー」→「共有をやめる」です。</p>
-    <h3>6. 変更</h3>
+    <h3>7. 変更</h3>
     <p>この内容は変更することがあります。大きな変更は、アプリの中でお知らせします。</p>
-    <h3>7. 運営者・お問い合わせ</h3>
+    <h3>8. 運営者・お問い合わせ</h3>
     <p>運営者：TIMING</p>
     <p>データの取り扱いについてのご質問は、こちらへ。<br><a class="ml" data-u="info" data-d="timing.jp">（表示中…）</a></p>
-    <p class="doc-date">2026年10月16日 制定</p>
+    <p class="doc-date">2026年10月16日 制定・改定</p>
   </section>
   <div class="agree-wrap" id="tmAgree" hidden><section class="panel agree">
     <label class="agree-chk"><input type="checkbox" id="tmChk"><span>利用規約とプライバシーポリシーを読んで、同意します</span></label>
@@ -2601,7 +2610,38 @@ function openX(text){const web='https://x.com/intent/post?text='+encodeURICompon
   let gone=false;const onHide=()=>{gone=true};document.addEventListener('visibilitychange',onHide,{once:true});
   location.href='twitter://post?message='+encodeURIComponent(text);
   setTimeout(()=>{document.removeEventListener('visibilitychange',onHide);if(!gone&&!document.hidden)location.href=web},1200)}
-$('shareX').addEventListener('click',e=>{e.preventDefault();openX($('shareText').value)});
+/* --- リンクカード：結果の画像を、XやLINEのカードに出す（画像はサーバーに30日） --- */
+const CARD_API='/api/card';
+const cardLink={}; // 'result' | 'home' → {blob,url,p}
+function wideJpeg(blob){return new Promise(async ok=>{try{const im=await loadImg(URL.createObjectURL(blob));
+  const W=1200,H=630,sc=H/1080,c=document.createElement('canvas');c.width=W;c.height=H;const x=c.getContext('2d');
+  x.fillStyle='#5EC4FF';x.fillRect(0,0,W,H);
+  x.fillStyle='#33B84A';x.fillRect(0,H-90*sc,W,30*sc);x.fillStyle='#D9692A';x.fillRect(0,H-60*sc,W,60*sc);
+  x.fillStyle='#8C3C10';for(let i=0;i<W;i+=60*sc)x.fillRect(i,H-60*sc,4*sc,60*sc);x.fillRect(0,H-32*sc,W,4*sc);
+  x.drawImage(im,(W-H)/2,0,H,H);ok(c.toDataURL('image/jpeg',.82))}catch(e){ok(null)}})}
+const cardDesc=t=>t.split('\n').filter(l=>l&&!/^https?:|^#/.test(l)).slice(0,2).join(' ');
+function prepCard(kind,blob,text){if(!blob)return null;const cur=cardLink[kind];if(cur&&cur.blob===blob)return cur.p;
+  if(kind==='home'&&S.hcard&&S.hcard.k===text&&Date.now()-S.hcard.at<20*864e5){cardLink.home={blob,url:S.hcard.url,p:Promise.resolve(S.hcard.url)};return cardLink.home.p}
+  const o={blob,url:null};cardLink[kind]=o;
+  o.p=(async()=>{const img=await wideJpeg(blob);if(!img)return null;
+    try{const r=await fetch(CARD_API,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({img,text:cardDesc(text)})});
+      if(!r.ok)return null;o.url=(await r.json()).url;if(kind==='home'){S.hcard={k:text,url:o.url,at:Date.now()};save()}return o.url}catch(e){return null}})();
+  return o.p}
+const withCard=(kind,t)=>{const u=cardLink[kind]&&cardLink[kind].url;return u?t.split(SHARE_URL+'/').join(u).split(SHARE_URL).join(u):t};
+async function shareOut(kind,blob,text,to){
+  const win=IS_MOBILE?null:window.open('','_blank');
+  const p=prepCard(kind,blob,text);if(p&&!(cardLink[kind]&&cardLink[kind].url))await Promise.race([p,new Promise(r=>setTimeout(r,4000))]);
+  const t=withCard(kind,text);
+  if(to==='x'){if(win){win.location.href='https://x.com/intent/post?text='+encodeURIComponent(t);return}openX(t);return}
+  const u='https://line.me/R/share?text='+encodeURIComponent(t);if(win)win.location.href=u;else location.href=u}
+// シェア欄が見えたら、先にカードを用意しておく（押したらすぐ開けるように）
+function watchCard(el,kind){if(!el||!window.IntersectionObserver)return;
+  new IntersectionObserver(es=>{if(!es.some(e=>e.isIntersecting))return;let n=0;
+    const go=()=>{const b=kind==='result'?shareBlob:hsBlob,t=kind==='result'?$('shareText').value:homeShareText();
+      if(b)prepCard(kind,b,t);else if(++n<20)setTimeout(go,500)};go()}).observe(el)}
+watchCard($('shareBox'),'result');watchCard(document.querySelector('.share-home'),'home');
+$('shareX').addEventListener('click',e=>{e.preventDefault();shareOut('result',shareBlob,$('shareText').value,'x')});
+$('shareLine').addEventListener('click',e=>{e.preventDefault();shareOut('result',shareBlob,$('shareText').value,'line')});
 // トップ用：アプリの紹介と 今の がんばり
 function homeShareText(){const st=streakNow();
   const me=S.grade?`\n\nただいま${S.grade}年生の漢字に挑戦中！${st>=2?`（${st}日連続クリア）`:''}`:'';
@@ -2617,12 +2657,13 @@ $('hsSave').onclick=async()=>{if(!hsBlob)hsBlob=await homeCard();saveImage(hsBlo
 function homeCard(){const st=streakNow();
   return shareCard({sub:'小学生の漢字。書けますか？',big:S.grade?`${S.grade}年生`:'1〜6年生',bigSize:170,badge:'毎日10問、指で書いてAIが採点',badgeColor:'#1C2A5C',
     line2:'ポイントを貯めて ごほうびと交換！'})}
-$('hsX').addEventListener('click',e=>{e.preventDefault();openX(homeShareText())});
-$('hsCopy').onclick=async()=>{try{await navigator.clipboard.writeText(homeShareText());$('hsCopy').textContent='コピーした'}catch(e){$('hsCopy').textContent='できません'}
+$('hsX').addEventListener('click',async e=>{e.preventDefault();if(!hsBlob)hsBlob=await homeCard();shareOut('home',hsBlob,homeShareText(),'x')});
+$('hsLine').addEventListener('click',async e=>{e.preventDefault();if(!hsBlob)hsBlob=await homeCard();shareOut('home',hsBlob,homeShareText(),'line')});
+$('hsCopy').onclick=async()=>{try{await navigator.clipboard.writeText(withCard('home',homeShareText()));$('hsCopy').textContent='コピーした'}catch(e){$('hsCopy').textContent='できません'}
   setTimeout(()=>$('hsCopy').textContent='コピー',1500)};
 $('shareNative').onclick=()=>shareWith($('shareText').value,shareBlob,'kanji-quest.png');
 $('shareSave').onclick=()=>saveImage(shareBlob,'kanji-quest.png');
-$('shareCopy').onclick=async()=>{const t=$('shareText').value;
+$('shareCopy').onclick=async()=>{const t=withCard('result',$('shareText').value);
   try{await navigator.clipboard.writeText(t);$('shareCopy').textContent='コピーした'}catch(e){$('shareText').select();$('shareCopy').textContent='選択した'}
   setTimeout(()=>$('shareCopy').textContent='コピー',1500)};
 
@@ -2640,7 +2681,7 @@ let obGrade=4,obStep=0,obFromHome=false;
 /* ===== 利用規約・プライバシー ===== */
 // メールアドレスは ソースに書かず、表示するときに組み立てる（迷惑メール対策）
 document.querySelectorAll('a.ml').forEach(a=>{const m=a.dataset.u+String.fromCharCode(64)+a.dataset.d;a.textContent=m;a.href='mai'+'lto:'+m});
-const TERMS_V='2026-10-16';
+const TERMS_V='2026-10-16b';
 const agreed=()=>S.agreed===TERMS_V;
 let tmNext=null; // 同意したあとに すること（null＝読むだけ）
 function openTerms(tab,next){tmNext=next||null;setTmTab(tab||'tos');
