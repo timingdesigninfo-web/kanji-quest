@@ -1686,7 +1686,7 @@ document.fonts&&document.fonts.load('500 40px "M PLUS Rounded 1c"','0123456789+�
     HQ_HIT.push((X,Y)=>{if(cv.offsetParent===null)return false;const b=cv.getBoundingClientRect(),px=X-b.left,py=Y-b.top,h=S*H0/W0;
       const hit=actors.slice().reverse().find(a=>{const ay=H-h+2+a.y;return px>=a.x-10&&px<=a.x+S+10&&py>=ay-14&&py<=ay+h+10});
       if(!hit)return false;actors.splice(actors.indexOf(hit),1);
-      sfx(hit.foe?'reveal':'coin');if(reduce&&!hit.foe)return;
+      sfx(hit.foe?'reveal':'coin'); // タップした時の動きは「動きを減らす」設定でも出す（自分で起こした動きなので）
       launch(hit.c,hit.dir,hit.foe,b.left+hit.x,b.top+H-h+2+hit.y);spawnT=Math.min(spawnT,1.2);return true});
     new ResizeObserver(()=>{if(cv.clientWidth){size();if(!actors.length)seed()}}).observe(cv);
     requestAnimationFrame(step);
