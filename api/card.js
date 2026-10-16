@@ -1,4 +1,4 @@
-// かんじクエスト：シェア用のリンクカード（XやLINEに 結果の画像をカードで出す）
+// かんじクエスト・ひっさんクエスト：シェア用のリンクカード（XやLINEに 結果の画像をカードで出す）
 //
 // POST /api/card {img:"data:image/jpeg;base64,...", text}  画像をあずけて、専用URLを返す（30日で自動削除）
 // GET  /r/<id>        → XやLINEが読むカード情報（人はアプリのトップへ移動）
@@ -17,6 +17,12 @@ const SITE = 'https://kanji-quest-black.vercel.app';
 const TTL = 30 * 86400;
 const ID_RE = /^[a-z0-9]{12}$/;
 const key = id => 'kq:card:' + id;
+// アプリごとのカードの文言（かんじクエスト・ひっさんクエスト）
+const APPS = {
+  kanji: { name: 'かんじクエスト', path: '/', og: '/og.png', title: 'かんじクエスト｜AIが採点。ごほうびを決めてポイント集め！', desc: '小学生の漢字を、指で書いてAIが採点。ごほうびを決めて、ポイント集めをがんばろう！' },
+  hissan: { name: 'ひっさんクエスト', path: '/hissan/', og: '/hissan/og.png', title: 'ひっさんクエスト｜指で筆算、AIが丸つけ。ごほうびを決めてポイント集め！', desc: '小学生の計算と文章題を、指で筆算してAIが丸つけ。ごほうびを決めて、ポイント集めをがんばろう！' },
+};
+const appOf = a => APPS[a] ? a : 'kanji';
 
 async function db(cmds) {
   const r = await fetch(DB_URL + '/pipeline', {
@@ -44,8 +50,8 @@ async function rateLimited(req) {
 }
 
 async function image(res, id) {
-  const [img] = ID_RE.test(id) ? await db([['HGET', key(id), 'img']]) : [null];
-  if (!img) { res.statusCode = 302; res.setHeader('Location', SITE + '/og.png'); return res.end(); }
+  const [img, app] = ID_RE.test(id) ? await db([['HGET', key(id), 'img'], ['HGET', key(id), 'app']]) : [null, null];
+  if (!img) { res.statusCode = 302; res.setHeader('Location', SITE + APPS[appOf(app)].og); return res.end(); }
   res.statusCode = 200;
   res.setHeader('Content-Type', 'image/jpeg');
   res.setHeader('Cache-Control', 'public, max-age=31536000, immutable');
@@ -54,17 +60,18 @@ async function image(res, id) {
 
 async function page(res, id) {
   const ok = ID_RE.test(id);
-  const [text] = ok ? await db([['HGET', key(id), 'text']]) : [null];
-  const img = text != null ? `${SITE}/c/${id}.jpg` : `${SITE}/og.png`;
-  const title = 'かんじクエスト｜AIが採点。ごほうびを決めてポイント集め！';
-  const desc = text || '小学生の漢字を、指で書いてAIが採点。ごほうびを決めて、ポイント集めをがんばろう！';
+  const [text, app0] = ok ? await db([['HGET', key(id), 'text'], ['HGET', key(id), 'app']]) : [null, null];
+  const A = APPS[appOf(app0)];
+  const img = text != null ? `${SITE}/c/${id}.jpg` : `${SITE}${A.og}`;
+  const title = A.title;
+  const desc = text || A.desc;
   res.statusCode = 200;
   res.setHeader('Content-Type', 'text/html; charset=utf-8');
   res.setHeader('Cache-Control', 'public, max-age=3600');
   return res.end(`<!doctype html><html lang="ja"><head><meta charset="utf-8">
 <title>${esc(title)}</title>
 <meta name="description" content="${esc(desc)}">
-<meta property="og:site_name" content="かんじクエスト">
+<meta property="og:site_name" content="${A.name}">
 <meta property="og:title" content="${esc(title)}">
 <meta property="og:description" content="${esc(desc)}">
 <meta property="og:type" content="website">
@@ -76,9 +83,9 @@ async function page(res, id) {
 <meta name="twitter:description" content="${esc(desc)}">
 <meta name="twitter:image" content="${img}">
 <meta name="robots" content="noindex">
-<link rel="canonical" href="${SITE}/">
-<meta http-equiv="refresh" content="0;url=/">
-</head><body><script>location.replace('/')</script><a href="/">かんじクエストをひらく</a></body></html>`);
+<link rel="canonical" href="${SITE}${A.path}">
+<meta http-equiv="refresh" content="0;url=${A.path}">
+</head><body><script>location.replace('${A.path}')</script><a href="${A.path}">${A.name}をひらく</a></body></html>`);
 }
 
 module.exports = async (req, res) => {
@@ -101,7 +108,8 @@ module.exports = async (req, res) => {
     if (!img.startsWith('/9j/') || img.length > 700000) return send(res, 400, { error: 'bad_image' });
     const text = String(body.text || '').slice(0, 160);
     const id = crypto.randomBytes(12).toString('base64').replace(/[^a-zA-Z0-9]/g, '').toLowerCase().padEnd(12, '0').slice(0, 12);
-    await db([['HSET', key(id), 'img', img, 'text', text], ['EXPIRE', key(id), TTL]]);
+    const app = appOf(String(body.app || ''));
+    await db([['HSET', key(id), 'img', img, 'text', text, 'app', app], ['EXPIRE', key(id), TTL]]);
     return send(res, 200, { id, url: `${SITE}/r/${id}` });
   } catch (e) {
     console.error(e);

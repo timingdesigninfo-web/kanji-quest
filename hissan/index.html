@@ -1759,7 +1759,38 @@ function openX(text){const web='https://x.com/intent/post?text='+encodeURICompon
   let gone=false;const onHide=()=>{gone=true};document.addEventListener('visibilitychange',onHide,{once:true});
   location.href='twitter://post?message='+encodeURIComponent(text);
   setTimeout(()=>{document.removeEventListener('visibilitychange',onHide);if(!gone&&!document.hidden)location.href=web},1200)}
-$('shareX').addEventListener('click',e=>{e.preventDefault();openX($('shareText').value)});
+/* --- リンクカード：結果の画像を、XやLINEのカードに出す（画像はサーバーに30日。かんじクエストと同じしくみ） --- */
+const CARD_API='/api/card';
+const cardLink={}; // 'result' | 'home' → {blob,url,p}
+function wideJpeg(blob){return new Promise(async ok=>{try{const im=await loadImg(URL.createObjectURL(blob));
+  const W=1200,H=630,sc=H/1080,c=document.createElement('canvas');c.width=W;c.height=H;const x=c.getContext('2d');
+  x.fillStyle='#6DBE5A';x.fillRect(0,0,W,H);
+  x.fillStyle='#4E9E43';x.fillRect(0,H-70*sc,W,10*sc);x.fillStyle='#D9B77A';x.fillRect(0,H-60*sc,W,60*sc);
+  x.drawImage(im,(W-H)/2,0,H,H);ok(c.toDataURL('image/jpeg',.82))}catch(e){ok(null)}})}
+const cardDesc=t=>t.split('\n').filter(l=>l&&!/^https?:|^#/.test(l)).slice(0,2).join(' ');
+const CARD_OK=/^https?:/.test(location.protocol)&&!/claude|usercontent/.test(location.host);
+function prepCard(kind,blob,text){if(!blob||!CARD_OK)return null;const cur=cardLink[kind];if(cur&&cur.blob===blob)return cur.p;
+  if(kind==='home'&&S.hcard&&S.hcard.k===text&&Date.now()-S.hcard.at<20*864e5){cardLink.home={blob,url:S.hcard.url,p:Promise.resolve(S.hcard.url)};return cardLink.home.p}
+  const o={blob,url:null};cardLink[kind]=o;
+  o.p=(async()=>{const img=await wideJpeg(blob);if(!img)return null;
+    try{const r=await fetch(CARD_API,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({img,text:cardDesc(text),app:'hissan'})});
+      if(!r.ok)return null;o.url=(await r.json()).url;if(kind==='home'){S.hcard={k:text,url:o.url,at:Date.now()};save()}return o.url}catch(e){return null}})();
+  return o.p}
+const withCard=(kind,t)=>{const u=cardLink[kind]&&cardLink[kind].url;return u?t.split(SHARE_URL).join(u):t};
+async function shareOut(kind,blob,text,to){
+  const win=IS_MOBILE?null:window.open('','_blank');
+  const p=prepCard(kind,blob,text);if(p&&!(cardLink[kind]&&cardLink[kind].url))await Promise.race([p,new Promise(r=>setTimeout(r,4000))]);
+  const t=withCard(kind,text);
+  if(to==='x'){if(win){win.location.href='https://x.com/intent/post?text='+encodeURIComponent(t);return}openX(t);return}
+  const u='https://line.me/R/share?text='+encodeURIComponent(t);if(win)win.location.href=u;else location.href=u}
+// シェア欄が見えたら、先にカードを用意しておく（押したらすぐ開けるように）
+function watchCard(el,kind){if(!el||!window.IntersectionObserver)return;
+  new IntersectionObserver(es=>{if(!es.some(e=>e.isIntersecting))return;let n=0;
+    const go=()=>{const b=kind==='result'?shareBlob:hsBlob,t=kind==='result'?$('shareText').value:homeShareText();
+      if(b)prepCard(kind,b,t);else if(++n<20)setTimeout(go,500)};go()}).observe(el)}
+watchCard($('shareBox'),'result');watchCard(document.querySelector('.share-home'),'home');
+$('shareX').addEventListener('click',e=>{e.preventDefault();shareOut('result',shareBlob,$('shareText').value,'x')});
+$('shareLine').addEventListener('click',e=>{e.preventDefault();shareOut('result',shareBlob,$('shareText').value,'line')});
 // トップ用：アプリの紹介と 今の がんばり
 function homeShareText(){const st=streakNow();
   const me=S.grade?`\n\nただいま${S.grade}年生の計算に挑戦中！${st>=2?`（${st}日連続クリア）`:''}`:'';
@@ -1775,12 +1806,13 @@ $('hsSave').onclick=async()=>{if(!hsBlob)hsBlob=await homeCard();saveImage(hsBlo
 function homeCard(){const st=streakNow();
   return shareCard({sub:'小学生の計算。書いてとけるかな？',big:S.grade?`${S.grade}年生`:'1〜6年生',bigSize:170,badge:'毎日10問、指で筆算してAIが丸つけ',badgeColor:'#1C2A5C',
     line2:'ポイントを貯めて ごほうびと交換！'})}
-$('hsX').addEventListener('click',e=>{e.preventDefault();openX(homeShareText())});
-$('hsCopy').onclick=async()=>{try{await navigator.clipboard.writeText(homeShareText());$('hsCopy').textContent='コピーした'}catch(e){$('hsCopy').textContent='できません'}
+$('hsX').addEventListener('click',async e=>{e.preventDefault();if(!hsBlob)hsBlob=await homeCard();shareOut('home',hsBlob,homeShareText(),'x')});
+$('hsLine').addEventListener('click',async e=>{e.preventDefault();if(!hsBlob)hsBlob=await homeCard();shareOut('home',hsBlob,homeShareText(),'line')});
+$('hsCopy').onclick=async()=>{try{await navigator.clipboard.writeText(withCard('home',homeShareText()));$('hsCopy').textContent='コピーした'}catch(e){$('hsCopy').textContent='できません'}
   setTimeout(()=>$('hsCopy').textContent='コピー',1500)};
 $('shareNative').onclick=()=>shareWith($('shareText').value,shareBlob,'hissan-quest.png');
 $('shareSave').onclick=()=>saveImage(shareBlob,'hissan-quest.png');
-$('shareCopy').onclick=async()=>{const t=$('shareText').value;
+$('shareCopy').onclick=async()=>{const t=withCard('result',$('shareText').value);
   try{await navigator.clipboard.writeText(t);$('shareCopy').textContent='コピーした'}catch(e){$('shareText').select();$('shareCopy').textContent='選択した'}
   setTimeout(()=>$('shareCopy').textContent='コピー',1500)};
 
