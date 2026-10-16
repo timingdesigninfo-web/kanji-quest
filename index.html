@@ -112,6 +112,33 @@ button:focus-visible{outline:4px solid var(--ink);outline-offset:3px}
 .wallet .unit{font-size:13px;color:var(--yellow)}
 
 .quest{padding:30px 20px;display:flex;flex-direction:column;gap:18px}
+/* ---- 教科の切りかえ・連携（検証中） ---- */
+/* ヘッダーの大きさ・すき間を ひっさんクエストと そろえる（ロゴの縦横比がちがうので、ロゴの箱の高さを そろえる） */
+.top .logo{font-size:clamp(30px,8.6vw,50px)}
+.top .logo-img{width:min(420px,82vw);aspect-ratio:1000/351;height:auto;object-fit:contain}
+@media (min-width:760px){.top .logo-img{width:440px}}
+.subjects{position:absolute;top:6px;left:50%;transform:translateX(-50%);z-index:2;display:flex;justify-content:center;gap:6px}
+.subjects a{display:flex;align-items:center;gap:6px;padding:6px 14px;border:3px solid var(--ink);border-radius:999px;background:#fff;color:var(--ink);font-size:14px;font-weight:800;text-decoration:none;box-shadow:0 3px 0 var(--ink)}
+.subjects a[aria-current="page"]{background:var(--yellow)}
+.subjects a:active{translate:0 2px;box-shadow:0 1px 0 var(--ink)}
+.linkbox{padding:10px 12px;display:flex;flex-direction:column;gap:8px;border:3px dashed var(--line);border-radius:14px;background:var(--sky-lite)}
+.link-h{display:flex;justify-content:space-between;align-items:baseline;gap:8px;flex-wrap:wrap;font-size:15px}
+.link-h span{font-size:12px;font-weight:500}
+.link-row{display:flex;gap:6px;flex-wrap:wrap}
+.lk{border:3px solid var(--ink);border-radius:999px;padding:4px 12px;font-size:14px;background:#fff}
+.lk.done{background:var(--green);color:#fff}
+.link-note{font-size:13px;font-weight:500}
+.link-got{color:var(--violet);font-weight:800}
+.linkbox.offer{border-style:solid;border-color:var(--ink);background:#FFF8D6}
+.linkbox .new{display:inline-block;background:var(--red);color:#fff;border-radius:6px;padding:0 6px;font-size:11px;margin-right:4px;vertical-align:2px}
+.linkbox .link-more{align-self:flex-start;font-size:14px;padding:8px 14px}
+.link-intro .panel{text-align:left;gap:12px}
+.link-warn{font-size:13px;font-weight:500;line-height:1.6;background:#FFF4C7;border:2px solid #E0B43A;border-radius:12px;padding:8px 12px}
+.link-warn b{color:var(--red)}
+.release{position:absolute;top:6px;left:50%;transform:translateX(-50%);z-index:2;display:flex;align-items:center;gap:6px;white-space:nowrap;padding:7px 14px;border:3px solid var(--ink);border-radius:999px;background:#FFF4C7;color:var(--ink);font:800 14px var(--f-body);box-shadow:0 3px 0 var(--ink);cursor:pointer}
+.release .new{background:var(--red);color:#fff;border-radius:6px;padding:0 6px;font-size:11px}
+.subjects a.off{background:rgba(255,255,255,.55);color:rgba(28,42,92,.45);border-style:dashed;box-shadow:none}
+
 .quest h2{margin:0;font-size:22px;display:flex;align-items:center;gap:10px;text-wrap:balance}
 .flag{width:14px;height:22px;position:relative;flex:none}
 .flag::before{content:"";position:absolute;left:0;top:0;width:3px;height:22px;background:var(--ink)}
@@ -255,7 +282,7 @@ button:focus-visible{outline:4px solid var(--ink);outline-offset:3px}
 .tools .btn{font-size:18px;padding:12px}
 .tools .btn.small{flex:0 0 auto;min-width:76px}
 .tools .btn.grow{flex:1}
-.walk{position:absolute;left:0;bottom:100%;width:100%;height:84px;overflow:visible;pointer-events:none;image-rendering:pixelated}
+.walk{position:absolute;left:0;bottom:100%;width:100%;height:120px;overflow:visible;pointer-events:none;image-rendering:pixelated}
 .now-pt{display:flex;align-items:center;justify-content:space-between;gap:8px;padding-bottom:8px;border-bottom:2px dashed var(--line)}
 .now-l{font-size:15px}
 .now-v{display:flex;align-items:center;gap:6px;font-size:40px;line-height:1}
@@ -272,12 +299,12 @@ button:focus-visible{outline:4px solid var(--ink);outline-offset:3px}
   #home .foot-row{grid-column:1;grid-row:3;align-self:start}
   #home .amz{grid-column:1;grid-row:4;align-self:start}
   #home .share-home{grid-column:2;grid-row:3/span 2;align-self:start}
+  #home .share-home .share-img{display:none} /* タブレットでは シェアの画像を出さない（ひっさんクエストと同じ） */
   #home>.info{grid-column:1/-1;grid-row:5}
   #home>.news{grid-column:1/-1;grid-row:6;align-self:start}
   #home>.legal{grid-column:1/-1;grid-row:7;align-self:start}
-  #home>.walk-space{grid-row:8!important}#home>.ground{grid-row:9!important}
-  #home>.walk-space{grid-column:1/-1;grid-row:7}
-  #home>.ground{grid-column:1/-1;grid-row:8}
+  #home>.walk-space{grid-column:1/-1;grid-row:8}
+  #home>.ground{grid-column:1/-1;grid-row:9}
   .bigstart{font-size:32px;padding:26px}
   .logo-img{width:360px}
   #welcome{max-width:760px}
@@ -567,6 +594,7 @@ button:focus-visible{outline:4px solid var(--ink);outline-offset:3px}
 <!-- ============ ホーム ============ -->
 <main id="home" class="screen">
   <div class="top">
+    <nav class="subjects" aria-label="教科"><a href="/" data-app="kanji" aria-current="page">かんじ</a><a href="/hissan/" data-app="hissan">ひっさん</a></nav>
     <i class="cloud hc1"></i><i class="cloud hc2"></i><i class="cloud hc3"></i>
     <div class="logo"><img class="logo-img" alt="かんじクエスト" width="1000" height="184"><small id="gradeLabel">4年生の漢字</small></div>
     <div class="watch-pills" id="homeWatch"></div>
@@ -577,6 +605,7 @@ button:focus-visible{outline:4px solid var(--ink);outline-offset:3px}
   <section class="panel quest">
     <h2><span class="flag"></span><span id="qTitle">今日のクエスト</span></h2>
     <div class="status" id="status"></div>
+    <div class="linkbox" id="linkBox" hidden></div>
     <button class="btn bigstart" id="startBtn">スタート</button>
   </section>
 
@@ -632,13 +661,22 @@ button:focus-visible{outline:4px solid var(--ink);outline-offset:3px}
     <p class="info-p">まちがえた漢字は書けるまで練習！ クリア後の自主練は80点以上で+10pt（1日4回）。15日連続で+100pt。</p>
     <p class="info-p">※AI採点は、回数や利用の上限で使えないことがあります。そのときは自分で○×をつけます。</p>
     <button class="howto" id="howtoBtn">使い方</button>
+    <button class="howto" id="linkBtn">教科の連携</button>
   </section>
   <section class="panel news" id="news">
     <details>
-      <summary><span class="news-h">アップデートのお知らせ</span><span class="news-v">ベータ版 1.1.1</span>
-        <span class="news-l">XやLINEでシェアすると、結果の画像がカードで出るようになりました。<small>タップでくわしく</small></span></summary>
+      <summary><span class="news-h">アップデートのお知らせ</span><span class="news-v">ベータ版 1.2</span>
+        <span class="news-l">姉妹アプリ「ひっさんクエスト」ができました。教科の連携でポイントをまとめられます。<small>タップでくわしく</small></span></summary>
       <div class="news-body">
-        <div class="news-d">ベータ版 1.1.1（2026年10月16日）</div>
+        <div class="news-d">ベータ版 1.2（2026年10月16日）</div>
+        <ul>
+          <li>計算の筆算と文章題を練習する「ひっさんクエスト」ができました。画面の上の「ひっさん」から開けます。</li>
+          <li>教科の連携：2つのアプリのポイント・ごほうび・PINを1つにまとめられます。両方クリアした日は連携ボーナスがつきます（使うかどうかは自分で選べます）。</li>
+          <li>機種変更のとき、ひっさんクエストのデータもいっしょに移るようにしました。</li>
+          <li>利用規約・プライバシーポリシーを、ひっさんクエストもふくむ形に直しました。もう一度同意をお願いします。</li>
+          <li>タブレットのホームを、ひっさんクエストと同じ見た目にそろえました。</li>
+        </ul>
+        <div class="news-d news-old">ベータ版 1.1.1（2026年10月16日）：シェアの画像がカードで出るようになりました</div>
         <ul>
           <li>「X」「LINE」「コピー」でシェアすると、リンクに結果の画像がカードで出ます。</li>
           <li>そのため、カードの画像を最大30日保存するようにしました。プライバシーポリシーに書き足したので、もう一度同意をお願いします。</li>
@@ -795,19 +833,20 @@ button:focus-visible{outline:4px solid var(--ink);outline-offset:3px}
   <div class="shop-head"><h2 id="tmTitle">利用規約</h2><button class="btn white small" id="tmBack">もどる</button></div>
   <div class="hi-tabs" id="tmTabs"><button class="on" data-t="tos">利用規約</button><button data-t="pp">プライバシー</button></div>
   <section class="panel doc" id="tmTos">
-    <p class="doc-lead">かんじクエスト（以下「本アプリ」）を使う前に、お読みください。本アプリを使うことで、この規約に同意したものとします。本アプリは TIMING（以下「運営者」）が運営しています。</p>
+    <p class="doc-lead">かんじクエスト・ひっさんクエスト（以下あわせて「本アプリ」）を使う前に、お読みください。本アプリを使うことで、この規約に同意したものとします。本アプリは TIMING（以下「運営者」）が運営しています。</p>
     <h3>1. 本アプリについて</h3>
-    <p>本アプリは、小学校で習う漢字を練習するための無料のアプリです。現在はベータ版（試験公開）です。</p>
+    <p>本アプリは、小学校で習う漢字（かんじクエスト）と計算・文章題（ひっさんクエスト）を練習するための無料のアプリです。2つは同じ運営者が提供する姉妹アプリで、この規約は両方に適用されます。現在はベータ版（試験公開）です。</p>
     <h3>2. 問題と採点について</h3>
     <ul>
-      <li>問題文・漢字・読みがな・学年や学期の分け方に、まちがいがふくまれることがあります。</li>
-      <li>AIによる採点は、正しくないことがあります。最後は、自分で○×を確かめて直せます。</li>
+      <li>問題文・漢字・読みがな・計算問題・文章題・学年や学期の分け方に、まちがいがふくまれることがあります。</li>
+      <li>AIによる採点・読み取りは、正しくないことがあります。最後は、自分で○×を確かめて直せます。</li>
       <li>本アプリは学習の参考です。学校のテストや成績の結果を保証するものではありません。</li>
       <li>これらのまちがいによって生じたことについて、運営者は責任を負いません。</li>
     </ul>
     <h3>3. ポイントとごほうびについて</h3>
     <ul>
       <li>ポイントは本アプリの中だけのもので、お金や商品と交換できるものではありません。</li>
+      <li>「教科の連携」を使うと、ポイント・ごほうび・PINは連携した教科で共通になり、教科ごとにもらえるポイントの量が変わります（連携の説明に書いてあります）。</li>
       <li>ごほうびの内容は、利用者（ご家庭）が自由に決めるものです。ごほうびの用意・費用・家庭内での約束やトラブルについて、運営者は関与せず、責任を負いません。</li>
     </ul>
     <h3>4. データについて</h3>
@@ -828,14 +867,14 @@ button:focus-visible{outline:4px solid var(--ink);outline-offset:3px}
     <h3>10. 運営者・お問い合わせ</h3>
     <p>運営者：TIMING</p>
     <p><a class="ml" data-u="info" data-d="timing.jp">（表示中…）</a></p>
-    <p class="doc-date">2026年10月16日 制定</p>
+    <p class="doc-date">2026年10月16日 制定・改定（ひっさんクエストを追加）</p>
   </section>
   <section class="panel doc" id="tmPp" hidden>
-    <p class="doc-lead">本アプリは、名前・メールアドレス・電話番号・住所などの個人情報を集めません。アカウント登録も、アクセス解析もありません。</p>
+    <p class="doc-lead">かんじクエスト・ひっさんクエスト（以下あわせて「本アプリ」）は、名前・メールアドレス・電話番号・住所などの個人情報を集めません。アカウント登録も、アクセス解析もありません。</p>
     <h3>1. 端末の中だけに保存するもの</h3>
-    <p>ポイント、テストの記録、書いた字の画像、ごほうびの設定、PIN（そのままではなく変換した形）。これらは使っている端末のブラウザの中だけに保存され、運営者には送られません。</p>
+    <p>ポイント、テストの記録、書いた字や筆算の画像、ごほうびの設定、PIN（そのままではなく変換した形）。「教科の連携」をしたときの共通のポイント・ごほうびも、同じく端末の中だけに保存します。これらは使っている端末のブラウザの中だけに保存され、運営者には送られません。</p>
     <h3>2. AI採点で送るもの</h3>
-    <p>AI採点のとき、<b>書いた字の画像</b>と<b>問題文・正しい答え</b>を、採点のためだけに Anthropic社（アメリカ）のAIに送ります。名前などはいっしょに送りません。送ったデータの扱いは、Anthropic社の規約に従います。AI採点を使わず、自分で採点することもできます。</p>
+    <p>AI採点のとき、<b>書いた字の画像</b>と<b>問題文・正しい答え</b>を、採点のためだけに Anthropic社（アメリカ）のAIに送ります（かんじクエスト）。ひっさんクエストでは、<b>書いた筆算・答えの画像</b>と<b>問題の種類の説明</b>を、答えを読み取るためだけに送ります（正しい答えは送りません）。名前などはいっしょに送りません。送ったデータの扱いは、Anthropic社の規約に従います。AI採点を使わず、自分で採点することもできます。</p>
     <h3>3. 「家族と共有」を使うときに保存するもの</h3>
     <ul>
       <li>保存するもの：表示名（ニックネーム）、学年、ポイント、記録（問題・○×・書いた字の画像）、ごほうびの設定と交換の記録。</li>
@@ -849,7 +888,7 @@ button:focus-visible{outline:4px solid var(--ink);outline-offset:3px}
     <ul>
       <li>Vercel：アプリの置き場所。ふつうのWebサイトと同じく、アクセスの記録（IPアドレスなど）が一時的に残ることがあります。</li>
       <li>Google Fonts：文字の形を読みこむために使います。</li>
-      <li>Amazonアソシエイト：かんじクエストは、アマゾンジャパン合同会社またはその関連会社により実施されている「Amazonアソシエイト・プログラム」の参加者です。広告リンクを押すと、Amazonがクッキーを使うことがあります。</li>
+      <li>Amazonアソシエイト：かんじクエスト・ひっさんクエストは、アマゾンジャパン合同会社またはその関連会社により実施されている「Amazonアソシエイト・プログラム」の参加者です。広告リンクを押すと、Amazonがクッキーを使うことがあります。</li>
     </ul>
     <h3>6. データを消すには</h3>
     <p>ホームの一番下の「管理メニュー」→「全部消す」で、端末のデータと共有のデータが消えます。共有だけやめるときは「管理メニュー」→「共有をやめる」です。</p>
@@ -858,7 +897,7 @@ button:focus-visible{outline:4px solid var(--ink);outline-offset:3px}
     <h3>8. 運営者・お問い合わせ</h3>
     <p>運営者：TIMING</p>
     <p>データの取り扱いについてのご質問は、こちらへ。<br><a class="ml" data-u="info" data-d="timing.jp">（表示中…）</a></p>
-    <p class="doc-date">2026年10月16日 制定・改定</p>
+    <p class="doc-date">2026年10月16日 制定・改定（ひっさんクエストを追加）</p>
   </section>
   <div class="agree-wrap" id="tmAgree" hidden><section class="panel agree">
     <label class="agree-chk"><input type="checkbox" id="tmChk"><span>利用規約とプライバシーポリシーを読んで、同意します</span></label>
@@ -2044,8 +2083,117 @@ function eligible(b,fc){return [...b.ans].every(c=>!KG[c]||KG[c]<=S.grade||fc.in
 function idsFor(kanji,fc){return BANK.filter(b=>eligible(b,fc)&&[...b.ans].some(c=>kanji.includes(c))).map(b=>b.id)}
 function focusIds(){const fc=focusChars();if(!fc.length)return [];return idsFor(fc,fc)}
 function shuffle(a){for(let i=a.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[a[i],a[j]]=[a[j],a[i]]}return a}
-function save(){try{localStorage.setItem(KEY,JSON.stringify(S))}catch(e){}}
+function save(){try{localStorage.setItem(KEY,JSON.stringify(S))}catch(e){}saveW()}
 let S=load();
+const APP='kanji',APP_NAME='かんじ';
+/* ===== 教科の連携（かんじクエスト・ひっさんクエストなど 同じサイトの教科アプリ） =====
+   この部分は 各アプリに同じものを入れる（tools/wallet-snippet.js が元）。APP・APP_NAME・DEFAULT_SHOP・S・save・todayKey・dkey は 各アプリのもの。
+   連携は 自分で選ぶ（どちらか1つだけの人は 今までどおり）。2つの教科を使っている人にだけ「新しい機能」として知らせる。
+   連携すると「財布」が1つになる：W = {v,linked,points,total,tickets,shop,shopV,reqs,pin, apps:{kanji:{name,last,days,joined}}, days:{日付:{アプリ:{earned,cleared}, bonus}}}
+   連携ルール（A案）：
+   - 連携している教科の数 n で、各教科のポイントを割る（2教科×1/2、3教科×1/3）
+   - その日にクリアした教科の数 k で、その日の合計に ×(1＋0.5×(k−1))。上乗せ分を「連携ボーナス」として足す
+   - ごほうびの値段は変えない
+   つながるとき：ポイント・チケット・おねがいは足し合わせる。ごほうびの一覧は 長く使っていた教科のものを使い、もう一方にしかないものを下に足す */
+const WKEY='questWallet.v1',LINK_DAYS=14,WF=['points','total','tickets','shop','shopV','reqs','pin'];
+const FUNDS=()=>({points:0,total:0,tickets:[],shop:[],shopV:0,reqs:[],pin:''});
+function emptyW(){return {v:1,linked:false,...FUNDS(),apps:{},days:{},offerOff:{}}}
+function readW(){try{const w=JSON.parse(localStorage.getItem(WKEY));if(w&&w.v===1){const e=emptyW();
+  for(const k in e)if(w[k]===undefined)w[k]=e[k];return w}}catch(e){}return null}
+const isDefaultShop=sh=>JSON.stringify((sh||[]).map(x=>[x.name,x.cost]))===JSON.stringify(DEFAULT_SHOP.map(x=>[x.name,x.cost]));
+let W=readW()||emptyW();
+function bindWallet(){WF.forEach(k=>{delete S[k];Object.defineProperty(S,k,{get:()=>W[k],set:v=>{W[k]=v},configurable:true,enumerable:false})})}
+// この教科のポイント・チケット・ごほうびを 財布にまぜる
+function joinWallet(){
+  const mine={points:S.points||0,total:S.total||0,tickets:Array.isArray(S.tickets)?S.tickets:[],shop:Array.isArray(S.shop)?S.shop:DEFAULT_SHOP.map(x=>({...x})),
+    shopV:S.shopV||0,reqs:Array.isArray(S.reqs)?S.reqs:[],pin:S.pin||''};
+  W.points+=mine.points;W.total+=mine.total;W.tickets=W.tickets.concat(mine.tickets);W.reqs=W.reqs.concat(mine.reqs);
+  if(!W.shop.length)W.shop=mine.shop;
+  else{const myDays=Object.keys(S.days||{}).length,others=Math.max(0,...Object.entries(W.apps).filter(([id,a])=>id!==APP&&a.joined).map(([,a])=>a.days||0));
+    let base=W.shop,add=mine.shop;if((myDays>others||isDefaultShop(W.shop))&&!isDefaultShop(mine.shop)){base=mine.shop;add=W.shop} // 自分で決めた一覧があれば そちらを優先
+    if(isDefaultShop(add)&&!isDefaultShop(base))add=[]; // 何も変えていない一覧は まぜない
+    const names=new Set(base.map(x=>x.name));W.shop=base.concat(add.filter(x=>!names.has(x.name)))}
+  W.shopV=Math.max(W.shopV||0,mine.shopV);if(!W.pin)W.pin=mine.pin;
+  S.walletJoined=true;W.apps[APP]={...(W.apps[APP]||{}),name:APP_NAME,joined:true};bindWallet()}
+if(W.linked){if(S.walletJoined)bindWallet();else{joinWallet();save()}} // まぜたら すぐ保存（このあと読みなおしても 消えないように）
+else if(S.walletJoined&&S.points===undefined){S.walletJoined=false;S.points=0;S.total=0} // 検証中の前の版のデータ
+W.apps[APP]={...(W.apps[APP]||{}),name:APP_NAME};
+function saveW(){try{localStorage.setItem(WKEY,JSON.stringify(W))}catch(e){}}
+function freshW(){const w=readW();if(w)W=w} // ほかのタブで 変わっているかもしれないので 読みなおす
+addEventListener('storage',e=>{if(e.key===WKEY){freshW();if(W.linked&&!S.walletJoined){joinWallet();save()}try{if(typeof onWalletChange==='function')onWalletChange()}catch(_){}}});
+function touchApp(){W.apps[APP]={...(W.apps[APP]||{}),name:APP_NAME,last:todayKey(),days:Object.keys(S.days||{}).length};save()}
+const recent=a=>{const lim=new Date();lim.setDate(lim.getDate()-LINK_DAYS);return (a.last||'')>=dkey(lim)};
+// 連携している教科（自分をふくむ）。連携していなければ 自分だけ
+function linkedApps(){if(!W.linked)return [{id:APP,name:APP_NAME}];
+  return Object.entries(W.apps).filter(([id,a])=>id===APP||(a.joined&&recent(a))).map(([id,a])=>({id,name:a.name||id}))}
+const otherApps=()=>Object.entries(W.apps).filter(([id,a])=>id!==APP&&recent(a)).map(([id,a])=>({id,name:a.name||id}));
+const linkN=()=>Math.max(1,linkedApps().length);
+const linkMul=k=>1+.5*Math.max(0,k-1);
+const linkPt=v=>Math.max(1,Math.round(v/linkN()));
+function wDay(){const t=todayKey();return W.days[t]||(W.days[t]={bonus:0})}
+let linkGot=0;
+// ポイントをもらう（連携中は 教科の数で割って 財布へ）
+function earn(e){if(!W.linked){S.points+=e;S.total+=e;return e}
+  freshW();const v=linkPt(e);const d=wDay();const me=d[APP]||(d[APP]={earned:0,cleared:false});
+  me.earned+=v;W.points+=v;W.total+=v;return v}
+function markCleared(){if(!W.linked)return;const d=wDay();(d[APP]||(d[APP]={earned:0,cleared:false})).cleared=true}
+function settleLink(){linkGot=0;if(!W.linked)return 0;const d=wDay();const apps=Object.keys(d).filter(k=>k!=='bonus'&&d[k]&&typeof d[k]==='object');
+  const k=apps.filter(a=>d[a].cleared).length,sum=apps.reduce((s,a)=>s+(d[a].earned||0),0);
+  const want=Math.round(sum*(linkMul(k)-1)),add=want-(d.bonus||0);
+  if(add>0&&linkN()>1){d.bonus=want;W.points+=add;W.total+=add;linkGot=add}return linkGot}
+const wesc=s=>String(s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+function renderLink(){const box=document.getElementById('linkBox');if(!box)return;
+  if(W.linked){const ap=linkedApps(),n=ap.length;if(n<2){box.hidden=true;return}
+    const d=W.days[todayKey()]||{},k=ap.filter(a=>d[a.id]&&d[a.id].cleared).length;
+    box.hidden=false;box.className='linkbox';
+    box.innerHTML=`<div class="link-h">${n}教科 連携中</div>
+      <div class="link-row">${ap.map(a=>`<span class="lk ${d[a.id]&&d[a.id].cleared?'done':''}">${wesc(a.name)}${d[a.id]&&d[a.id].cleared?' ✓':''}</span>`).join('')}</div>
+      <div class="link-note">${k>=n?`今日は全部クリア！ 連携ボーナス ×${linkMul(k)}`:(k?`あと${n-k}教科クリアで ×${linkMul(n)}${k>1?`（今は ×${linkMul(k)}）`:''}`:`${n===2?'両方':'全部'} クリアで ×${linkMul(n)}`)}</div>`;return}
+  box.hidden=true}
+function linkModal(html,btns){const m=document.createElement('div');m.className='modal link-intro';
+  m.innerHTML=`<div class="panel">${html}<div class="row">${btns.map((b,i)=>`<button class="btn ${b.cls||'green'}" data-i="${i}">${b.t}</button>`).join('')}</div></div>`;
+  m.addEventListener('click',e=>{const b=e.target.closest('[data-i]');if(!b)return;m.remove();btns[+b.dataset.i].on&&btns[+b.dataset.i].on()});
+  document.body.appendChild(m)}
+const LINK_TEXT=n=>`<p style="font-size:15px;font-weight:500;line-height:1.7;text-align:left;margin:0">・ポイント・ごほうび・チケットを 教科どうしで 共有します。<br>・同じ日に ${n===2?'両方':'全部'} クリアすると <b>連携ボーナス ×${linkMul(n)}</b>。</p>
+  <div class="link-warn"><b>ご注意</b><br>・ポイントは ${n}つの教科で わけあうので、1つの教科で もらえるポイントは へります。<br>・ごほうびの中身と ひつようなポイントは そのままです。連携したあとに 一度 確認してください。<br>・連携は あとからでも できます。</div>`;
+// 新しく できた教科（ほかの教科のホームの上に「リリース」として出す）
+const NEW_APPS={hissan:{name:'ひっさんクエスト（筆算）',short:'ひっさん',desc:'計算の筆算を 指で書いて、AIが まるつけ。毎日10問、学年ごとの計算に チャレンジ！'}};
+const appName=id=>(W.apps[id]&&W.apps[id].name)||(NEW_APPS[id]&&NEW_APPS[id].short)||((document.querySelector(`.subjects a[data-app="${id}"]`)||{}).textContent||'').trim()||id;
+// 上の教科ボタン：連携していない教科は うすい表示。押すと「連携しますか？」
+function renderNav(){const nav=document.querySelector('.subjects');if(!nav)return;
+  const rel=Object.keys(NEW_APPS).find(id=>id!==APP&&!(W.seenRelease||{})[id]&&!W.linked&&!(W.apps[id]&&W.apps[id].last)&&nav.querySelector(`a[data-app="${id}"]`)); // もう使っている教科は「リリース」と言わない
+  let ban=document.getElementById('releaseBan');
+  if(rel){ // まだ見ていない新しい教科：ボタンのかわりに リリースのお知らせ
+    nav.hidden=true;if(!ban){ban=document.createElement('button');ban.id='releaseBan';ban.className='release';nav.parentNode.insertBefore(ban,nav)}
+    ban.hidden=false;ban.innerHTML=`<span class="new">NEW</span>${wesc(NEW_APPS[rel].name)} リリース！`;ban.onclick=()=>openRelease(rel);return}
+  if(ban)ban.hidden=true;nav.hidden=false;
+  nav.querySelectorAll('a[data-app]').forEach(a=>{const id=a.dataset.app,off=id!==APP&&!W.linked;a.classList.toggle('off',off);
+    a.onclick=off?(e=>{e.preventDefault();e.stopPropagation();openLinkOffer(id)}):null})}
+function seeRelease(id){W.seenRelease=W.seenRelease||{};W.seenRelease[id]=todayKey();saveW();renderNav()}
+function openRelease(id){const r=NEW_APPS[id];
+  linkModal(`<p style="font-size:20px;font-weight:800;margin:0">${wesc(r.name)}が できました！</p><p style="font-size:15px;font-weight:500;line-height:1.7;margin:0">${wesc(r.desc)}</p>
+    <p style="font-size:15px;font-weight:800;margin:0">${wesc(APP_NAME)}と 連携すると…</p>${LINK_TEXT(2)}`,
+    [{t:'あとで',cls:'white',on:()=>seeRelease(id)},{t:'連携して はじめる',on:()=>{seeRelease(id);startLink(id)}}])}
+function openLinkOffer(id){
+  if(W.linked){linkModal(`<p style="font-size:20px;font-weight:800;margin:0">${linkN()}教科 連携中</p>${LINK_TEXT(Math.max(2,linkN()))}`,[{t:'とじる'}]);return}
+  id=id||Object.keys(W.apps).find(k=>k!==APP)||Object.keys(NEW_APPS).find(k=>k!==APP);const nm=appName(id);
+  linkModal(`<p style="font-size:20px;font-weight:800;margin:0">${wesc(nm)}と 連携しますか？</p>${LINK_TEXT(2)}`,
+    [{t:'今はしない',cls:'white'},{t:'連携する',on:()=>startLink(id)}])}
+function goApp(id){const a=document.querySelector(`.subjects a[data-app="${id}"]`);if(a){a.classList.remove('off');a.onclick=null;a.click()}}
+function startLink(id){freshW();if(!W.linked){Object.assign(W,FUNDS());W.linked=true;W.linkAt=todayKey()}
+  if(!S.walletJoined)joinWallet();W.apps[APP].introSeen=true;
+  if(id)W.apps[id]={...(W.apps[id]||{}),introSeen:true}; // 自分で選んで つないだので、相手の教科でも 説明は出さない
+  save();try{if(typeof onWalletChange==='function')onWalletChange()}catch(_){}renderNav();
+  const nm=id?appName(id):'';
+  linkModal(`<p style="font-size:20px;font-weight:800;margin:0">連携しました！</p><p style="font-size:15px;font-weight:500;margin:0">上の ボタンで、いつでも 教科を 切りかえられます。</p><p style="font-size:14px;font-weight:500;margin:0">ごほうびの中身と ひつようなポイントを、「ごほうび」から 一度 確認してください。</p>`,
+    id?[{t:'あとで',cls:'white'},{t:`${wesc(nm)}へ`,on:()=>goApp(id)}]:[{t:'OK'}])}
+// あとから つながった教科で 1回だけ 知らせる
+function linkIntro(){if(!W.linked||!S.walletJoined||W.apps[APP].introSeen)return;W.apps[APP].introSeen=true;saveW();
+  if(linkN()<2)return;
+  linkModal(`<p style="font-size:20px;font-weight:800;margin:0">${wesc(linkedApps().map(a=>a.name).join('と'))}が つながりました！</p>${LINK_TEXT(linkN())}`,[{t:'わかった！'}])}
+function resetWallet(){if(W.linked){Object.assign(W,FUNDS());W.shop=DEFAULT_SHOP.map(x=>({...x}));S.walletJoined=true;W.apps[APP]={...(W.apps[APP]||{}),joined:true};bindWallet()}
+  else S.walletJoined=false;saveW()}
+
 
 const pad=n=>String(n).padStart(2,'0');
 const dkey=d=>`${d.getFullYear()}-${pad(d.getMonth()+1)}-${pad(d.getDate())}`;
@@ -2082,6 +2230,7 @@ function show(id){['home','quiz','learn','grading','review','result','shop','set
 /* ===== ホーム ===== */
 function renderHome(){
   if(!S.onboarded){openWelcome();return}
+  freshW();touchApp();renderLink();renderNav();linkIntro();
   ensureToday();
   $('gradeLabel').textContent=`${S.grade}年生の漢字`;renderWatchPills();refreshPending();checkDecisions();renderAmzRw();askAgree();
   const d=day();
@@ -2090,23 +2239,23 @@ function renderHome(){
   let cur=-1;
   if(!d.testDone){
     $('qTitle').textContent='今日のクエスト';
-    $('status').innerHTML=`${qn()}問。80点以上で一発合格 <b>+${PTS[0]}pt</b>`;
+    $('status').innerHTML=`${qn()}問。80点以上で一発合格 <b>+${linkPt(PTS[0])}pt</b>`;
     $('startBtn').textContent='スタート';$('startBtn').className='btn bigstart';cur=0;
   }else if(n){
     $('qTitle').textContent=d.passed?'あと少し！':'今日のクエスト';
     $('status').innerHTML=d.passed
       ?`合格 <b>+${d.earned}pt</b>！<br>まちがえた${n}字を書けるまで練習！`
-      :`まちがえた漢字が全部書けたら合格！<br>次で書ければ <b>+${PTS[nextRw]}pt</b>`;
+      :`まちがえた漢字が全部書けたら合格！<br>次で書ければ <b>+${linkPt(PTS[nextRw])}pt</b>`;
     $('startBtn').textContent=`書けるまで練習！（残り${n}字）`;$('startBtn').className='btn bigstart';
     if(!d.passed)cur=nextRw;
   }else{
     const bl=BONUS_MAX-(d.bonus||0);
     $('qTitle').textContent='今日のクエスト クリア！';
     $('status').innerHTML=`${d.passRw?`書き直し${d.passRw}回で`:'一発'}合格！ <b>+${d.earned+bonusSum(d.bonus||0)+(d.streakBonus||0)}pt</b><br>`
-      +(bl>0?`自主練で80点以上なら <b>+${bonusPt(d.bonus||0)}pt</b>（あと${bl}回）`:'今日の自主練ポイントは終了。練習は続けられます。');
-    $('startBtn').textContent=bl>0?`自主練（+${bonusPt(d.bonus||0)}pt）`:'もう一度テスト';$('startBtn').className=bl>0?'btn yellow bigstart':'btn white bigstart';
+      +(bl>0?`自主練で80点以上なら <b>+${linkPt(bonusPt(d.bonus||0))}pt</b>（あと${bl}回）`:'今日の自主練ポイントは終了。練習は続けられます。');
+    $('startBtn').textContent=bl>0?`自主練（+${linkPt(bonusPt(d.bonus||0))}pt）`:'もう一度テスト';$('startBtn').className=bl>0?'btn yellow bigstart':'btn white bigstart';
   }
-  $('rule').innerHTML=PTS.map((p,i)=>`<div class="${cur===i?'on':''}"><span>${PTS_LABEL[i]}</span><strong>+${p}</strong></div>`).join('');
+  $('rule').innerHTML=PTS.map((p,i)=>`<div class="${cur===i?'on':''}"><span>${PTS_LABEL[i]}</span><strong>+${linkPt(p)}</strong></div>`).join('');
   const fc=focusChars();
   $('range').textContent=fc.length?`${fc.length}字：${fc.join(' ')}`:`${S.grade}年生の漢字ぜんぶ`;
   const GOAL=(goalItem()||{cost:1000}).cost;const left=Math.max(0,GOAL-S.points);
@@ -2135,7 +2284,7 @@ function startQuiz(m){ensureToday();mode=m;const d=dayRec();
 function home(){const d=dayRec();
   if(!d.testDone)startQuiz('test');else if(d.pending.length)openLearn();else startQuiz('free')}
 function openLearn(){const d=dayRec();
-  $('learnNote').textContent=`${d.pending.length}字。よく見て覚えたら、見ないで書こう。`+(d.passed?'':` 全部書けたら合格（+${PTS[Math.min(d.rewrites+1,RW_MAX)]}pt）！`);
+  $('learnNote').textContent=`${d.pending.length}字。よく見て覚えたら、見ないで書こう。`+(d.passed?'':` 全部書けたら合格（+${linkPt(PTS[Math.min(d.rewrites+1,RW_MAX)])}pt）！`);
   $('learnList').innerHTML=d.pending.map(id=>{const q=BANK[id];return `<div class="panel learn-card"><div class="k">${esc(q.ans)}</div><div class="q">${esc(q.pre)}<b>${esc(q.yomi)}</b>${esc(q.post)}</div></div>`}).join('');
   show('learn')}
 function showQ(){
@@ -2303,8 +2452,8 @@ const STREAK_DAYS=15,STREAK_PT=100; // 15日連続で +100pt
 function streakNow(){let st=0;const dt=new Date();if(!(S.days[todayKey()]||{}).passed)dt.setDate(dt.getDate()-1);
   while((S.days[dkey(dt)]||{}).passed){st++;dt.setDate(dt.getDate()-1)}return st}
 let streakGot=0;
-function award(d,rw){const e=PTS[Math.min(rw,RW_MAX)];d.passed=true;d.earned=e;d.passRw=rw;S.points+=e;S.total+=e;
-  streakGot=0;const st=streakNow();if(st>0&&st%STREAK_DAYS===0&&!d.streakBonus){d.streakBonus=STREAK_PT;S.points+=STREAK_PT;S.total+=STREAK_PT;streakGot=STREAK_PT}
+function award(d,rw){const e=earn(PTS[Math.min(rw,RW_MAX)]);d.passed=true;d.earned=e;d.passRw=rw;markCleared();
+  streakGot=0;const st=streakNow();if(st>0&&st%STREAK_DAYS===0&&!d.streakBonus){d.streakBonus=earn(STREAK_PT);streakGot=d.streakBonus}
   return e}
 function finish(){
   const d=dayRec();
@@ -2325,15 +2474,17 @@ function finish(){
     head=`<div class="badge ${wrong.length?'ng':''}">${wrong.length?`あと${wrong.length}字！`:(earned?'合格！':'全部書けた！')}</div><div class="big">${correct}<small>/${total}</small></div>`;
     body=earned?`<div class="earn"><span class="coin"></span><span class="pixel">+${earned}</span>pt</div><div class="sub">書き直し${d.rewrites}回で合格。合計 ${S.points}pt</div>`
       :!wrong.length?`<div class="sub">今日のクエスト クリア！</div>`
-      :`<div class="sub">もう一度覚えて書こう。${wasPassed?'':`<br>次で書ければ +${PTS[Math.min(d.rewrites+1,RW_MAX)]}pt`}</div>`;
+      :`<div class="sub">もう一度覚えて書こう。${wasPassed?'':`<br>次で書ければ +${linkPt(PTS[Math.min(d.rewrites+1,RW_MAX)])}pt`}</div>`;
   }else{
     const sc=toScore(correct,total);
-    if(sc>=PASS&&(d.bonus||0)<BONUS_MAX){earned=bonusPt(d.bonus||0);d.bonus=(d.bonus||0)+1;S.points+=earned;S.total+=earned}
+    if(sc>=PASS&&(d.bonus||0)<BONUS_MAX){earned=earn(bonusPt(d.bonus||0));d.bonus=(d.bonus||0)+1}
     head=`<div class="badge ${earned?'':'ng'}">自主練</div><div class="big">${sc}<small>点</small></div>`;
     body=earned?`<div class="earn"><span class="coin"></span><span class="pixel">+${earned}</span>pt</div><div class="sub">ナイス！ ${BONUS_MAX-d.bonus?`あと${BONUS_MAX-d.bonus}回`:'今日の分は終了'}</div>`
       :(d.bonus||0)>=BONUS_MAX?`<div class="sub">おつかれさま。今日の自主練ポイントは終了。</div>`
-      :`<div class="sub">80点以上で +${bonusPt(d.bonus||0)}pt。もう一度！</div>`;
+      :`<div class="sub">80点以上で +${linkPt(bonusPt(d.bonus||0))}pt。もう一度！</div>`;
   }
+  settleLink();body=body.replace(/合計 \d+pt/,`合計 ${S.points}pt`);
+  if(linkGot)body+=`<div class="sub link-got">連携ボーナス +${linkGot}pt！（${linkedApps().length}教科）</div>`;
   if(streakGot)body+=`<div class="sub" style="color:var(--red)">${STREAK_DAYS}日連続ボーナス +${STREAK_PT}pt！</div>`;
   save();
   addLog({t:Date.now(),date:todayKey(),mode,rw:mode==='practice'?d.rewrites:0,ai:aiState==='ai'||aiState==='partial',earned,
@@ -2690,7 +2841,7 @@ let obGrade=4,obStep=0,obFromHome=false;
 /* ===== 利用規約・プライバシー ===== */
 // メールアドレスは ソースに書かず、表示するときに組み立てる（迷惑メール対策）
 document.querySelectorAll('a.ml').forEach(a=>{const m=a.dataset.u+String.fromCharCode(64)+a.dataset.d;a.textContent=m;a.href='mai'+'lto:'+m});
-const TERMS_V='2026-10-16b';
+const TERMS_V='2026-10-16c'; // ひっさんクエストを追加
 const agreed=()=>S.agreed===TERMS_V;
 let tmNext=null; // 同意したあとに すること（null＝読むだけ）
 function openTerms(tab,next){tmNext=next||null;setTmTab(tab||'tos');
@@ -2752,6 +2903,7 @@ $('obNext').onclick=()=>{if(!obAdmin&&obStep<OB.length-1){obStep++;renderOb()}el
 $('obBack').onclick=()=>{if(obAdmin){obAdmin=false;renderOb()}else if(obStep>0){obStep--;renderOb()}};
 $('obAdmin').onclick=()=>{obAdmin=true;sfx('reveal');renderOb()};
 $('obSkip').onclick=obDone;
+$('linkBtn').onclick=()=>openLinkOffer(Object.keys(NEW_APPS).find(k=>k!==APP)||'kanji');
 $('howtoBtn').onclick=()=>{obFromHome=true;obStep=0;obAdmin=false;renderOb();show('onboard')};
 function renderSetup(){
   $('gradeRow').innerHTML=[1,2,3,4,5,6].map(g=>`<button class="${g===suGrade?'on':''}" data-grade="${g}">${g}<small>年</small></button>`).join('');
@@ -2851,8 +3003,12 @@ function renderAmzRw(){const seen=new Set(),rows=[];
 /* ===== 機種変更（データの引っ越し） ===== */
 const MOVE_URL='/api/move';
 let mv=null; // {code,url,until,timer,done}
+// 機種変更：同じサイトの ほかの教科のデータも いっしょに運ぶ
+const OTHER_RE=/^(kanjiQuest|hissanQuest)/;
+function otherData(own){const o={};try{for(let i=0;i<localStorage.length;i++){const k=localStorage.key(i);if(OTHER_RE.test(k)&&!own.includes(k))o[k]=localStorage.getItem(k)}}catch(e){}return o}
+function putOther(x){if(x&&typeof x==='object')for(const k in x)if(OTHER_RE.test(k)&&typeof x[k]==='string')try{localStorage.setItem(k,x[k])}catch(e){}}
 function movePayload(){const st=JSON.parse(JSON.stringify(S));const lg=JSON.parse(JSON.stringify(LOG));
-  const out={v:1,kind:'kanjiQuest',at:Date.now(),S:st,LOG:lg};let j=JSON.stringify(out);
+  const out={v:1,kind:'kanjiQuest',at:Date.now(),S:st,LOG:lg,W:JSON.parse(JSON.stringify(W)),X:otherData([KEY,LOGKEY])};let j=JSON.stringify(out);
   for(let i=0;j.length>3500000&&i<lg.length;i+=10){lg.slice(i,i+10).forEach(x=>x.items.forEach(it=>delete it.img));j=JSON.stringify(out)}
   return j}
 function renderMove(){const b=$('moveBox');
@@ -2897,8 +3053,8 @@ function receiveMove(code){$('mvMsg').textContent='データを受けとりま�
       if(r.status===404){$('mvMsg').textContent='このQRは使えません';$('mvSub').textContent='時間切れか、すでに使われています。前の端末で、もう一度QRを出してください。';
         $('mvYes').hidden=true;$('mvNo').textContent='閉じる';return}
       if(!r.ok)throw 0;const d=await r.json();if(d.kind!=='kanjiQuest'||!d.S)throw 0;
-      localStorage.setItem(KEY,JSON.stringify(d.S));localStorage.setItem(LOGKEY,JSON.stringify(d.LOG||[]));
-      $('mvMsg').textContent='引っ越しが終わりました！';$('mvSub').textContent=`${d.S.points||0}pt と記録が、この端末に移りました。`;
+      localStorage.setItem(KEY,JSON.stringify(d.S));localStorage.setItem(LOGKEY,JSON.stringify(d.LOG||[]));putOther(d.X);if(d.W)localStorage.setItem(WKEY,JSON.stringify(d.W));
+      $('mvMsg').textContent='引っ越しが終わりました！';$('mvSub').textContent=`${(d.W||d.S).points||0}pt と記録が、この端末に移りました。`;
       $('mvYes').hidden=true;$('mvNo').textContent='はじめる';$('mvNo').onclick=()=>location.replace(location.pathname);sfx('clear')}
     catch(e){$('mvYes').disabled=false;$('mvYes').textContent='受けとる';$('mvSub').textContent='うまく受けとれませんでした。電波のよいところで、もう一度おしてください。'}}}
 
@@ -2948,7 +3104,8 @@ $('items').addEventListener('click',e=>{const b=e.target.closest('[data-buy]');i
   else ask(`${it.name}と${it.cost}ptを交換する？`,'交換',()=>{if(S.points<it.cost)return;S.points-=it.cost;S.tickets.push({id:Date.now(),name:it.name,cost:it.cost,date:todayKey(),used:false});save();syncSoon();sfx('clear');renderShop()})});
 $('ticketList').addEventListener('click',e=>{const b=e.target.closest('[data-use]');if(!b)return;const t=S.tickets.find(x=>String(x.id)===b.dataset.use);
   ask('このチケットを使った？','使った',()=>{t.used=true;t.usedAt=todayKey();save();syncSoon();renderShop()})});
-$('resetBtn').onclick=()=>ask('ポイント・記録・チケットを全部消します。元に戻せません。','消す',()=>ask('本当に消しますか？','全部消す',()=>{if(S.share)fetch(SYNC_URL,{method:'DELETE',headers:{'Content-Type':'application/json'},body:JSON.stringify({id:S.share.id,key:S.share.key})}).catch(()=>{});S=fresh();save();openWelcome()}));
+$('resetBtn').onclick=()=>ask('ポイント・記録・チケットを全部消します。'+(linkN()>1?'連携しているほかの教科と共通のポイントも消えます。':'')+'元に戻せません。','消す',()=>ask('本当に消しますか？','全部消す',()=>{if(S.share)fetch(SYNC_URL,{method:'DELETE',headers:{'Content-Type':'application/json'},body:JSON.stringify({id:S.share.id,key:S.share.key})}).catch(()=>{});S=fresh();resetWallet();save();openWelcome()}));
+function onWalletChange(){if(!$('home').hidden)renderHome();if(!$('shop').hidden)renderShop()}
 
 /* ===== モーダル ===== */
 let mCb=null;
@@ -3035,7 +3192,7 @@ document.fonts.load('600 40px "Klee One"','漢').catch(()=>{});
   const friends=CHARS.filter(c=>!c.foe),foes=CHARS.filter(c=>c.foe),pick=a=>a[Math.floor(Math.random()*a.length)];
   const S=50;
   document.querySelectorAll('canvas.walk').forEach(cv=>{
-    const ctx=cv.getContext('2d');let W=0,H=84,dpr=1,actors=[],last=0,spawnT=0;
+    const ctx=cv.getContext('2d');let W=0,H=120,dpr=1,actors=[],last=0,spawnT=0;
     // タップで びっくり
     window.KQ_HIT=window.KQ_HIT||[];
     KQ_HIT.push((px,py)=>{if(cv.offsetParent===null)return false;const r=cv.getBoundingClientRect(),h=S*H0/W0;
@@ -3104,7 +3261,7 @@ document.addEventListener('pointerdown',e=>{if(e.target.closest('button,a,input,
   function size(){dpr=Math.min(devicePixelRatio||1,2);W=innerWidth;H=innerHeight;cv.width=W*dpr;cv.height=H*dpr;ctx.setTransform(dpr,0,0,dpr,0,0)}
   addEventListener('resize',size);size();
   function spawn(kind,x){const dir=kind==='cloud'?(Math.random()<.5?1:-1):(Math.random()<.7?1:-1);
-    fl.push({kind,dir,x:x??(dir>0?-90:W+10),y:20+Math.random()*Math.max(60,H*.55),v:kind==='cloud'?10+Math.random()*8:45+Math.random()*25,t:Math.random()*1000,ph:Math.random()*6})}
+    fl.push({kind,dir,x:x??(dir>0?-90:W+10),y:72+Math.random()*Math.max(60,H*.5),v:kind==='cloud'?10+Math.random()*8:45+Math.random()*25,t:Math.random()*1000,ph:Math.random()*6})}
   spawn('cloud',W*.15);spawn('bird',W*.55);spawn('cloud',W*.7);
   function step(ts){requestAnimationFrame(step);
     const on=!$('home').hidden||!$('welcome').hidden;cv.style.display=on?'':'none';
