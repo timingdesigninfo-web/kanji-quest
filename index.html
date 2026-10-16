@@ -678,7 +678,7 @@ button:focus-visible{outline:4px solid var(--ink);outline-offset:3px}
     <div class="range" id="range"></div>
     <div class="info-h">ポイント</div>
     <div class="rule" id="rule"></div>
-    <p class="info-p">まちがえた漢字は書けるまで練習！ クリア後の自主練は80点以上で+10pt（1日4回）。15日連続で+100pt。</p>
+    <p class="info-p" id="ptNote"></p>
     <p class="info-p">※AI採点は、回数や利用の上限で使えないことがあります。そのときは自分で○×をつけます。</p>
     <button class="howto" id="howtoBtn">使い方</button>
     <button class="howto" id="linkBtn">教科の連携</button>
@@ -2310,7 +2310,7 @@ function renderHome(){
     const cls=r&&r.passed?((r.passRw??(r.tries-1))===0?'gold':'silver'):'';row.push(`<div class="st ${cls} ${i===0?'today':''}" title="${k}">${dt.getDate()}</div>`)}
   $('stampRow').innerHTML=row.join('');
   const st=streakNow();
-  $('streak').innerHTML=`${st?`${st}日連続！ `:''}あと${STREAK_DAYS-st%STREAK_DAYS}日で <b>+${STREAK_PT}pt</b>`;
+  $('streak').innerHTML=`${st?`${st}日連続！ `:''}あと${STREAK_DAYS-st%STREAK_DAYS}日で <b>+${linkPt(STREAK_PT)}pt</b>`;renderPtNote();
 }
 
 /* ===== テスト ===== */
@@ -2499,6 +2499,11 @@ $('decideBtn').onclick=()=>{results=written.map((w,i)=>({id:w.id,ok:marks[i]===t
 
 /* ===== 結果 ===== */
 const STREAK_DAYS=15,STREAK_PT=100; // 15日連続で +100pt
+
+// ポイントの説明（連携中は じっさいにもらえる量で出す）
+function renderPtNote(){const el=$('ptNote');if(!el)return;const n=linkN();
+  el.innerHTML=`まちがえた漢字は書けるまで練習！ クリア後の自主練は80点以上で+${linkPt(10)}pt（1日4回）。15日連続で+${linkPt(STREAK_PT)}pt。`
+    +(n>1?`<br><b>${n}教科 連携中</b>：ポイントは${n}教科で分けあうので、1教科でもらえるのは ${n===2?'半分':n+'分の1'} です。${n===2?'両方':'全部'}クリアした日は、その日のポイントが ×${linkMul(n)} になります。`:'')}
 function streakNow(){let st=0;const dt=new Date();if(!(S.days[todayKey()]||{}).passed)dt.setDate(dt.getDate()-1);
   while((S.days[dkey(dt)]||{}).passed){st++;dt.setDate(dt.getDate()-1)}return st}
 let streakGot=0;
@@ -2536,7 +2541,7 @@ function finish(){
   settleLink();body=body.replace(/合計 \d+pt/,`合計 ${S.points}pt`);
   if(linkGot)body+=`<div class="sub link-got">連携ボーナス +${linkGot}pt！（${linkedApps().length}教科）</div>`;
   body+=linkSummary();
-  if(streakGot)body+=`<div class="sub" style="color:var(--red)">${STREAK_DAYS}日連続ボーナス +${STREAK_PT}pt！</div>`;
+  if(streakGot)body+=`<div class="sub" style="color:var(--red)">${STREAK_DAYS}日連続ボーナス +${streakGot}pt！</div>`;
   save();
   addLog({t:Date.now(),date:todayKey(),mode,rw:mode==='practice'?d.rewrites:0,ai:aiState==='ai'||aiState==='partial',earned,
     items:results.map((r,i)=>{const b=BANK[r.id]||{};return {p:b.pre,y:b.yomi,o:b.post,a:b.ans,ok:r.ok,img:thumb(b.ans||'',(written[i]||{}).strokes||[])}})});
@@ -2960,7 +2965,7 @@ const OB=[
   {pic:()=>`<div class="ob-board"><span>漢</span></div>`,h:'毎日10問、指で書く',p:'文の中の［よみがな］を漢字で書きます。書く場所は大きく、ほかには何も置いていません。'},
   {pic:()=>`<div class="ob-mark">80点</div>`,h:'AIが採点',p:'10問書いたら、AIがまとめて丸つけ。80点以上で一発合格です。使えないときは自分で○×をつけます。'},
   {pic:()=>icon('star'),h:'書けるまで練習！',p:'まちがえた漢字は、答えを見て覚えて、書けるまでくり返します。書き直しが少ないほどポイントアップ。'},
-  {pic:()=>icon('gem'),h:'ポイントでごほうび',p:'ためたポイントで、自分で決めたごほうびと交換。合格のあとの自主練でも+10pt（1日4回）。'},
+  {pic:()=>icon('gem'),h:'ポイントでごほうび',p:'ためたポイントで、自分で決めたごほうびと交換。合格のあとの自主練でも+'+linkPt(10)+'pt（1日4回）。'},
 ];
 let obAdmin=false;
 const OB_PHONE=`<svg viewBox="0 0 120 120"><rect x="34" y="8" width="52" height="104" rx="10" fill="#fff" stroke="#1C2A5C" stroke-width="5"/><rect x="44" y="30" width="32" height="32" fill="#fff" stroke="#1C2A5C" stroke-width="3"/><rect x="48" y="34" width="9" height="9" fill="#1C2A5C"/><rect x="63" y="34" width="9" height="9" fill="#1C2A5C"/><rect x="48" y="49" width="9" height="9" fill="#1C2A5C"/><rect x="63" y="51" width="5" height="5" fill="#1C2A5C"/><rect x="68" y="56" width="4" height="4" fill="#1C2A5C"/><rect x="44" y="72" width="32" height="8" rx="4" fill="#FFCF1F"/><rect x="44" y="86" width="22" height="8" rx="4" fill="#C9DAF5"/></svg>`;

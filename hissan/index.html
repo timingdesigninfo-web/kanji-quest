@@ -738,7 +738,7 @@ body:has(#quiz:not([hidden])){background-image:none!important;background-color:#
     <div class="range" id="range"></div>
     <div class="info-h">ポイント</div>
     <div class="rule" id="rule"></div>
-    <p class="info-p">まちがえた問題は、同じ形の新しい問題でとけるまで練習！ クリア後の自主練は80点以上で+10pt（1日4回）。15日連続で+100pt。</p>
+    <p class="info-p" id="ptNote"></p>
     <p class="info-p">※AIの読み取りは、回数や利用の上限で使えないことがあります。そのときは自分で○×をつけます。</p>
     <button class="howto" id="howtoBtn">使い方</button>
     <button class="howto" id="linkBtn">教科の連携</button>
@@ -1267,15 +1267,15 @@ function renderHome(){
     $('qTitle').textContent=d.passed?'あと少し！':'今日のクエスト';
     $('status').innerHTML=d.passed
       ?`合格 <b>+${d.earned}pt</b>！<br>まちがえた${n}問を とけるまで練習！`
-      :`まちがえた問題が全部とけたら合格！<br>次でとければ <b>+${PTS[nextRw]}pt</b>`;
+      :`まちがえた問題が全部とけたら合格！<br>次でとければ <b>+${linkPt(PTS[nextRw])}pt</b>`;
     $('startBtn').textContent=`とけるまで練習！（残り${n}問）`;$('startBtn').className='btn bigstart';
     if(!d.passed)cur=nextRw;
   }else{
     const bl=BONUS_MAX-(d.bonus||0);
     $('qTitle').textContent='今日のクエスト クリア！';
     $('status').innerHTML=`${d.passRw?`とき直し${d.passRw}回で`:'一発'}合格！ <b>+${d.earned+(d.bonus||0)*BONUS_PT+(d.streakBonus||0)}pt</b><br>`
-      +(bl>0?`自主練で80点以上なら <b>+${BONUS_PT}pt</b>（あと${bl}回）`:'今日の自主練ポイントは終了。練習は続けられます。');
-    $('startBtn').textContent=bl>0?`自主練（+${BONUS_PT}pt）`:'もう一度テスト';$('startBtn').className=bl>0?'btn yellow bigstart':'btn white bigstart';
+      +(bl>0?`自主練で80点以上なら <b>+${linkPt(BONUS_PT)}pt</b>（あと${bl}回）`:'今日の自主練ポイントは終了。練習は続けられます。');
+    $('startBtn').textContent=bl>0?`自主練（+${linkPt(BONUS_PT)}pt）`:'もう一度テスト';$('startBtn').className=bl>0?'btn yellow bigstart':'btn white bigstart';
   }
   const ln=linkN();$('rule').innerHTML=PTS.map((p,i)=>`<div class="${cur===i?'on':''}"><span>${PTS_LABEL[i]}</span><strong>+${linkPt(p)}</strong></div>`).join('');
   $('range').textContent=selUnits().map(id=>UNIT[id].name).join('、');
@@ -1288,7 +1288,7 @@ function renderHome(){
     const cls=r&&r.passed?((r.passRw??(r.tries-1))===0?'gold':'silver'):'';row.push(`<div class="st ${cls} ${i===0?'today':''}" title="${k}">${dt.getDate()}</div>`)}
   $('stampRow').innerHTML=row.join('');
   const st=streakNow();
-  $('streak').innerHTML=`${st?`${st}日連続！ `:''}あと${STREAK_DAYS-st%STREAK_DAYS}日で <b>+${STREAK_PT}pt</b>`;
+  $('streak').innerHTML=`${st?`${st}日連続！ `:''}あと${STREAK_DAYS-st%STREAK_DAYS}日で <b>+${linkPt(STREAK_PT)}pt</b>`;renderPtNote();
 }
 
 /* ===== テスト ===== */
@@ -1302,7 +1302,7 @@ function startQuiz(m){ensureToday();mode=m;const d=dayRec();
 function home(){const d=dayRec();
   if(!d.testDone)startQuiz('test');else if(d.pending.length)openLearn();else startQuiz('free')}
 function openLearn(){const d=dayRec();
-  $('learnNote').textContent=`${d.pending.length}問。正しい答えをたしかめたら、同じ形の新しい問題をとこう。`+(d.passed?'':` 全部とけたら合格（+${PTS[Math.min(d.rewrites+1,RW_MAX)]}pt）！`);
+  $('learnNote').textContent=`${d.pending.length}問。正しい答えをたしかめたら、同じ形の新しい問題をとこう。`+(d.passed?'':` 全部とけたら合格（+${linkPt(PTS[Math.min(d.rewrites+1,RW_MAX)])}pt）！`);
   $('learnList').innerHTML=d.pending.map(p=>`<div class="panel learn-card"><div class="q">${esc(UNIT[p.u]?.name||'')}${p.kind==='word'?'・文章題':''}</div><div class="k ${p.kind==='word'?'wordk':''}">${esc(probText(p))}</div><div class="ans">${esc(ansText(p))}</div>${p.read?`<div class="q">自分の答え：${esc(p.read)}</div>`:''}</div>`).join('');
   show('learn')}
 function showQ(){
@@ -1874,6 +1874,11 @@ $('rpYes').onclick=async()=>{$('rpYes').disabled=true;$('rpYes').textContent='�
 
 /* ===== 結果 ===== */
 const STREAK_DAYS=15,STREAK_PT=100;
+
+// ポイントの説明（連携中は じっさいにもらえる量で出す）
+function renderPtNote(){const el=$('ptNote');if(!el)return;const n=linkN();
+  el.innerHTML=`まちがえた問題は、同じ形の新しい問題でとけるまで練習！ クリア後の自主練は80点以上で+${linkPt(10)}pt（1日4回）。15日連続で+${linkPt(STREAK_PT)}pt。`
+    +(n>1?`<br><b>${n}教科 連携中</b>：ポイントは${n}教科で分けあうので、1教科でもらえるのは ${n===2?'半分':n+'分の1'} です。${n===2?'両方':'全部'}クリアした日は、その日のポイントが ×${linkMul(n)} になります。`:'')}
 function streakNow(){let st=0;const dt=new Date();if(!(S.days[todayKey()]||{}).passed)dt.setDate(dt.getDate()-1);
   while((S.days[dkey(dt)]||{}).passed){st++;dt.setDate(dt.getDate()-1)}return st}
 let streakGot=0;
@@ -1900,19 +1905,19 @@ function finish(){
     head=`<div class="badge ${wrong.length?'ng':''}">${wrong.length?`あと${wrong.length}問！`:(earned?'合格！':'全部とけた！')}</div><div class="big">${correct}<small>/${total}</small></div>`;
     body=earned?`<div class="earn"><span class="coin"></span><span class="pixel">+${earned}</span>pt</div><div class="sub">とき直し${d.rewrites}回で合格。合計 ${S.points}pt</div>`
       :!wrong.length?`<div class="sub">今日のクエスト クリア！</div>`
-      :`<div class="sub">答えをたしかめて、もう一度。${wasPassed?'':`<br>次でとければ +${PTS[Math.min(d.rewrites+1,RW_MAX)]}pt`}</div>`;
+      :`<div class="sub">答えをたしかめて、もう一度。${wasPassed?'':`<br>次でとければ +${linkPt(PTS[Math.min(d.rewrites+1,RW_MAX)])}pt`}</div>`;
   }else{
     const sc=score100(correct,total);
     if(sc>=PASS&&(d.bonus||0)<BONUS_MAX){d.bonus=(d.bonus||0)+1;earned=earn(BONUS_PT)}
     head=`<div class="badge ${earned?'':'ng'}">自主練</div><div class="big">${sc}<small>点</small></div>`;
     body=earned?`<div class="earn"><span class="coin"></span><span class="pixel">+${earned}</span>pt</div><div class="sub">ナイス！ ${BONUS_MAX-d.bonus?`あと${BONUS_MAX-d.bonus}回`:'今日の分は終了'}</div>`
       :(d.bonus||0)>=BONUS_MAX?`<div class="sub">おつかれさま。今日の自主練ポイントは終了。</div>`
-      :`<div class="sub">80点以上で +${BONUS_PT}pt。もう一度！</div>`;
+      :`<div class="sub">80点以上で +${linkPt(BONUS_PT)}pt。もう一度！</div>`;
   }
   settleLink();body=body.replace(/合計 \d+pt/,`合計 ${S.points}pt`); // 連携ボーナスをふくめた合計にする
   if(linkGot)body+=`<div class="sub link-got">連携ボーナス +${linkGot}pt！（${linkedApps().length}教科）</div>`;
   body+=linkSummary();
-  if(streakGot)body+=`<div class="sub" style="color:var(--red)">${STREAK_DAYS}日連続ボーナス +${STREAK_PT}pt！</div>`;
+  if(streakGot)body+=`<div class="sub" style="color:var(--red)">${STREAK_DAYS}日連続ボーナス +${streakGot}pt！</div>`;
   save();
   $('scoreBox').innerHTML=head+body;
   const miss=results.filter(r=>!r.ok);
@@ -1940,7 +1945,7 @@ const OB=[
   {pic:()=>`<div class="ob-board ob-hissan"><span>47<br><u>+38</u></span></div>`,h:'毎日5問、指で筆算',p:'問題は板に印刷されています。答えや くり上がりを指で書こう。点線のたて線で 位をそろえます。',note:'タブレットがおすすめです（スマホでもできます）'},
   {pic:()=>`<div class="ob-mark">80点</div>`,h:'AIがまとめて丸つけ',p:'全部書いたら、AIがまとめて答えを読みます。正しいかどうかはアプリが判定。80点以上で一発合格です。'},
   {pic:()=>icon('star'),h:'とけるまで練習！',p:'まちがえた問題は、正しい答えをたしかめてから、同じ形の新しい問題にチャレンジ。とき直しが少ないほどポイントアップ。'},
-  {pic:()=>icon('gem'),h:'ポイントでごほうび',p:'ためたポイントで、自分で決めたごほうびと交換。合格のあとの自主練でも+10pt（1日4回）。'},
+  {pic:()=>icon('gem'),h:'ポイントでごほうび',p:'ためたポイントで、自分で決めたごほうびと交換。合格のあとの自主練でも+'+linkPt(10)+'pt（1日4回）。'},
 ];
 function renderOb(){const o=OB[obStep];
   $('obCard').innerHTML=`<div class="ob-pic">${o.pic()}</div><h2>${o.h}</h2><p>${o.p}</p>${o.note?`<p class="ob-note"><svg viewBox="0 0 32 22" aria-hidden="true"><rect x="1.5" y="1.5" width="29" height="19" rx="3.5" fill="#fff" stroke="currentColor" stroke-width="2.2"/><rect x="5" y="4.5" width="20.5" height="13" rx="1" fill="#D3F5DF"/><circle cx="28" cy="11" r="1.2" fill="currentColor"/></svg>${o.note}</p>`:''}`;
