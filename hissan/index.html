@@ -1118,7 +1118,7 @@ function itemLine(w,k){const p=w.p;
   let what;
   if(p.kind==='frac')what='answer＝「こたえ」の点線のわくに書いた答え。分数は 分子/分母（例 7/12）、帯分数は 整数 分子/分母（例 1 1/12）。下の「とちゅうの計算」は読まなくてよい';
   else if(p.kind==='expr')what=p.rem!=null?'answer＝「こたえ」のわくに書いた数、remainder＝「あまり」の右のわくに書いた数':'answer＝「こたえ」のわくに書いた数';
-  else if(p.kind==='div')what='answer＝商（わられる数の上の線より上に書いた数）、remainder＝あまり（いちばん下に残った数）';
+  else if(p.kind==='div')what='answer＝わり算の答え（わられる数の上の線より上に書いた数）、remainder＝あまり（いちばん下に残った数）';
   else what=p.op==='×'&&String(p.b).length===2?'answer＝いちばん下に書いた数、partials＝その上の途中の行':'answer＝線の下に書いた数';
   return `画像${k+1}: ${probText(p)}（${p.kind==='frac'?'分数の':''}${OP_NAME[p.op]}）／読むもの: ${what}`}
 function promptFor(items){
@@ -1138,7 +1138,7 @@ ${items.map(itemLine).join('\n')}
 - remainder: あまり（わり算でなければ、または書いていなければ空文字）
 - carries: くり上がり・くり下がりのメモ（左から順に。なければ空文字）
 - clear: 数字がはっきり読めたら true、自信がない所があれば false
-- note: 書き方について 子どもに向けた ひらがな多めの ひとこと（25文字いない。位がそろっているか など）
+- note: 書き方について 子どもに向けた ひらがな多めの ひとこと（25文字いない。「商」「位取り」などの むずかしい言葉は使わず、「わり算の答え」「くらい」のような ふだんの言葉で。位がそろっているか など）
 
 ルール:
 - 正しい答えを計算してはいけません。書いてあるとおりに読んでください。まちがった数が書いてあれば、そのまま読みます。
