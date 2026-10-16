@@ -1,0 +1,20 @@
+# かんじクエスト
+User-agent: *
+Allow: /
+Disallow: /api/
+
+# AIの検索・回答サービスも歓迎します
+User-agent: GPTBot
+Allow: /
+User-agent: OAI-SearchBot
+Allow: /
+User-agent: ClaudeBot
+Allow: /
+User-agent: Claude-SearchBot
+Allow: /
+User-agent: PerplexityBot
+Allow: /
+User-agent: Google-Extended
+Allow: /
+
+Sitemap: https://kanji-quest-black.vercel.app/sitemap.xml
