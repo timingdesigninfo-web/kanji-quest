@@ -482,6 +482,9 @@ body:has(#quiz:not([hidden])){background-image:none!important;background-color:#
 .linkbox .new{display:inline-block;background:var(--red);color:#fff;border-radius:6px;padding:0 6px;font-size:11px;margin-right:4px;vertical-align:2px}
 .linkbox .link-more{align-self:flex-start;font-size:14px;padding:8px 14px}
 .link-intro .panel{text-align:left;gap:12px}
+.release{position:absolute;top:6px;left:50%;transform:translateX(-50%);z-index:2;display:flex;align-items:center;gap:6px;white-space:nowrap;padding:7px 14px;border:3px solid var(--ink);border-radius:999px;background:#FFF4C7;color:var(--ink);font:800 14px var(--f-body);box-shadow:0 3px 0 var(--ink);cursor:pointer}
+.release .new{background:var(--red);color:#fff;border-radius:6px;padding:0 6px;font-size:11px}
+.subjects a.off{background:rgba(255,255,255,.55);color:rgba(28,42,92,.45);border-style:dashed;box-shadow:none}
 .ob-board.ob-hissan{font:800 38px/1.25 var(--f-pixel);text-align:right}
 .ob-board.ob-hissan::before,.ob-board.ob-hissan::after{display:none}
 .ob-board.ob-hissan u{text-decoration:none;display:inline-block;border-bottom:4px solid var(--ink);padding:0 2px}
@@ -513,7 +516,7 @@ body:has(#quiz:not([hidden])){background-image:none!important;background-color:#
 <!-- ============ ホーム ============ -->
 <main id="home" class="screen">
   <div class="top">
-    <nav class="subjects" id="subjects" aria-label="教科"><a href="/">かんじ</a><a href="/hissan/" aria-current="page">ひっさん</a></nav>
+    <nav class="subjects" id="subjects" aria-label="教科"><a href="/" data-app="kanji">かんじ</a><a href="/hissan/" data-app="hissan" aria-current="page">ひっさん</a></nav>
     <i class="cloud hc1"></i><i class="cloud hc2"></i><i class="cloud hc3"></i>
     <div class="logo"><img class="logo-img" alt="ひっさんクエスト" width="1000" height="351"><small id="gradeLabel">4年生の計算</small></div>
   </div>
@@ -871,29 +874,45 @@ function renderLink(){const box=document.getElementById('linkBox');if(!box)retur
     box.innerHTML=`<div class="link-h">${n}教科 連携中</div>
       <div class="link-row">${ap.map(a=>`<span class="lk ${d[a.id]&&d[a.id].cleared?'done':''}">${wesc(a.name)}${d[a.id]&&d[a.id].cleared?' ✓':''}</span>`).join('')}</div>
       <div class="link-note">${k>=n?`今日は全部クリア！ 連携ボーナス ×${linkMul(k)}`:(k?`あと${n-k}教科クリアで ×${linkMul(n)}${k>1?`（今は ×${linkMul(k)}）`:''}`:`${n===2?'両方':'全部'} クリアで ×${linkMul(n)}`)}</div>`;return}
-  // 連携していない：ほかの教科も使っている人にだけ、新しい機能として知らせる（「今はしない」で消える）
-  const ot=otherApps();if(!ot.length||(W.offerOff||{})[APP]){box.hidden=true;return}
-  box.hidden=false;box.className='linkbox offer';
-  box.innerHTML=`<div class="link-h"><span><span class="new">NEW</span> 教科の連携ができました</span></div>
-    <div class="link-note">${wesc(APP_NAME)}と${ot.map(a=>wesc(a.name)).join('・')}の ポイントと ごほうびを 1つにできます。</div>
-    <button class="btn white link-more">くわしく</button>`;
-  box.querySelector('.link-more').onclick=openLinkOffer}
+  box.hidden=true}
 function linkModal(html,btns){const m=document.createElement('div');m.className='modal link-intro';
   m.innerHTML=`<div class="panel">${html}<div class="row">${btns.map((b,i)=>`<button class="btn ${b.cls||'green'}" data-i="${i}">${b.t}</button>`).join('')}</div></div>`;
   m.addEventListener('click',e=>{const b=e.target.closest('[data-i]');if(!b)return;m.remove();btns[+b.dataset.i].on&&btns[+b.dataset.i].on()});
   document.body.appendChild(m)}
 const LINK_TEXT=n=>`<p style="font-size:15px;font-weight:500;line-height:1.7;text-align:left;margin:0">・ポイントと ごほうび・チケットが 1つになります。<br>・ポイントは ${n}つの教科で わけあいます（1つの教科で もらえるポイントは へります）。<br>・そのかわり、同じ日に ${n===2?'両方':'全部'} クリアすると <b>連携ボーナス ×${linkMul(n)}</b>。<br>・ごほうびの ポイントは そのままです。</p>`;
-function openLinkOffer(){
+// 新しく できた教科（ほかの教科のホームの上に「リリース」として出す）
+const NEW_APPS={hissan:{name:'ひっさんクエスト（筆算）',short:'ひっさん',desc:'計算の筆算を 指で書いて、AIが まるつけ。毎日10問、学年ごとの計算に チャレンジ！'}};
+const appName=id=>(W.apps[id]&&W.apps[id].name)||(NEW_APPS[id]&&NEW_APPS[id].short)||id;
+// 上の教科ボタン：連携していない教科は うすい表示。押すと「連携しますか？」
+function renderNav(){const nav=document.querySelector('.subjects');if(!nav)return;
+  const rel=Object.keys(NEW_APPS).find(id=>id!==APP&&!(W.seenRelease||{})[id]&&!W.linked&&nav.querySelector(`a[data-app="${id}"]`));
+  let ban=document.getElementById('releaseBan');
+  if(rel){ // まだ見ていない新しい教科：ボタンのかわりに リリースのお知らせ
+    nav.hidden=true;if(!ban){ban=document.createElement('button');ban.id='releaseBan';ban.className='release';nav.parentNode.insertBefore(ban,nav)}
+    ban.hidden=false;ban.innerHTML=`<span class="new">NEW</span>${wesc(NEW_APPS[rel].name)} リリース！`;ban.onclick=()=>openRelease(rel);return}
+  if(ban)ban.hidden=true;nav.hidden=false;
+  nav.querySelectorAll('a[data-app]').forEach(a=>{const id=a.dataset.app,off=id!==APP&&!W.linked;a.classList.toggle('off',off);
+    a.onclick=off?(e=>{e.preventDefault();e.stopPropagation();openLinkOffer(id)}):null})}
+function seeRelease(id){W.seenRelease=W.seenRelease||{};W.seenRelease[id]=todayKey();saveW();renderNav()}
+function openRelease(id){const r=NEW_APPS[id];
+  linkModal(`<p style="font-size:20px;font-weight:800;margin:0">${wesc(r.name)}が できました！</p><p style="font-size:15px;font-weight:500;line-height:1.7;margin:0">${wesc(r.desc)}</p>
+    <p style="font-size:15px;font-weight:800;margin:0">${wesc(APP_NAME)}と 連携すると…</p>${LINK_TEXT(2)}
+    <p style="font-size:13px;font-weight:500;margin:0">あとで はじめるときは、上の「${wesc(r.short)}」ボタンから。</p>`,
+    [{t:'あとで',cls:'white',on:()=>seeRelease(id)},{t:'連携して はじめる',on:()=>{seeRelease(id);startLink(id)}}])}
+function openLinkOffer(id){
   if(W.linked){linkModal(`<p style="font-size:20px;font-weight:800;margin:0">${linkN()}教科 連携中</p>${LINK_TEXT(Math.max(2,linkN()))}`,[{t:'とじる'}]);return}
-  const ot=otherApps(),names=[APP_NAME,...ot.map(a=>a.name)].join('と');
-  linkModal(`<p style="font-size:20px;font-weight:800;margin:0">新しい機能：教科の連携</p><p style="font-size:15px;font-weight:500;margin:0">${wesc(names)}を つなげると…</p>${LINK_TEXT(Math.max(2,ot.length+1))}
-    <p style="font-size:13px;font-weight:500;margin:0;text-align:left">どちらか だけで いい人は、つなげなくても だいじょうぶです。あとから つなげることも できます。</p>`,
-    [{t:'今はしない',cls:'white',on:()=>{W.offerOff=W.offerOff||{};W.offerOff[APP]=todayKey();saveW();renderLink()}},
-     {t:'連携する',on:startLink}])}
-function startLink(){freshW();if(!W.linked){Object.assign(W,FUNDS());W.linked=true;W.linkAt=todayKey()}
-  if(!S.walletJoined)joinWallet();W.apps[APP].introSeen=true;save();
-  try{if(typeof onWalletChange==='function')onWalletChange()}catch(_){}
-  linkModal(`<p style="font-size:20px;font-weight:800;margin:0">連携しました！</p><p style="font-size:15px;font-weight:500;margin:0">ほかの教科を ひらくと、そちらも つながります。</p>`,[{t:'OK'}])}
+  id=id||Object.keys(W.apps).find(k=>k!==APP)||Object.keys(NEW_APPS).find(k=>k!==APP);const nm=appName(id);
+  linkModal(`<p style="font-size:20px;font-weight:800;margin:0">${wesc(nm)}と 連携しますか？</p>${LINK_TEXT(2)}
+    <p style="font-size:13px;font-weight:500;margin:0;text-align:left">${wesc(APP_NAME)}だけで いい人は、連携しなくても だいじょうぶです。</p>`,
+    [{t:'今はしない',cls:'white'},{t:'連携する',on:()=>startLink(id)}])}
+function goApp(id){const a=document.querySelector(`.subjects a[data-app="${id}"]`);if(a){a.classList.remove('off');a.onclick=null;a.click()}}
+function startLink(id){freshW();if(!W.linked){Object.assign(W,FUNDS());W.linked=true;W.linkAt=todayKey()}
+  if(!S.walletJoined)joinWallet();W.apps[APP].introSeen=true;
+  if(id)W.apps[id]={...(W.apps[id]||{}),introSeen:true}; // 自分で選んで つないだので、相手の教科でも 説明は出さない
+  save();try{if(typeof onWalletChange==='function')onWalletChange()}catch(_){}renderNav();
+  const nm=id?appName(id):'';
+  linkModal(`<p style="font-size:20px;font-weight:800;margin:0">連携しました！</p><p style="font-size:15px;font-weight:500;margin:0">上の ボタンで、いつでも 教科を 切りかえられます。</p>`,
+    id?[{t:'あとで',cls:'white'},{t:`${wesc(nm)}へ`,on:()=>goApp(id)}]:[{t:'OK'}])}
 // あとから つながった教科で 1回だけ 知らせる
 function linkIntro(){if(!W.linked||!S.walletJoined||W.apps[APP].introSeen)return;W.apps[APP].introSeen=true;saveW();
   if(linkN()<2)return;
@@ -928,7 +947,7 @@ function renderHome(){
   ensureToday();
   $('gradeLabel').textContent=`${S.grade}年生の計算`;
   const d=day();
-  freshW();touchApp();renderLink();linkIntro();
+  freshW();touchApp();renderLink();renderNav();linkIntro();
   $('ptsBig').textContent=S.points;updateHomeShare();
   const n=d.pending.length,nextRw=Math.min(d.rewrites+1,RW_MAX);
   let cur=-1;
@@ -1368,7 +1387,7 @@ function obDone(){if(obFromHome){renderHome();show('home')}else openSetup(obGrad
 $('obNext').onclick=()=>{if(obStep<OB.length-1){obStep++;renderOb()}else obDone()};
 $('obBack').onclick=()=>{if(obStep>0){obStep--;renderOb()}};
 $('obSkip').onclick=obDone;
-$('linkBtn').onclick=()=>openLinkOffer();
+$('linkBtn').onclick=()=>openLinkOffer(Object.keys(NEW_APPS).find(k=>k!==APP)||'kanji');
 $('howtoBtn').onclick=()=>{obFromHome=true;obStep=0;renderOb();show('onboard')};
 function renderSetup(){
   $('gradeRow').innerHTML=[1,2,3,4,5,6].map(g=>`<button class="${g===suGrade?'on':''}" data-grade="${g}">${g}<small>年</small></button>`).join('');
