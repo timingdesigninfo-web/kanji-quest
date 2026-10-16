@@ -57,6 +57,16 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Klee+One:wght@600&family=M+PLUS+Rounded+1c:wght@500;800&display=swap">
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=DotGothic16&text=0123456789%2B%2F%25.%2C%C3%97%C3%B7%E2%88%92%3D%EF%BC%8B%E3%81%82%E3%81%BE%E3%82%8A%E7%82%B9&display=swap">
+<title>ひっさんクエスト</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Klee+One:wght@600&family=M+PLUS+Rounded+1c:wght@500;800&display=swap">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=DotGothic16&text=0123456789%2B%2F%25.%2C%C3%97%C3%B7%E2%88%92%3D%EF%BC%8B%E3%81%82%E3%81%BE%E3%82%8A%E7%82%B9&display=swap">
+<title>ひっさんクエスト</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Klee+One:wght@600&family=M+PLUS+Rounded+1c:wght@500;800&display=swap">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=DotGothic16&text=0123456789%2B%2F%25.%2C%C3%97%C3%B7%E2%88%92%3D%EF%BC%8B%E3%81%82%E3%81%BE%E3%82%8A%E7%82%B9&display=swap">
 </head>
 <body>
 <style>
@@ -193,12 +203,17 @@ button:focus-visible{outline:4px solid var(--ink);outline-offset:3px}
 .tools .btn{font-size:18px;padding:12px}
 .tools .btn.small{flex:0 0 auto;min-width:76px}
 .tools .btn.grow{flex:1}
-.tools .btn.small{font-size:14px;padding:8px 10px;min-width:0}
+.tools .btn.small{font-size:12px;padding:6px 8px;min-width:0;align-self:center}
+.tools .btn.small.mid{font-size:15px;padding:10px 14px;align-self:stretch}
 .tools .btn.eraser{flex:0 0 auto;background:#fff;color:var(--ink);box-shadow:0 6px 0 var(--line);text-shadow:none;padding-inline:16px}
 .tools .btn.eraser svg{width:26px;height:26px;flex:none}
 .tools .btn.eraser[aria-pressed="true"]{background:#FFD9E2;box-shadow:0 6px 0 #E58AA0;outline:3px solid var(--ink)}
 .board.erasing #ink{cursor:cell}
 .qtop{display:none}
+.undo-toast{position:absolute;left:12px;bottom:12px;z-index:3;display:flex;align-items:center;gap:6px;padding:10px 16px;border-radius:999px;border:3px solid var(--ink);background:var(--yellow);color:var(--ink);font-size:17px;font-weight:800;box-shadow:0 4px 0 var(--ink);animation:toastIn .2s ease-out}
+.undo-toast svg{width:22px;height:22px}
+@keyframes toastIn{from{transform:translateY(10px);opacity:0}to{transform:none;opacity:1}}
+@media (max-width:480px){.tools{flex-wrap:wrap}.tools #nextBtn{flex-basis:100%;order:5}}
 .walk{position:absolute;left:0;bottom:100%;width:100%;height:120px;overflow:visible;pointer-events:none;image-rendering:pixelated}
 
 .now-pt{display:flex;align-items:center;justify-content:space-between;gap:8px;padding-bottom:8px;border-bottom:2px dashed var(--line)}
@@ -496,7 +511,8 @@ body:has(#quiz:not([hidden])){background-image:none!important;background-color:#
   .work-side .tools .btn{width:100%}
   .work-side .tools #nextBtn{order:-2;font-size:24px;padding:22px 16px}
   .work-side .tools #eraseBtn{order:-1;width:100%;font-size:22px;padding:18px 12px}
-  .work-side .tools .btn.small{flex:1 1 0;width:auto}
+  .work-side .tools #undoBtn{order:0;width:100%}
+  .work-side .tools #clearBtn{order:1;width:auto;margin:6px auto 0}
   .work-side .qbar .xbtn{display:none}
   .qtop{display:flex;margin-bottom:8px}
 }
@@ -507,7 +523,9 @@ body:has(#quiz:not([hidden])){background-image:none!important;background-color:#
   .work-side .tools .btn{padding:10px;font-size:16px}
   .work-side .tools #nextBtn{font-size:18px;padding:14px 10px}
   .work-side .tools #eraseBtn{font-size:16px;padding:10px}
-  .work-side .tools .btn.small{font-size:13px;padding:7px 4px;white-space:nowrap}
+  .work-side .tools .btn.small{font-size:12px;padding:6px 10px;white-space:nowrap}
+  .work-side .tools #undoBtn{font-size:14px;padding:8px}
+  .work-side .tools #clearBtn{margin-top:0}
   .qtop{margin-bottom:4px}.qtop .xbtn{width:34px;height:34px;font-size:18px}
   .dots .coin{font-size:14px}
 }
@@ -648,7 +666,7 @@ body:has(#quiz:not([hidden])){background-image:none!important;background-color:#
     <div class="work-main">
       <div class="qtop"><button class="xbtn" id="quitBtn2" aria-label="やめる">×</button></div>
       <div class="stage" id="stage">
-        <div class="board" id="board"><canvas id="guide"></canvas><canvas id="ink"></canvas><span class="twofinger">指2本でスクロール</span></div>
+        <div class="board" id="board"><canvas id="guide"></canvas><canvas id="ink"></canvas><span class="twofinger">指2本でスクロール</span><button class="undo-toast" id="undoToast" hidden><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4.5 12a7.5 7.5 0 1 0 2.4-5.5" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round"/><path d="M3.5 3.5v5h5" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"/></svg>とりけし</button></div>
         <button class="pagetab" id="growBtn"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 4v15M5 12l7 7 7-7"/></svg>ページを伸ばす</button>
       </div>
     </div>
@@ -659,8 +677,8 @@ body:has(#quiz:not([hidden])){background-image:none!important;background-color:#
         <div class="qnum" id="qnum">1/10</div>
       </div>
       <div class="tools">
-        <button class="btn white small" id="undoBtn">もどす</button>
         <button class="btn white small" id="clearBtn">ぜんぶけす</button>
+        <button class="btn white small mid" id="undoBtn">もどす</button>
         <button class="btn eraser" id="eraseBtn" aria-pressed="false"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 15.5 13.5 5a2 2 0 0 1 2.8 0l3.7 3.7a2 2 0 0 1 0 2.8L11 20.5H6.5z" fill="#FF8FA8" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/><path d="M7.5 11 14 17.5M11 20.5h10" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg><span>けしゴム</span></button>
         <button class="btn grow" id="nextBtn">つぎへ</button>
       </div>
@@ -1058,7 +1076,7 @@ function openLearn(){const d=dayRec();
   $('learnList').innerHTML=d.pending.map(p=>`<div class="panel learn-card"><div class="q">${esc(UNIT[p.u]?.name||'')}</div><div class="k">${esc(probText(p))}</div><div class="ans">${esc(ansText(p))}</div>${p.read?`<div class="q">自分の答え：${esc(p.read)}</div>`:''}</div>`).join('');
   show('learn')}
 function showQ(){
-  cur=qs[qi];strokes=written[qi]?written[qi].strokes:[];hist=[];setEraser(false);extra=written[qi]?written[qi].extra:0;
+  cur=qs[qi];strokes=written[qi]?written[qi].strokes:[];hist=[];setEraser(false);hideToast();extra=written[qi]?written[qi].extra:0;
   $('qnum').textContent=`${qi+1}/${qs.length}`;
   $('dots').innerHTML=qs.map((_,i)=>`<span class="coin ${i<qi?'done':(i===qi?'now':'')}"></span>`).join('');
   $('nextBtn').textContent=qi===qs.length-1?'おわり！':'つぎへ';
@@ -1193,7 +1211,7 @@ ink.addEventListener('pointerdown',e=>{e.preventDefault();ink.setPointerCapture(
   if(e.pointerType==='touch')touches.set(e.pointerId,{x:e.clientX,y:e.clientY});
   if(touches.size>=2){if(drawing||erLast){strokes=hist.pop()||[];drawing=null;erLast=null;redraw();updateBtns()}scrolling=true;lastMid=mid();return}
   if(scrolling)return;
-  hist.push(strokes.slice());
+  hist.push(strokes.slice());hideToast();
   if(erasing){erLast=null;eraseTo(pos(e));updateBtns();return}
   drawing=[pos(e)];strokes.push(drawing);drawStroke(ictx,drawing,u);updateBtns()});
 ink.addEventListener('pointermove',e=>{
@@ -1629,7 +1647,9 @@ $('learnHome').onclick=()=>{renderHome();show('home')};
 $('shopBtn').onclick=()=>{renderShop();show('shop')};
 $('backBtn').onclick=()=>{renderHome();show('home')};
 $('undoBtn').onclick=()=>{if(hist.length)strokes=hist.pop();redraw();updateBtns()};
-$('clearBtn').onclick=()=>{hist.push(strokes.slice());strokes=[];redraw();updateBtns()};
+let toastT=0;const hideToast=()=>{clearTimeout(toastT);$('undoToast').hidden=true};
+$('clearBtn').onclick=()=>{hist.push(strokes.slice());strokes=[];redraw();updateBtns();$('undoToast').hidden=false;clearTimeout(toastT);toastT=setTimeout(hideToast,6000)};
+$('undoToast').onclick=e=>{e.stopPropagation();if(hist.length)strokes=hist.pop();hideToast();redraw();updateBtns()};
 $('eraseBtn').onclick=()=>setEraser(!erasing);
 $('quitBtn2').onclick=()=>$('quitBtn').onclick();
 $('nextBtn').onclick=nextQ;
