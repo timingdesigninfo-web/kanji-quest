@@ -57,7 +57,7 @@ async function page(res, id) {
   const [text] = ok ? await db([['HGET', key(id), 'text']]) : [null];
   const img = text != null ? `${SITE}/c/${id}.jpg` : `${SITE}/og.png`;
   const title = 'かんじクエスト｜AIが採点。ごほうびを決めてポイント集め！';
-  const desc = text || '小学生の漢字テストを、指で書いてAIが採点。ごほうびを決めて、ポイント集めをがんばろう！';
+  const desc = text || '小学生の漢字を、指で書いてAIが採点。ごほうびを決めて、ポイント集めをがんばろう！';
   res.statusCode = 200;
   res.setHeader('Content-Type', 'text/html; charset=utf-8');
   res.setHeader('Cache-Control', 'public, max-age=3600');
