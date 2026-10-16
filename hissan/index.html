@@ -222,7 +222,7 @@ body{overflow-x:hidden;overflow-x:clip}
 /* ---- ホームの組み立て（スマホは1列、タブレット以上は2列） ---- */
 .home-main,.home-side{display:contents}
 @media (min-width:760px){
-  #home{max-width:1040px;display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);grid-template-rows:auto auto auto auto auto 1fr auto auto auto;column-gap:24px;row-gap:18px}
+  #home{max-width:1040px;display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);grid-template-rows:auto auto auto 1fr auto auto auto auto auto;column-gap:24px;row-gap:18px}
   #home>.top{grid-column:1/-1;grid-row:1}
   /* 左上：今のポイント／右上：今日のクエスト／左下：ごほうび・広告／右下：シェア */
   #home .goal{grid-column:1;grid-row:2}
@@ -230,7 +230,6 @@ body{overflow-x:hidden;overflow-x:clip}
   #home .foot-row{grid-column:1;grid-row:3;align-self:start}
   #home .amz{grid-column:1;grid-row:4;align-self:start}
   #home .share-home{grid-column:2;grid-row:3/span 2;align-self:start}
-  #home .share-home .share-img{display:none}
   #home>.info{grid-column:1/-1;grid-row:5}
   #home>.news{grid-column:1/-1;grid-row:6;align-self:start}
   #home>.legal{grid-column:1/-1;grid-row:7;align-self:start}
