@@ -5,6 +5,7 @@
 //   AIは「書いてあるとおりに読む」だけ。正しいかどうかは アプリ側のプログラムが判定する。
 //   careful=false は速くて安いモデル、true は読めなかった問題の読み直し用（ていねいなモデル）。
 // GET  /api/hissan  動作確認
+// GET  /api/hissan?diag=1  今日の成功・失敗の数と、最近のエラー（画像は残さない）
 //
 // 環境変数：ANTHROPIC_API_KEY（必須。かんじクエストと共通）
 //           HISSAN_MODEL（任意。省略時 claude-haiku-5-5）／HISSAN_MODEL_CAREFUL（任意。省略時 claude-sonnet-5-5）
@@ -64,13 +65,34 @@ async function overDailyLimit(n) { // n問ぶん数える（10問で1回。分�
   } catch { return false; }
 }
 
+// うまくいかなかった時の記録（画像や答えは残さない）。GET /api/hissan?diag=1 で、今日の数と 最近20件を見られる
+async function note(kind, info) {
+  if (!DB_URL || !DB_TOKEN) return;
+  try {
+    const day = 'hissan:diag:' + jstDay(), cmds = [['HINCRBY', day, kind, 1], ['EXPIRE', day, 8 * 86400]];
+    if (info) cmds.push(['LPUSH', 'hissan:diag:err', JSON.stringify({ t: new Date(Date.now() + 9 * 3600e3).toISOString().slice(5, 19), kind, ...info })], ['LTRIM', 'hissan:diag:err', 0, 49]);
+    await fetch(DB_URL + '/pipeline', { method: 'POST', headers: { Authorization: 'Bearer ' + DB_TOKEN, 'Content-Type': 'application/json' }, body: JSON.stringify(cmds) });
+  } catch {}
+}
+async function diag(res) {
+  if (!DB_URL || !DB_TOKEN) return send(res, 200, { counter: false });
+  try {
+    const r = await fetch(DB_URL + '/pipeline', { method: 'POST', headers: { Authorization: 'Bearer ' + DB_TOKEN, 'Content-Type': 'application/json' },
+      body: JSON.stringify([['HGETALL', 'hissan:diag:' + jstDay()], ['LRANGE', 'hissan:diag:err', 0, 19], ['GET', 'hissan:ai:' + jstDay() + ':q']]) });
+    const [h, l, q] = (await r.json()).map(x => x.result);
+    const today = {}; for (let i = 0; h && i < h.length; i += 2) today[h[i]] = Number(h[i + 1]);
+    return send(res, 200, { day: jstDay(), today, questions_today: Number(q) || 0, limit_questions: DAILY * 10, recent: (l || []).map(x => { try { return JSON.parse(x); } catch { return x; } }) });
+  } catch (e) { return send(res, 200, { error: String(e).slice(0, 100) }); }
+}
+
 module.exports = async (req, res) => {
   const key = process.env.ANTHROPIC_API_KEY;
+  if (req.method === 'GET' && /[?&]diag=1/.test(req.url || '')) return diag(res);
   if (req.method === 'GET') return send(res, 200, { ok: true, key_set: !!key, daily_limit: DAILY, counter: !!(DB_URL && DB_TOKEN) });
   if (req.method !== 'POST') return send(res, 405, { error: 'method' });
   const origin = req.headers.origin;
   if (origin) {
-    try { if (new URL(origin).host !== req.headers.host) return send(res, 403, { error: 'origin' }); }
+    try { if (new URL(origin).host !== req.headers.host) { await note('origin', { origin: String(origin).slice(0, 60), host: String(req.headers.host).slice(0, 60) }); return send(res, 403, { error: 'origin' }); } }
     catch { return send(res, 403, { error: 'origin' }); }
   }
   if (!key) return send(res, 503, { error: 'AIの準備中です（APIキー未設定）。' });
@@ -84,13 +106,13 @@ module.exports = async (req, res) => {
     const it = items[i] || {};
     const desc = String(it.desc || '').replace(/[\r\n]+/g, ' ').slice(0, 260);
     const m = /^data:image\/png;base64,([A-Za-z0-9+/=]+)$/.exec(String(it.image || ''));
-    if (!m || m[1].length > 1500000) return send(res, 400, { error: 'bad_item', index: i });
+    if (!m || m[1].length > 1500000) { await note('bad_item', { i, len: m ? m[1].length : -1, head: String(it.image || '').slice(0, 30) }); return send(res, 400, { error: 'bad_item', index: i }); }
     lines.push(desc || `画像${i + 1}`);
     content.push({ type: 'image', source: { type: 'base64', media_type: 'image/png', data: m[1] } });
   }
   content.push({ type: 'text', text: `小学生がタブレットに指で書いた算数の答えの画像が ${items.length}まい あります。順番は下のリストと同じです。1まいずつ読み取ってください。\n\n${lines.join('\n')}\n\n${RULES}` });
 
-  if (await overDailyLimit(items.length)) return send(res, 429, { error: 'きょうのAIの読み取りは おしまい' });
+  if (await overDailyLimit(items.length)) { await note('limit'); return send(res, 429, { error: 'きょうのAIの読み取りは おしまい' }); }
   const model = body.careful ? (process.env.HISSAN_MODEL_CAREFUL || 'claude-sonnet-5-5') : (process.env.HISSAN_MODEL || 'claude-haiku-5-5');
   try {
     const r = await fetch('https://api.anthropic.com/v1/messages', {
@@ -98,16 +120,18 @@ module.exports = async (req, res) => {
       headers: { 'x-api-key': key, 'anthropic-version': '2023-06-01', 'content-type': 'application/json' },
       body: JSON.stringify({ model, max_tokens: 4096, messages: [{ role: 'user', content }] }),
     });
-    if (!r.ok) { console.error('anthropic', r.status, (await r.text()).slice(0, 300)); return send(res, 502, { error: 'anthropic_error', status: r.status }); }
+    if (!r.ok) { const et = (await r.text()).slice(0, 300); console.error('anthropic', r.status, et); await note('anthropic_' + r.status, { model, n: items.length, detail: et.slice(0, 200) }); return send(res, 502, { error: 'anthropic_error', status: r.status }); }
     const data = await r.json();
-    if (data.stop_reason === 'max_tokens') console.warn('truncated', model, items.length);
+    if (data.stop_reason === 'max_tokens') { console.warn('truncated', model, items.length); await note('truncated', { model, n: items.length }); }
     const text = (data.content || []).filter(c => c.type === 'text').map(c => c.text).join('');
     let results = null;
     const a = text.indexOf('['), b = text.lastIndexOf(']');
     if (a >= 0 && b > a) { try { results = JSON.parse(text.slice(a, b + 1)); } catch {} }
     if (!Array.isArray(results)) { results = []; for (const mm of text.matchAll(/\{[^{}]*\}/g)) { try { results.push(JSON.parse(mm[0])); } catch {} } }
-    if (!results.length) { console.error('parse_failed', text.slice(0, 300)); return send(res, 502, { error: 'parse_failed' }); }
+    if (!results.length) { console.error('parse_failed', text.slice(0, 300)); await note('parse_failed', { model, n: items.length, text: text.slice(0, 200) }); return send(res, 502, { error: 'parse_failed' }); }
     const s = (v, n) => String(v == null ? '' : v).slice(0, n);
+    const unclear = results.filter(x => !x || x.clear === false || /\?/.test(String(x.answer || '')) || !String(x.answer || '').trim()).length;
+    await note(body.careful ? 'ok_careful' : 'ok_quick'); if (unclear) await note(body.careful ? 'unclear_careful' : 'unclear_quick', { model, n: items.length, unclear, answers: results.map(x => s(x && x.answer, 8) + (x && x.shiki ? '|' + s(x.shiki, 12) : '')).join(',').slice(0, 160) });
     return send(res, 200, { model, results: results.map(x => ({ n: Number(x && x.n) || 0, shiki: s(x && x.shiki, 40), answer: s(x && x.answer, 20), remainder: s(x && x.remainder, 10), carries: s(x && x.carries, 20), clear: !(x && x.clear === false), note: s(x && x.note, 60) })) });
-  } catch (e) { console.error(e); return send(res, 502, { error: 'failed' }); }
+  } catch (e) { console.error(e); await note('exception', { model, detail: String(e).slice(0, 200) }); return send(res, 502, { error: 'failed' }); }
 };

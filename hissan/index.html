@@ -1503,8 +1503,8 @@ async function readWorker(items,idxs,tier,signal,outs){
     let r=null;
     for(let t=0;t<2;t++){r=await fetch(AI_URL,{method:'POST',headers:{'Content-Type':'application/json'},body,signal}).catch(e=>{if(signal.aborted)throw e;return null});
       if(r&&(r.ok||r.status===429||r.status===403||r.status===503||r.status===400))break;if(t===0)await new Promise(z=>setTimeout(z,900))}
-    if(!r)throw{code:'network'};
-    if(!r.ok)throw{code:r.status===429?'rate_limited':r.status===503?'sampling_disabled':'upstream_error'};
+    if(!r){aiErr='つながらない';throw{code:'network'}}
+    if(!r.ok){let ec='';try{ec=(await r.json()).error||''}catch(_){}aiErr=`${r.status} ${ec}`.trim();throw{code:r.status===429?'rate_limited':r.status===503?'sampling_disabled':'upstream_error'}}
     const d=await r.json();(d.results||[]).forEach((o,k)=>{const j=(Number(o?.n)||k+1)-1;if(j>=0&&j<ix.length&&o)outs[ix[j]]=o})}))}
 async function readChunks(items,idxs,tier,signal,outs){
   if(!useSample())return readWorker(items,idxs,tier,signal,outs);
@@ -1514,7 +1514,7 @@ async function readChunks(items,idxs,tier,signal,outs){
     if(!Array.isArray(arr))throw{code:'invalid_json'};
     arr.forEach((o,k)=>{const j=(Number(o?.n)||k+1)-1;if(j>=0&&j<ix.length&&o)outs[ix[j]]=o})}));
 }
-let pend=[];
+let pend=[],aiErr='';
 function startRead(i){
   if(!aiOK())return;
   if(i===0){reads=[];pend=[];aiCtl=new AbortController();const t=todayKey();dayRec();S.days[t].ai=(S.days[t].ai||0)+1;save()}
@@ -1525,6 +1525,7 @@ function startRead(i){
     reads[i]=out[0]||null})().catch(e=>{reads[i]=null;if(e?.code==='not_granted'||e?.code==='sampling_disabled')aiState='denied'});
 }
 async function toReview(){
+  aiErr='';
   if(pend.length){ // 1問ずつ読んだ結果を待つ
     marks=written.map(()=>null);aiState='';
     show('grading');$('gradingNote').innerHTML='AIが答えを読んでいます。<br>少しお待ちください。';
@@ -1563,7 +1564,7 @@ function renderReview(){
     denied:'AIが使えません。正しい答えを見て自分で○×をつけてください。',
     limit:'今日のAIの読み取りは上限です。正しい答えを見て自分で○×をつけてください。',
     manual:'正しい答えを見て○×をタップ。'}[aiState]||'';
-  $('rvNote').textContent=note;
+  $('rvNote').textContent=note+(aiState==='failed'&&aiErr?`（コード：${aiErr}）`:'');
   $('rvList').innerHTML=written.map((w,i)=>{const m=marks[i],o=reads[i],j=judge(w.p,o);
     const tag=j.reduce?'（約分しよう）':'';
     return `<div class="panel rv">
