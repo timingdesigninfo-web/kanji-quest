@@ -432,6 +432,20 @@ body{overflow-x:hidden;overflow-x:clip}
 .am-chk{display:flex;gap:10px;align-items:center;justify-content:center;font-size:16px;font-weight:800;cursor:pointer}.am-chk input{width:24px;height:24px;accent-color:var(--green)}
 .rp-btn{display:block;margin-top:8px;font-size:13px;font-weight:800;text-decoration:underline;color:var(--ink);padding:4px 0}
 .rp-btn:disabled{text-decoration:none;opacity:.6}
+.thanks{position:fixed;left:50%;bottom:calc(24px + env(safe-area-inset-bottom,0px));z-index:70;display:flex;align-items:flex-end;gap:6px;transform:translateX(-50%);pointer-events:auto;cursor:pointer}
+.thanks canvas{width:96px;height:auto;flex:none;image-rendering:auto;animation:th-hop .7s cubic-bezier(.3,1.6,.5,1) both,th-bob 1.1s ease-in-out .7s infinite}
+.thanks .bub{position:relative;max-width:min(62vw,300px);background:#fff;border:3px solid var(--ink);border-radius:18px;padding:10px 14px;font-size:15px;font-weight:800;line-height:1.5;color:var(--ink);box-shadow:0 4px 0 var(--ink);margin-bottom:46px;transform-origin:0 100%;animation:th-pop .45s cubic-bezier(.3,1.7,.5,1) .35s both}
+.thanks .bub::before{content:"";position:absolute;left:-13px;bottom:14px;border:8px solid transparent;border-right:12px solid var(--ink)}
+.thanks .bub::after{content:"";position:absolute;left:-7px;bottom:16px;border:6px solid transparent;border-right:9px solid #fff}
+.thanks .bub small{display:block;font-size:12px;font-weight:500;opacity:.75}
+.thanks .spark{position:absolute;width:8px;height:8px;border-radius:50%;background:var(--yellow);border:2px solid var(--ink);animation:th-spark .9s ease-out both}
+.thanks.out{animation:th-out .4s ease-in forwards}
+@keyframes th-hop{0%{transform:translateY(140px) scale(.6)}70%{transform:translateY(-14px) scale(1.05)}100%{transform:none}}
+@keyframes th-bob{0%,100%{transform:translateY(0)}50%{transform:translateY(-6px)}}
+@keyframes th-pop{0%{transform:scale(0);opacity:0}100%{transform:scale(1);opacity:1}}
+@keyframes th-spark{0%{transform:translate(0,0) scale(.4);opacity:1}100%{transform:translate(var(--dx),var(--dy)) scale(1);opacity:0}}
+@keyframes th-out{to{transform:translate(-50%,40px);opacity:0}}
+@media (prefers-reduced-motion:reduce){.thanks canvas,.thanks .bub,.thanks .spark{animation:none}}
 .rp-list{margin:0;padding-left:1.2em;text-align:left;font-size:13px;font-weight:500;line-height:1.6;display:flex;flex-direction:column;gap:4px}
 .modal .row{display:flex;gap:10px}.modal .row .btn{flex:1;font-size:17px}
 .pop{position:fixed;left:50%;top:40%;transform:translate(-50%,-50%);font-family:var(--f-pixel);font-size:64px;color:#fff;
@@ -1620,6 +1634,22 @@ function smallJpeg(url){return new Promise(async ok=>{const im=await loadImg(url
 $('rpBtn').onclick=()=>{const n=reportTargets().length;$('rpCount').textContent=`（${n}問ぶん）`;$('rpMsg').textContent='';
   $('rpYes').disabled=false;$('rpYes').textContent='送る';$('rpModal').hidden=false};
 $('rpNo').onclick=()=>{$('rpModal').hidden=true};
+// 送ったあと：キャラが ぴょんと出てきて 吹き出しで お礼（タップか 数秒で きえる）
+function showThanks(){document.querySelector('.thanks')?.remove();
+  const box=document.createElement('div');box.className='thanks';box.setAttribute('role','status');
+  let cv=null;try{cv=window.kanjiSprite?window.kanjiSprite('5',1,0):null}catch(e){}
+  const img=document.createElement('canvas');
+  if(cv){img.width=cv.width;img.height=cv.height;img.getContext('2d').drawImage(cv,0,0)}
+  box.innerHTML=`<div class="bub">ありがとうございます！<br>読みとりを よくするのに 役立てます。<small>タップで とじる</small></div>`;
+  if(cv)box.prepend(img);
+  // きらきら
+  for(let i=0;i<8;i++){const sp=document.createElement('i');sp.className='spark';const a=i/8*6.28;
+    sp.style.cssText=`left:44px;bottom:60px;--dx:${Math.cos(a)*70}px;--dy:${Math.sin(a)*-70}px;animation-delay:${.3+i*.03}s`;box.appendChild(sp)}
+  document.body.appendChild(box);
+  // あしを うごかす（2コマ）
+  let f=0;const tick=cv?setInterval(()=>{f^=1;try{const c2=window.kanjiSprite('5',1,f),x=img.getContext('2d');x.clearRect(0,0,img.width,img.height);x.drawImage(c2,0,0)}catch(e){}},260):0;
+  const close=()=>{clearInterval(tick);box.classList.add('out');setTimeout(()=>box.remove(),400)};
+  box.onclick=close;setTimeout(close,4500)}
 $('rpYes').onclick=async()=>{$('rpYes').disabled=true;$('rpYes').textContent='送っています…';
   try{const ix=reportTargets();
     const items=[];for(const i of ix){const w=written[i],o=reads[i];
@@ -1628,7 +1658,7 @@ $('rpYes').onclick=async()=>{$('rpYes').disabled=true;$('rpYes').textContent='�
     const body=JSON.stringify({act:'report',state:aiState,err:aiErr,grade:S.grade||0,units:[...new Set(ix.map(i=>written[i].p.u))],ua:(navigator.userAgent||'').slice(0,120),items});
     const r=await fetch(AI_URL,{method:'POST',headers:{'Content-Type':'application/json'},body});
     if(!r.ok)throw r.status;
-    rpSent=true;$('rpModal').hidden=true;$('rpBtn').disabled=true;$('rpBtn').textContent='送りました。ありがとう！';sfx('clear')}
+    rpSent=true;$('rpModal').hidden=true;$('rpBtn').disabled=true;$('rpBtn').textContent='送りました。ありがとう！';sfx('clear');showThanks()}
   catch(e){$('rpYes').disabled=false;$('rpYes').textContent='送る';$('rpMsg').textContent='うまく送れませんでした。電波のよいところで、もう一度おしてください。'}};
 
 /* ===== 結果 ===== */
