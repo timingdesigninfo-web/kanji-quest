@@ -113,6 +113,10 @@ button:focus-visible{outline:4px solid var(--ink);outline-offset:3px}
 
 .quest{padding:30px 20px;display:flex;flex-direction:column;gap:18px}
 /* ---- 教科の切りかえ・連携（検証中） ---- */
+/* ヘッダーの大きさ・すき間を ひっさんクエストと そろえる（ロゴの縦横比がちがうので、ロゴの箱の高さを そろえる） */
+.top .logo{font-size:clamp(30px,8.6vw,50px)}
+.top .logo-img{width:min(420px,82vw);aspect-ratio:1000/351;height:auto;object-fit:contain}
+@media (min-width:760px){.top .logo-img{width:440px}}
 .subjects{position:absolute;top:6px;left:50%;transform:translateX(-50%);z-index:2;display:flex;justify-content:center;gap:6px}
 .subjects a{display:flex;align-items:center;gap:6px;padding:6px 14px;border:3px solid var(--ink);border-radius:999px;background:#fff;color:var(--ink);font-size:14px;font-weight:800;text-decoration:none;box-shadow:0 3px 0 var(--ink)}
 .subjects a[aria-current="page"]{background:var(--yellow)}
