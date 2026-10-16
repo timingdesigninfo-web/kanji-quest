@@ -1341,14 +1341,15 @@ function pos(e){const b=ink.getBoundingClientRect();return[(e.clientX-b.left)/u-
 const mid=()=>{let X=0,Y=0;for(const p of touches.values()){X+=p.x;Y+=p.y}return{x:X/touches.size,y:Y/touches.size}};
 ink.addEventListener('pointerdown',e=>{e.preventDefault();ink.setPointerCapture(e.pointerId);
   if(e.pointerType==='touch')touches.set(e.pointerId,{x:e.clientX,y:e.clientY});
-  if(touches.size>=2){if(drawing||erLast){strokes=hist.pop()||[];drawing=null;erLast=null;redraw();updateBtns()}scrolling=true;lastMid=mid();return}
+  if(touches.size>=2){if(drawing||erLast){strokes=hist.pop()||[];drawing=null;erLast=null;redraw();updateBtns()}scrolling=true;return}
+  stopFling();
   if(scrolling)return;
   hist.push(strokes.slice());hideToast();
   if(erasing){erLast=null;eraseTo(pos(e));updateBtns();return}
   drawing=[pos(e)];strokes.push(drawing);drawStroke(ictx,drawing,u);updateBtns()});
 ink.addEventListener('pointermove',e=>{
   if(touches.has(e.pointerId))touches.set(e.pointerId,{x:e.clientX,y:e.clientY});
-  if(scrolling){e.preventDefault();if(touches.size>=2){const m=mid();scrollBy(lastMid.x-m.x,lastMid.y-m.y);lastMid=m}return}
+  if(scrolling){e.preventDefault();return} // スクロールは下の touchmove でまとめて動かす
   if(erLast){e.preventDefault();for(const ev of (e.getCoalescedEvents?e.getCoalescedEvents():[e]))eraseTo(pos(ev));updateBtns();return}
   if(!drawing)return;e.preventDefault();
   for(const ev of (e.getCoalescedEvents?e.getCoalescedEvents():[e])){const a=drawing[drawing.length-1],p=pos(ev);drawing.push(p);
@@ -1357,6 +1358,24 @@ ink.addEventListener('pointermove',e=>{
   if(scrolling){if(touches.size>=2)lastMid=mid();if(!touches.size)scrolling=false;return}
   if(erasing&&!scrolling){erLast=null;redraw();if(hist.length&&hist[hist.length-1].length===strokes.length&&hist[hist.length-1].every((s,i)=>s===strokes[i]))hist.pop();else showToast();setEraser(false);updateBtns()} // けしゴムは 1回なぞったら（消えても消えなくても）書くモードにもどす
   drawing=null}));
+/* 指2本のスクロール：2本の指の位置を同じタッチイベントから取り（指ごとの順番ずれでガタガタしない）、
+   動きは 画面の書きかえ1回につき1回だけ反映。指を離したら 少しだけ すべって止まる */
+let tMid=null,scrollAcc=0,scrollRaf=0,vel=0,lastT=0,flingRaf=0;
+const tMidOf=ts=>{let y=0;for(const t of ts)y+=t.clientY;return y/ts.length};
+function stopFling(){cancelAnimationFrame(flingRaf);flingRaf=0}
+function flushScroll(){scrollRaf=0;if(scrollAcc){window.scrollTo({top:scrollY+scrollAcc,behavior:'instant'});scrollAcc=0}}
+ink.addEventListener('touchstart',e=>{if(e.touches.length>=2){stopFling();tMid=tMidOf(e.touches);vel=0;lastT=e.timeStamp}},{passive:false});
+ink.addEventListener('touchmove',e=>{if(!scrolling||e.touches.length<2||tMid==null)return;e.preventDefault();
+  const m=tMidOf(e.touches),dy=tMid-m,dt=Math.max(1,e.timeStamp-lastT);tMid=m;lastT=e.timeStamp;
+  vel=vel*.6+(dy/dt)*.4;scrollAcc+=dy;if(!scrollRaf)scrollRaf=requestAnimationFrame(flushScroll)},{passive:false});
+['touchend','touchcancel'].forEach(t=>ink.addEventListener(t,e=>{
+  if(e.touches.length>=2){tMid=tMidOf(e.touches);return} // 3本→2本など：つづけてスクロール
+  if(tMid==null)return;tMid=null;
+  if(Math.abs(vel)<.15||e.timeStamp-lastT>80)return; // ゆっくり止めたときは すべらない
+  let v=vel*16,prev=performance.now();stopFling();
+  const step=now=>{const k=Math.min(3,(now-prev)/16);prev=now;window.scrollTo({top:scrollY+v*k,behavior:'instant'});v*=Math.pow(.92,k);
+    flingRaf=Math.abs(v)>.4?requestAnimationFrame(step):0};
+  flingRaf=requestAnimationFrame(step)}));
 // 文章題の読み上げ（端末の音声）。分数は「4ぶんの3」、単位は 読みに直す
 const SAY_UNIT={'m²':'平方メートル','cm':'センチメートル','mL':'ミリリットル','dL':'デシリットル','km':'キロメートル','kg':'キログラム','L':'リットル','g':'グラム','m':'メートル'};
 const sayText=t=>t.replace(/(\d+)\/(\d+)/g,'$2ぶんの$1').replace(/(\d|の\d+)(m²|cm|mL|dL|km|kg|L|g|m)(?![a-zA-Z])/g,(_,a,u)=>a+SAY_UNIT[u]);
