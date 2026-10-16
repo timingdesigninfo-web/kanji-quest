@@ -856,9 +856,16 @@ function renderLink(){const box=document.getElementById('linkBox');if(!box)retur
   const d=W.days[todayKey()]||{},k=ap.filter(a=>d[a.id]&&d[a.id].cleared).length;
   const e=s=>String(s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
   box.hidden=false;
-  box.innerHTML=`<div class="link-h">${n}教科 連携中<span>ポイントは1教科あたり ×1/${n}</span></div>
+  box.innerHTML=`<div class="link-h">${n}教科 連携中</div>
     <div class="link-row">${ap.map(a=>`<span class="lk ${d[a.id]&&d[a.id].cleared?'done':''}">${e(a.name)}${d[a.id]&&d[a.id].cleared?' ✓':''}</span>`).join('')}</div>
-    <div class="link-note">${k>=n?`今日は全部クリア！ 連携ボーナス ×${linkMul(k)}`:`あと${n-k}教科クリアで ×${linkMul(n)}${k>1?`（今は ×${linkMul(k)}）`:''}`}</div>`}
+    <div class="link-note">${k>=n?`今日は全部クリア！ 連携ボーナス ×${linkMul(k)}`:(k?`あと${n-k}教科クリアで ×${linkMul(n)}${k>1?`（今は ×${linkMul(k)}）`:''}`:`${n===2?'両方':'全部'} クリアで ×${linkMul(n)}`)}</div>`}
+// はじめて つながったとき（教科がふえたとき）だけ、しくみを1回 説明する
+function linkIntro(){const n=linkN();if(n<2||(W.linkIntro||0)>=n)return;W.linkIntro=n;saveW();
+  const names=linkedApps().map(a=>a.name).join('と');const m=document.createElement('div');m.className='modal link-intro';
+  m.innerHTML=`<div class="panel"><p style="font-size:20px;font-weight:800">${names}が つながりました！</p>
+    <p style="font-size:15px;font-weight:500;line-height:1.7;text-align:left">ポイントは ${n}つの教科で わけあいます。そのかわり、同じ日に ${n===2?'両方':'全部'} クリアすると <b>連携ボーナス ×${linkMul(n)}</b>！ ごほうびの ポイントは そのままです。</p>
+    <div class="row"><button class="btn green">わかった！</button></div></div>`;
+  m.querySelector('button').onclick=()=>m.remove();document.body.appendChild(m)}
 function resetWallet(){W=emptyW();W.apps[APP]={name:APP_NAME};bindWallet();saveW()}
 
 const pad=n=>String(n).padStart(2,'0');
@@ -888,7 +895,7 @@ function renderHome(){
   ensureToday();
   $('gradeLabel').textContent=`${S.grade}年生の計算`;
   const d=day();
-  freshW();touchApp();renderLink();
+  freshW();touchApp();renderLink();linkIntro();
   $('ptsBig').textContent=S.points;updateHomeShare();
   const n=d.pending.length,nextRw=Math.min(d.rewrites+1,RW_MAX);
   let cur=-1;
