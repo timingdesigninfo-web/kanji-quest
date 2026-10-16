@@ -8,9 +8,9 @@
 //
 // 環境変数：ANTHROPIC_API_KEY（必須。かんじクエストと共通）
 //           HISSAN_MODEL（任意。省略時 claude-haiku-5-5）／HISSAN_MODEL_CAREFUL（任意。省略時 claude-sonnet-5-5）
-//           HISSAN_AI_PER_DAY（任意。サイト全体で1日に使える回数＝10問のまとまりの数。省略時 60）
+//           HISSAN_AI_PER_DAY（任意。サイト全体で1日に使える回数＝10問のまとまりの数。省略時 100）
 
-const DAILY = Number(process.env.HISSAN_AI_PER_DAY || 60);
+const DAILY = Number(process.env.HISSAN_AI_PER_DAY || 100);
 function envEnding(suffix) {
   const k = Object.keys(process.env).find(k => k.endsWith(suffix) && process.env[k]);
   return k ? process.env[k] : undefined;
