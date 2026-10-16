@@ -528,7 +528,7 @@ body:has(#quiz:not([hidden])){background-image:none!important;background-color:#
     <div class="bar"><i id="goalBar" style="width:0%"></i><span id="goalTxt"></span></div>
     <div class="cal-head"><span>15日カレンダー</span><span id="streak"></span></div>
     <div class="stamp-row" id="stampRow"></div>
-    <div class="legend"><span><i class="st gold"></i>一発合格</span><span><i class="st silver"></i>書き直して合格</span></div>
+    <div class="legend"><span><i class="st gold"></i>一発合格</span><span><i class="st silver"></i>とき直して合格</span></div>
   </section>
   </div>
 
@@ -568,7 +568,7 @@ body:has(#quiz:not([hidden])){background-image:none!important;background-color:#
     <div class="range" id="range"></div>
     <div class="info-h">ポイント</div>
     <div class="rule" id="rule"></div>
-    <p class="info-p">まちがえた問題は、同じ形の新しい問題で書けるまで練習！ クリア後の自主練は80点以上で+10pt（1日4回）。15日連続で+100pt。</p>
+    <p class="info-p">まちがえた問題は、同じ形の新しい問題でとけるまで練習！ クリア後の自主練は80点以上で+10pt（1日4回）。15日連続で+100pt。</p>
     <p class="info-p">※AIの読み取りは、回数や利用の上限で使えないことがあります。そのときは自分で○×をつけます。</p>
     <button class="howto" id="howtoBtn">使い方</button>
   </section>
@@ -614,11 +614,11 @@ body:has(#quiz:not([hidden])){background-image:none!important;background-color:#
 <!-- ============ れんしゅう前 ============ -->
 <main id="learn" class="screen" hidden>
   <section class="panel learn-head">
-    <div class="pixel" style="font-size:26px">書けるまで練習！</div>
+    <div class="pixel" style="font-size:26px">とけるまで練習！</div>
     <p class="sub" id="learnNote"></p>
   </section>
   <div class="learn-list" id="learnList"></div>
-  <button class="btn" id="learnGo" style="font-size:22px">わかった！ 書いてみる</button>
+  <button class="btn" id="learnGo" style="font-size:22px">わかった！ といてみる</button>
   <button class="btn white" id="learnHome">あとで</button>
 </main>
 
@@ -783,10 +783,10 @@ const ansText=p=>p.kind==='frac'?`${p.ans.n}/${p.ans.d}`:(p.rem?`${p.ans} あま
 /* ===== ルール ===== */
 const PER_DAY=1, PASS=80; // テスト中は1問（本番は10問）
 const score100=(c,t)=>t?Math.round(c/t*100):0;
-// 合格までの 書き直し回数 → もらえるポイント（0=一発合格、5回以上は最低）
-const PTS=[50,40,30,20,10]; // 一発合格・書き直し1回・2回・3回・4回以上（かんじクエストと同じ）
+// 合格までの とき直し回数 → もらえるポイント（0=一発合格、5回以上は最低）
+const PTS=[50,40,30,20,10]; // 一発合格・とき直し1回・2回・3回・4回以上（かんじクエストと同じ）
 const RW_MAX=PTS.length-1;
-const PTS_LABEL=['一発合格','書き直し1回で合格','2回で合格','3回で合格','4回以上で合格'];
+const PTS_LABEL=['一発合格','とき直し1回で合格','2回で合格','3回で合格','4回以上で合格'];
 const BONUS_PT=10, BONUS_MAX=4;
 const ICONS={snack:['おかし','#FF8FB8'],game:['ゲーム','#33B84A'],gem:['宝石','#7A4DFF'],star:['星','#FFCF1F'],book:['本','#2F8CFF'],cup:['飲み物','#F0402F']};
 const DEFAULT_SHOP=[
@@ -899,14 +899,14 @@ function renderHome(){
   }else if(n){
     $('qTitle').textContent=d.passed?'あと少し！':'今日のクエスト';
     $('status').innerHTML=d.passed
-      ?`合格 <b>+${d.earned}pt</b>！<br>まちがえた${n}問を 書けるまで練習！`
-      :`まちがえた問題が全部書けたら合格！<br>次で書ければ <b>+${PTS[nextRw]}pt</b>`;
-    $('startBtn').textContent=`書けるまで練習！（残り${n}問）`;$('startBtn').className='btn bigstart';
+      ?`合格 <b>+${d.earned}pt</b>！<br>まちがえた${n}問を とけるまで練習！`
+      :`まちがえた問題が全部とけたら合格！<br>次でとければ <b>+${PTS[nextRw]}pt</b>`;
+    $('startBtn').textContent=`とけるまで練習！（残り${n}問）`;$('startBtn').className='btn bigstart';
     if(!d.passed)cur=nextRw;
   }else{
     const bl=BONUS_MAX-(d.bonus||0);
     $('qTitle').textContent='今日のクエスト クリア！';
-    $('status').innerHTML=`${d.passRw?`書き直し${d.passRw}回で`:'一発'}合格！ <b>+${d.earned+(d.bonus||0)*BONUS_PT+(d.streakBonus||0)}pt</b><br>`
+    $('status').innerHTML=`${d.passRw?`とき直し${d.passRw}回で`:'一発'}合格！ <b>+${d.earned+(d.bonus||0)*BONUS_PT+(d.streakBonus||0)}pt</b><br>`
       +(bl>0?`自主練で80点以上なら <b>+${BONUS_PT}pt</b>（あと${bl}回）`:'今日の自主練ポイントは終了。練習は続けられます。');
     $('startBtn').textContent=bl>0?`自主練（+${BONUS_PT}pt）`:'もう一度テスト';$('startBtn').className=bl>0?'btn yellow bigstart':'btn white bigstart';
   }
@@ -935,7 +935,7 @@ function startQuiz(m){ensureToday();mode=m;const d=dayRec();
 function home(){const d=dayRec();
   if(!d.testDone)startQuiz('test');else if(d.pending.length)openLearn();else startQuiz('free')}
 function openLearn(){const d=dayRec();
-  $('learnNote').textContent=`${d.pending.length}問。正しい答えをたしかめたら、同じ形の新しい問題をとこう。`+(d.passed?'':` 全部書けたら合格（+${PTS[Math.min(d.rewrites+1,RW_MAX)]}pt）！`);
+  $('learnNote').textContent=`${d.pending.length}問。正しい答えをたしかめたら、同じ形の新しい問題をとこう。`+(d.passed?'':` 全部とけたら合格（+${PTS[Math.min(d.rewrites+1,RW_MAX)]}pt）！`);
   $('learnList').innerHTML=d.pending.map(p=>`<div class="panel learn-card"><div class="q">${esc(UNIT[p.u]?.name||'')}</div><div class="k">${esc(probText(p))}</div><div class="ans">${esc(ansText(p))}</div>${p.read?`<div class="q">自分の答え：${esc(p.read)}</div>`:''}</div>`).join('');
   show('learn')}
 function showQ(){
@@ -1269,15 +1269,15 @@ function finish(){
     if(score>=PASS)earned=award(d,0);
     head=`<div class="badge ${earned?'':'ng'}">${earned?'一発合格！':'もう少し！'}</div><div class="big">${score}<small>点</small></div>`;
     body=earned?`<div class="earn"><span class="coin"></span><span class="pixel">+${earned}</span>pt</div>`
-      +(wrong.length?`<div class="sub">まちがえた${wrong.length}問を 書けるまで練習！</div>`:`<div class="sub">全問正解！ 合計 ${S.points}pt</div>`)
-      :`<div class="sub">まちがえた${wrong.length}問が 書けたら合格！<br>書き直しが少ないほどポイントアップ。</div>`;
+      +(wrong.length?`<div class="sub">まちがえた${wrong.length}問を とけるまで練習！</div>`:`<div class="sub">全問正解！ 合計 ${S.points}pt</div>`)
+      :`<div class="sub">まちがえた${wrong.length}問が とけたら合格！<br>とき直しが少ないほどポイントアップ。</div>`;
   }else if(mode==='practice'){
     d.rewrites++;d.pending=wrong;
     if(!wasPassed&&!wrong.length)earned=award(d,d.rewrites);
-    head=`<div class="badge ${wrong.length?'ng':''}">${wrong.length?`あと${wrong.length}問！`:(earned?'合格！':'全部書けた！')}</div><div class="big">${correct}<small>/${total}</small></div>`;
-    body=earned?`<div class="earn"><span class="coin"></span><span class="pixel">+${earned}</span>pt</div><div class="sub">書き直し${d.rewrites}回で合格。合計 ${S.points}pt</div>`
+    head=`<div class="badge ${wrong.length?'ng':''}">${wrong.length?`あと${wrong.length}問！`:(earned?'合格！':'全部とけた！')}</div><div class="big">${correct}<small>/${total}</small></div>`;
+    body=earned?`<div class="earn"><span class="coin"></span><span class="pixel">+${earned}</span>pt</div><div class="sub">とき直し${d.rewrites}回で合格。合計 ${S.points}pt</div>`
       :!wrong.length?`<div class="sub">今日のクエスト クリア！</div>`
-      :`<div class="sub">答えをたしかめて、もう一度。${wasPassed?'':`<br>次で書ければ +${PTS[Math.min(d.rewrites+1,RW_MAX)]}pt`}</div>`;
+      :`<div class="sub">答えをたしかめて、もう一度。${wasPassed?'':`<br>次でとければ +${PTS[Math.min(d.rewrites+1,RW_MAX)]}pt`}</div>`;
   }else{
     const sc=score100(correct,total);
     if(sc>=PASS&&(d.bonus||0)<BONUS_MAX){d.bonus=(d.bonus||0)+1;earned=earn(BONUS_PT)}
@@ -1295,7 +1295,7 @@ function finish(){
   $('missBox').hidden=!miss.length;
   $('missBox').innerHTML=`<h3>まちがえた問題</h3>`+miss.map(r=>`<div class="miss"><span class="t">${esc(probText(r.p))}</span><span class="k">${esc(ansText(r.p))}</span></div>`).join('');
   const more=mode!=='free'&&d.pending.length;
-  $('resultBtns').innerHTML=(more?`<button class="btn" id="practiceBtn">書けるまで練習！</button>`:'')+`<button class="btn ${more?'white':'green'}" id="homeBtn">${more?'あとで':'ホームへ'}</button>`;
+  $('resultBtns').innerHTML=(more?`<button class="btn" id="practiceBtn">とけるまで練習！</button>`:'')+`<button class="btn ${more?'white':'green'}" id="homeBtn">${more?'あとで':'ホームへ'}</button>`;
   $('homeBtn').onclick=()=>{renderHome();show('home')};
   if($('practiceBtn'))$('practiceBtn').onclick=openLearn;
   makeShare(d,correct,total);
@@ -1315,7 +1315,7 @@ $('wlGrades').addEventListener('click',e=>{const b=e.target.closest('[data-wg]')
 const OB=[
   {pic:()=>`<div class="ob-board ob-hissan"><span>47<br><u>+38</u></span></div>`,h:'毎日10問、指で筆算',p:'問題は板に印刷されています。答えや くり上がりを指で書こう。点線のたて線で 位をそろえます。'},
   {pic:()=>`<div class="ob-mark">80点</div>`,h:'AIがまとめて丸つけ',p:'10問書いたら、AIがまとめて答えを読みます。正しいかどうかはアプリが判定。80点以上で一発合格です。'},
-  {pic:()=>icon('star'),h:'書けるまで練習！',p:'まちがえた問題は、正しい答えをたしかめてから、同じ形の新しい問題にチャレンジ。書き直しが少ないほどポイントアップ。'},
+  {pic:()=>icon('star'),h:'とけるまで練習！',p:'まちがえた問題は、正しい答えをたしかめてから、同じ形の新しい問題にチャレンジ。とき直しが少ないほどポイントアップ。'},
   {pic:()=>icon('gem'),h:'ポイントでごほうび',p:'ためたポイントで、自分で決めたごほうびと交換。合格のあとの自主練でも+10pt（1日4回）。'},
 ];
 function renderOb(){const o=OB[obStep];
@@ -1358,16 +1358,16 @@ const URL_LINE=SHARE_URL?'\n'+SHARE_URL:'';
 function makeShare(d,correct,total){
   const st=streakNow(),g=S.grade;let line,comment;
   if(mode==='test'){const sc=score100(correct,total);line=`${g}年生の計算テスト：${sc}点`;
-    comment=sc===100?'全問正解！ 今日は完ぺき。':sc>=PASS?'一発合格！':`まちがえた${total-correct}問は、書けるまで練習します。`}
-  else if(mode==='practice'){line=`${g}年生の計算：書けるまで練習 ${correct}/${total}`;
-    comment=d.pending.length?`あと${d.pending.length}問、がんばります。`:`書き直し${d.rewrites}回で合格！`}
+    comment=sc===100?'全問正解！ 今日は完ぺき。':sc>=PASS?'一発合格！':`まちがえた${total-correct}問は、とけるまで練習します。`}
+  else if(mode==='practice'){line=`${g}年生の計算：とけるまで練習 ${correct}/${total}`;
+    comment=d.pending.length?`あと${d.pending.length}問、がんばります。`:`とき直し${d.rewrites}回で合格！`}
   else{line=`${g}年生の計算 自主練：${score100(correct,total)}点`;comment='自主練もがんばった！'}
   const extra=st>=2?` ${st}日連続クリア中！`:'';
   $('shareText').value=`${line}\n${comment}${extra}\nポイントを貯めてごほうびと交換中！（いま${S.points}pt）\n#ひっさんクエスト${URL_LINE}`;
   updateShareLinks();
   const sc=score100(correct,total),isTest=mode!=='practice';
   shareBlob=null;$('shareImg').removeAttribute('src');
-  shareCard({sub:`${g}年生の計算`+(mode==='free'?'・自主練':mode==='practice'?'・書けるまで練習':''),
+  shareCard({sub:`${g}年生の計算`+(mode==='free'?'・自主練':mode==='practice'?'・とけるまで練習':''),
     big:isTest?`${sc}点`:`${correct}/${total}`,badge:comment.replace(/。$/,''),line2:st>=2?`${st}日連続クリア中！`:'',
     thumbs:written.map((w,i)=>({url:w.url,ok:!!(results[i]&&results[i].ok)}))}).then(b=>{shareBlob=b;if(b)$('shareImg').src=URL.createObjectURL(b)})}
 /* シェア画像（1080x1080）をつくる */
