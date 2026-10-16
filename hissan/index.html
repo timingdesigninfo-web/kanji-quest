@@ -294,7 +294,8 @@ body{overflow-x:hidden;overflow-x:clip}
 .ob-board::after{top:50%;left:10px;right:10px;border-top:2px dashed #C9DAF5}
 .ob-board span{position:relative;z-index:1}
 .ob-mark{flex:none;box-sizing:border-box;width:140px;height:140px;border-radius:50%;border:12px solid var(--red);display:flex;align-items:center;justify-content:center;font:800 34px var(--f-pixel);color:var(--ink);background:#fff}
-.ob-card p.ob-note{font-size:12px;opacity:.6;margin-top:-6px;max-width:none}
+.ob-card p.ob-note{font-size:12px;opacity:.7;margin-top:-6px;max-width:none;display:flex;align-items:center;justify-content:center;gap:6px}
+.ob-note svg{width:30px;height:21px;flex:none}
 .ob-btns{display:flex;gap:12px}.ob-btns .btn{flex:1;font-size:20px}
 .howto{align-self:center;font-size:13px;text-decoration:underline;color:var(--ink)}
 /* ---- せってい ---- */
@@ -1661,7 +1662,7 @@ const OB=[
   {pic:()=>icon('gem'),h:'ポイントでごほうび',p:'ためたポイントで、自分で決めたごほうびと交換。合格のあとの自主練でも+10pt（1日4回）。'},
 ];
 function renderOb(){const o=OB[obStep];
-  $('obCard').innerHTML=`<div class="ob-pic">${o.pic()}</div><h2>${o.h}</h2><p>${o.p}</p>${o.note?`<p class="ob-note">${o.note}</p>`:''}`;
+  $('obCard').innerHTML=`<div class="ob-pic">${o.pic()}</div><h2>${o.h}</h2><p>${o.p}</p>${o.note?`<p class="ob-note"><svg viewBox="0 0 32 22" aria-hidden="true"><rect x="1.5" y="1.5" width="29" height="19" rx="3.5" fill="#fff" stroke="currentColor" stroke-width="2.2"/><rect x="5" y="4.5" width="20.5" height="13" rx="1" fill="#D3F5DF"/><circle cx="28" cy="11" r="1.2" fill="currentColor"/></svg>${o.note}</p>`:''}`;
   $('obDots').innerHTML=OB.map((_,i)=>`<i class="${i===obStep?'on':''}"></i>`).join('');
   $('obBack').hidden=obStep===0;
   $('obNext').textContent=obStep<OB.length-1?'つぎへ':(obFromHome?'閉じる':'問題を選ぶ');
