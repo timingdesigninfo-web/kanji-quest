@@ -441,8 +441,7 @@ button:focus-visible{outline:4px solid var(--ink);outline-offset:3px}
 .ticket .btn{font-size:14px;padding:8px 12px;box-shadow:0 4px 0 var(--green-d)}
 .ticket.used{opacity:.45;border-style:solid}
 .empty{font-size:14px;font-weight:500}
-.parent{font-size:13px;font-weight:500;text-align:center;color:var(--ink)}
-.parent button{text-decoration:underline;font-weight:800}
+.shop-foot{font-size:13px;font-weight:500;text-align:center;color:var(--ink)}
 
 /* ---- ごほうび へんしゅう / Amazon ---- */
 .ed{padding:14px 16px;display:flex;flex-direction:column;gap:10px}
@@ -515,6 +514,9 @@ button:focus-visible{outline:4px solid var(--ink);outline-offset:3px}
 .parent h3{margin:0;font-size:16px}
 .parent p{margin:0;font-size:13px;font-weight:500;line-height:1.6}
 .parent .row{display:flex;gap:8px}.parent .row .btn{flex:1;font-size:15px;padding:10px}
+#admin{gap:14px;padding-bottom:24px}
+.ad-danger{color:var(--red)!important;font-size:15px;padding:10px}
+.legal .ad-link{opacity:.85}
 .rq .who{font-size:11px;font-weight:800;opacity:.7;white-space:nowrap}
 #wvEdHost:empty{display:none}
 .pop{position:fixed;left:50%;top:40%;transform:translate(-50%,-50%);font-family:var(--f-pixel);font-size:64px;color:#fff;
@@ -621,10 +623,16 @@ button:focus-visible{outline:4px solid var(--ink);outline-offset:3px}
   </section>
   <section class="panel news" id="news">
     <details>
-      <summary><span class="news-h">アップデートのお知らせ</span><span class="news-v">ベータ版 1.0.1</span>
-        <span class="news-l">利用規約とプライバシーポリシーを作りました。<small>タップでくわしく</small></span></summary>
+      <summary><span class="news-h">アップデートのお知らせ</span><span class="news-v">ベータ版 1.1</span>
+        <span class="news-l">管理メニューと、機種変更（データの引っ越し）ができました。<small>タップでくわしく</small></span></summary>
       <div class="news-body">
-        <div class="news-d">ベータ版 1.0.1（2026年10月16日）</div>
+        <div class="news-d">ベータ版 1.1（2026年10月16日）</div>
+        <ul>
+          <li>ホームの一番下に「管理メニュー」を作りました。PIN・家族と共有・機種変更・全部消す は、ここにまとめました（PINを決めているときは、開くときにPINが必要です）。</li>
+          <li>機種変更：「管理メニュー」→「新しい端末に移す」でQRを出し、新しい端末で読みとると、ポイント・記録・ごほうびが全部移ります（30分以内・1回だけ）。</li>
+          <li>iPhone・iPadは「ホーム画面に追加」して使うと、データが消えにくくなります。</li>
+        </ul>
+        <div class="news-d news-old">ベータ版 1.0.1（2026年10月16日）：利用規約とプライバシーポリシーを作りました</div>
         <ul>
           <li>利用規約とプライバシーポリシーを作りました。はじめて使うときと、内容が変わったときに、同意してから使う形になります。</li>
           <li>ホームの一番下の「利用規約」「プライバシー」から、いつでも見られます。</li>
@@ -641,7 +649,7 @@ button:focus-visible{outline:4px solid var(--ink);outline-offset:3px}
         <div class="news-s">そのほかの新しいこと</div>
         <ul>
           <li>きろく：前にといた問題と自分の字を、日付ごとに見返せます。「まちがえた字だけ」も。</li>
-          <li>家族と共有：「きろく」→「共有する」でQRを出すと、おうちの人のスマホから記録が見られます。</li>
+          <li>家族と共有：「管理メニュー」→「共有する」でQRを出すと、おうちの人のスマホから記録が見られます。</li>
           <li>ごほうびのOK：PINを決めると、交換はおうちの人のOKで決まります。共有先の「管理する人」のスマホからもOK・ごほうびの編集ができます。</li>
           <li>問題数：1回 5・10・20問から選べます（「学年」の画面）。</li>
           <li>ごほうびをさがす：ごほうびに合わせたAmazonのリンクが出ます（広告）。</li>
@@ -650,7 +658,7 @@ button:focus-visible{outline:4px solid var(--ink);outline-offset:3px}
       </div>
     </details>
   </section>
-  <div class="legal" id="legal"><button data-legal="tos">利用規約</button><button data-legal="pp">プライバシー</button><span class="copy">© 2026 TIMING</span></div>
+  <div class="legal" id="legal"><button class="ad-link" id="adminBtn">管理メニュー</button><button data-legal="tos">利用規約</button><button data-legal="pp">プライバシー</button><span class="copy">© 2026 TIMING</span></div>
   <div class="walk-space"></div>
   <div class="ground"><canvas class="walk"></canvas></div>
 </main>
@@ -760,7 +768,6 @@ button:focus-visible{outline:4px solid var(--ink);outline-offset:3px}
   <div id="wvEdHost"></div>
   <div class="hi-tabs" id="hiTabs"><button class="on" data-f="all">ぜんぶ</button><button data-f="ng">まちがえた字だけ</button></div>
   <div class="hi-list" id="hiList"></div>
-  <section class="panel fam" id="famBox"></section>
   <button class="btn white" id="hiHome">ホームへ</button>
 </main>
 
@@ -823,7 +830,7 @@ button:focus-visible{outline:4px solid var(--ink);outline-offset:3px}
       <li>Amazonアソシエイト：かんじクエストは、アマゾンジャパン合同会社またはその関連会社により実施されている「Amazonアソシエイト・プログラム」の参加者です。広告リンクを押すと、Amazonがクッキーを使うことがあります。</li>
     </ul>
     <h3>5. データを消すには</h3>
-    <p>「ごほうび」画面の一番下の「全部消す」で、端末のデータと共有のデータが消えます。共有だけやめるときは「きろく」→「共有をやめる」です。</p>
+    <p>ホームの一番下の「管理メニュー」→「全部消す」で、端末のデータと共有のデータが消えます。共有だけやめるときは「管理メニュー」→「共有をやめる」です。</p>
     <h3>6. 変更</h3>
     <p>この内容は変更することがあります。大きな変更は、アプリの中でお知らせします。</p>
     <h3>7. 運営者・お問い合わせ</h3>
@@ -835,6 +842,21 @@ button:focus-visible{outline:4px solid var(--ink);outline-offset:3px}
     <label class="agree-chk"><input type="checkbox" id="tmChk"><span>利用規約とプライバシーポリシーを読んで、同意します</span></label>
     <button class="btn green" id="tmGo" disabled>同意してはじめる</button>
   </section></div>
+</main>
+
+<!-- ============ 管理メニュー ============ -->
+<main id="admin" class="screen" hidden>
+  <div class="shop-head"><h2>管理メニュー</h2><button class="btn white small" id="adBack">もどる</button></div>
+  <section class="panel parent" id="parentBox"></section>
+  <section class="panel fam" id="famBox"></section>
+  <section class="panel parent fam" id="moveBox"></section>
+  <section class="panel parent">
+    <h3>そのほか</h3>
+    <div class="row"><button class="btn white" id="adSetup">学年・問題数</button><button class="btn white" id="adHowto">使い方</button></div>
+    <div class="row"><button class="btn white" data-legal="tos">利用規約</button><button class="btn white" data-legal="pp">プライバシー</button></div>
+    <p>この端末のポイント・記録・ごほうびを全部消します（共有も終わります）。元に戻せません。</p>
+    <button class="btn white ad-danger" id="resetBtn">全部消す</button>
+  </section>
 </main>
 
 <!-- ============ ショップ ============ -->
@@ -855,7 +877,6 @@ button:focus-visible{outline:4px solid var(--ink);outline-offset:3px}
     <button class="btn white" id="edAdd">＋ 追加</button>
     <div class="ed-btns"><button class="btn white" id="edCancel">やめる</button><button class="btn green" id="edSave">保存</button></div>
   </section>
-  <section class="panel parent" id="parentBox"></section>
   <button class="btn white" id="setupBtn2">学年</button>
   <section class="panel amz">
     <div class="amz-rw"></div>
@@ -871,13 +892,17 @@ button:focus-visible{outline:4px solid var(--ink);outline-offset:3px}
     <p class="amz-note">※広告です。Amazonのアソシエイトとして、かんじクエストは適格販売により収入を得ています。</p>
   </section>
   <button class="btn white" id="backBtn">戻る</button>
-  <div class="parent">チケットは使ったら「使った」を押してください。<br><button id="resetBtn">データをリセット</button></div>
+  <div class="shop-foot">チケットは使ったら「使った」を押してください。</div>
 </main>
 
 <div class="modal" id="pinModal" hidden><div class="panel"><p id="pinMsg"></p>
   <input id="pinIn" class="pin-in" type="password" inputmode="numeric" pattern="[0-9]*" maxlength="4" autocomplete="off" aria-label="PIN">
   <div class="pin-err" id="pinErr"></div>
   <div class="row"><button class="btn white" id="pinNo">やめる</button><button class="btn green" id="pinYes">OK</button></div></div></div>
+<div class="modal" id="moveModal" hidden><div class="panel">
+  <p id="mvMsg">データを受けとりますか？</p>
+  <p class="am-sub" id="mvSub">この端末の今のデータは、受けとったデータで上書きされます。</p>
+  <div class="row"><button class="btn white" id="mvNo">やめる</button><button class="btn green" id="mvYes">受けとる</button></div></div></div>
 <div class="modal" id="agreeModal" hidden><div class="panel">
   <p id="amMsg"></p>
   <p class="am-sub">内容を確認して、同意してから使ってください。</p>
@@ -2028,7 +2053,7 @@ const day=()=>dayRec();
 
 /* ===== 画面切りかえ ===== */
 const $=id=>document.getElementById(id);
-function show(id){['home','quiz','learn','grading','review','result','shop','setup','welcome','onboard','history','terms'].forEach(s=>$(s).hidden=s!==id);window.scrollTo(0,0);if(id==='quiz')requestAnimationFrame(layout)}
+function show(id){['home','quiz','learn','grading','review','result','shop','setup','welcome','onboard','history','terms','admin'].forEach(s=>$(s).hidden=s!==id);window.scrollTo(0,0);if(id==='quiz')requestAnimationFrame(layout)}
 
 /* ===== ホーム ===== */
 function renderHome(){
@@ -2335,7 +2360,7 @@ function openHistory(focus){HS=null;famStep='';syncErr='';renderHistory();show('
 function renderHistory(){
   const {log:LG,days:DY}=hsrc();
   document.querySelector('#history .shop-head h2').textContent=HS?wName(HS):'きろく';
-  $('famBox').hidden=!!HS;$('wvHead').hidden=!HS;if(HS)renderWatchHead();else renderFam();
+  $('wvHead').hidden=!HS;if(HS)renderWatchHead();
   const byDay={};LG.forEach((s,i)=>{(byDay[s.date]=byDay[s.date]||[]).push(i)});
   Object.keys(DY).forEach(k=>{if(DY[k].tries&&!byDay[k])byDay[k]=[]});
   const keys=Object.keys(byDay).sort().reverse();
@@ -2385,9 +2410,9 @@ let syncT=0,syncErr='';
 function syncSoon(){if(!S.share)return;clearTimeout(syncT);syncT=setTimeout(syncNow,800)}
 async function syncNow(){if(!S.share)return false;
   try{const r=await fetch(SYNC_URL,{method:'POST',headers:{'Content-Type':'application/json'},body:`{"id":"${S.share.id}","key":"${S.share.key}","data":${syncPayload()}}`});
-    if(r.ok){S.share.at=Date.now();syncErr='';save();if(!$('history').hidden&&!HS)renderFam();return true}
+    if(r.ok){S.share.at=Date.now();syncErr='';save();if(!$('admin').hidden)renderFam();return true}
     syncErr=r.status===503?'共有の準備がまだできていません。':'うまく送れませんでした。';}catch(e){syncErr='つながりませんでした。'}
-  if(!$('history').hidden&&!HS)renderFam();return false}
+  if(!$('admin').hidden)renderFam();return false}
 let qrLib=null;
 function loadQR(){return qrLib||(qrLib=new Promise((ok,ng)=>{const sc=document.createElement('script');sc.src='qr.js';sc.onload=()=>ok(window.qrcode);sc.onerror=ng;document.head.appendChild(sc)}))}
 async function drawQR(el,text){try{const q=(await loadQR())(0,'M');q.addData(text);q.make();el.innerHTML=q.createSvgTag({cellSize:4,margin:2,scalable:true})}catch(e){el.textContent='QRを表示できませんでした'}}
@@ -2439,7 +2464,7 @@ async function checkDecisions(){if(!S.share||Date.now()-decT<5000)return;decT=Da
     for(const q of S.reqs){if(q.st!=='wait')continue;const v=d.dec&&d.dec[q.rid];
       if(v==='1'||v==='0'){applyDecision(q,v==='1');ch=true;if(v==='1')sfx('clear')}}
     if(d.shop&&Array.isArray(d.shop.list)&&d.shop.v>(S.shopV||0)){S.shop=d.shop.list;S.shopV=d.shop.v;ch=true}
-    if(ch){save();syncSoon();if(!$('shop').hidden)renderShop();else if(!$('home').hidden)renderHome();if(!$('history').hidden&&!HS)renderFam()}}catch(e){}}
+    if(ch){save();syncSoon();if(!$('shop').hidden)renderShop();else if(!$('home').hidden)renderHome();if(!$('admin').hidden)renderFam()}}catch(e){}}
 setInterval(()=>{if(S.share&&S.reqs.some(q=>q.st==='wait')&&!document.hidden){decT=0;checkDecisions()}},30000);
 /* --- 管理する人の側 --- */
 async function claimAdmin(w){const k=rid(40);
@@ -2619,10 +2644,17 @@ function setTmTab(t){$('tmTos').hidden=t!=='tos';$('tmPp').hidden=t!=='pp';$('tm
 $('tmTabs').onclick=e=>{const b=e.target.closest('button');if(!b)return;setTmTab(b.dataset.t);window.scrollTo(0,0)};
 $('tmChk').onchange=()=>{$('tmGo').disabled=!$('tmChk').checked};
 $('tmGo').onclick=()=>{S.agreed=TERMS_V;save();sfx('clear');const n=tmNext;tmNext=null;n&&n()};
-$('tmBack').onclick=()=>{tmNext=null;if(!S.onboarded){openWelcome();return}renderHome();show('home')}; // 未同意なら ホームでまたモーダル
-$('legal').onclick=e=>{const b=e.target.closest('[data-legal]');if(!b)return;sfx('tap');openTerms(b.dataset.legal)};
+$('tmBack').onclick=()=>{const wasAgree=!!tmNext;tmNext=null;if(!S.onboarded){openWelcome();return}
+  if(!wasAgree&&tmFrom==='admin'){tmFrom='home';openAdmin();return}renderHome();show('home')}; // 未同意なら ホームでまたモーダル
+document.addEventListener('click',e=>{const b=e.target.closest('[data-legal]');if(!b)return;sfx('tap');tmFrom=$('admin').hidden?'home':'admin';openTerms(b.dataset.legal)});
+let tmFrom='home';
+function openAdmin(){famStep='';syncErr='';renderParent();renderFam();if(!mv)renderMove();show('admin')}
+$('adminBtn').onclick=()=>{sfx('tap');withPin('管理メニューを開くには、おうちの人のPINを入れてください',openAdmin)};
+$('adBack').onclick=()=>{renderHome();show('home')};
+$('adSetup').onclick=()=>openSetup();
+$('adHowto').onclick=()=>{obFromHome=true;obStep=0;obAdmin=false;renderOb();show('onboard')};
 // すでに使っている人：規約ができた・変わったときは、同意するまでモーダルを出す
-function askAgree(){if(agreed()||!S.onboarded)return;
+function askAgree(){if(agreed()||!S.onboarded||!$('moveModal').hidden)return;
   $('amMsg').textContent=S.agreed?'利用規約・プライバシーポリシーを変更しました。':'利用規約とプライバシーポリシーを作りました。';
   $('agreeModal').hidden=false}
 $('agreeModal').addEventListener('click',e=>{const b=e.target.closest('[data-am]');if(!b)return;$('agreeModal').hidden=true;
@@ -2642,9 +2674,9 @@ const OB_PHONE=`<svg viewBox="0 0 120 120"><rect x="34" y="8" width="52" height=
 function renderOb(){const last=obStep===OB.length-1;const qq=t=>t.replace(/10問/g,qn()+'問');
   if(obAdmin){
     $('obCard').innerHTML=`<div class="ob-pic">${OB_PHONE}</div><h2>管理する人へ</h2>
-      <p><b>1台で使うとき</b>は「ごほうび」画面の下でPINを決めると、ごほうびの編集と交換のOKがおうちの人だけになります。</p>
+      <p><b>1台で使うとき</b>は、ホームの一番下の「管理メニュー」でPINを決めると、ごほうびの編集と交換のOKがおうちの人だけになります。</p>
       <p><b>自分のスマホからも見るとき</b>は：</p>
-      <ol class="ob-steps"><li><span>この端末で<b>「きろく」→「共有する」</b>を押す</span></li>
+      <ol class="ob-steps"><li><span>この端末で<b>「管理メニュー」→「共有する」</b>を押す</span></li>
       <li><span><b>名前</b>を入れて「OK」</span></li>
       <li><span>出てきたQRを、<b>自分のスマホのカメラ</b>で読みとる</span></li>
       <li><span>あなたのホームに「〇〇さんの記録」ボタンが出て、いつでも見られます</span></li>
@@ -2757,6 +2789,60 @@ function renderAmzRw(){const seen=new Set(),rows=[];
   const h=rows.length?`<h3>ごほうびをさがす</h3><div class="amz-links">${rows.slice(0,6).map(r=>`<a class="rw" href="${amzURL(r.kw)}" target="_blank" rel="sponsored noopener">${esc(r.name)}${r.sub?`<small>${esc(r.sub)}</small>`:''}</a>`).join('')}</div>`:'';
   document.querySelectorAll('.amz-rw').forEach(el=>el.innerHTML=h)}
 
+/* ===== 機種変更（データの引っ越し） ===== */
+const MOVE_URL='/api/move';
+let mv=null; // {code,url,until,timer,done}
+function movePayload(){const st=JSON.parse(JSON.stringify(S));const lg=JSON.parse(JSON.stringify(LOG));
+  const out={v:1,kind:'kanjiQuest',at:Date.now(),S:st,LOG:lg};let j=JSON.stringify(out);
+  for(let i=0;j.length>3500000&&i<lg.length;i+=10){lg.slice(i,i+10).forEach(x=>x.items.forEach(it=>delete it.img));j=JSON.stringify(out)}
+  return j}
+function renderMove(){const b=$('moveBox');
+  if(mv&&mv.done){b.innerHTML=`<h3>引っ越しが終わりました</h3><p>新しい端末にデータが移りました。この端末は、もう使わなくてOKです。</p>
+      <p class="meta">この端末のデータを消すときは、下の「全部消す」を押してください。</p><button class="btn white" id="mvClose">閉じる</button>`;
+    $('mvClose').onclick=()=>{mv=null;renderMove()};return}
+  if(mv){const left=Math.max(0,Math.ceil((mv.until-Date.now())/60000));
+    b.innerHTML=`<h3>新しい端末で読みとってください</h3><p>新しい端末のカメラで、このQRを読みとってください。<b>${left}分</b>以内・1回だけ使えます。</p>
+      <div class="qr" id="mvQR"></div>
+      <div class="lnk"><input readonly value="${mv.url}" id="mvURL"><button class="btn white small" id="mvCopy">コピー</button></div>
+      <p class="meta">ほかの人には見せないでください。読みとった端末に、ポイントや記録が全部移ります。</p>
+      <button class="btn white" id="mvCancel">やめる</button>`;
+    drawQR($('mvQR'),mv.url);
+    $('mvCopy').onclick=()=>{navigator.clipboard?.writeText(mv.url).then(()=>{$('mvCopy').textContent='OK!'}).catch(()=>$('mvURL').select())};
+    $('mvCancel').onclick=cancelMove;return}
+  b.innerHTML=`<h3>機種変更（データの引っ越し）</h3><p>新しいスマホやタブレットに、ポイント・記録・ごほうびを全部移します。この端末でQRを出して、新しい端末で読みとるだけです。</p>
+    <button class="btn white" id="mvStart">新しい端末に移す</button>`;
+  $('mvStart').onclick=()=>withPin('データを移すには、おうちの人のPINを入れてください',startMove)}
+async function startMove(){const bt=$('mvStart');if(bt){bt.disabled=true;bt.textContent='準備中…'}
+  const code=rid(32);
+  try{const r=await fetch(MOVE_URL,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({code,data:movePayload()})});
+    if(!r.ok)throw r.status;
+    mv={code,url:`${SHARE_URL}/#move=${code}`,until:Date.now()+30*60000};
+    mv.timer=setInterval(pollMove,4000);renderMove();sfx('reveal')}
+  catch(e){if(bt){bt.disabled=false;bt.textContent='新しい端末に移す'}ask(e===503?'引っ越しの準備がまだできていません。':'うまくいきませんでした。電波のよいところで、もう一度おしてください。','OK',()=>{})}}
+async function pollMove(){if(!mv||mv.done)return;
+  if(Date.now()>mv.until){clearInterval(mv.timer);mv=null;renderMove();return}
+  try{const r=await fetch(MOVE_URL+'?peek=1&code='+mv.code,{cache:'no-store'});const d=await r.json();
+    if(!d.waiting){clearInterval(mv.timer);mv.done=true;
+      // 共有の書きこみは 新しい端末に まかせる（2台で上書きし合わないように）
+      if(S.share){S.share=null;save()}
+      sfx('clear');renderMove()}else if(!$('admin').hidden)renderMove()}catch(e){}}
+async function cancelMove(){if(!mv)return;clearInterval(mv.timer);const c=mv.code;mv=null;renderMove();
+  try{await fetch(MOVE_URL,{method:'DELETE',headers:{'Content-Type':'application/json'},body:JSON.stringify({code:c})})}catch(e){}}
+// 新しい端末：#move=... で開いたとき
+function receiveMove(code){$('mvMsg').textContent='データを受けとりますか？';
+  $('mvSub').textContent=S.onboarded?'この端末の今のポイントや記録は、受けとったデータで上書きされます。':'前の端末のポイント・記録・ごほうびが、この端末に移ります。';
+  $('moveModal').hidden=false;
+  $('mvNo').onclick=()=>{$('moveModal').hidden=true;S.onboarded?(renderHome(),show('home')):openWelcome()};
+  $('mvYes').onclick=async()=>{$('mvYes').disabled=true;$('mvYes').textContent='受けとり中…';
+    try{const r=await fetch(MOVE_URL+'?code='+encodeURIComponent(code),{cache:'no-store'});
+      if(r.status===404){$('mvMsg').textContent='このQRは使えません';$('mvSub').textContent='時間切れか、すでに使われています。前の端末で、もう一度QRを出してください。';
+        $('mvYes').hidden=true;$('mvNo').textContent='閉じる';return}
+      if(!r.ok)throw 0;const d=await r.json();if(d.kind!=='kanjiQuest'||!d.S)throw 0;
+      localStorage.setItem(KEY,JSON.stringify(d.S));localStorage.setItem(LOGKEY,JSON.stringify(d.LOG||[]));
+      $('mvMsg').textContent='引っ越しが終わりました！';$('mvSub').textContent=`${d.S.points||0}pt と記録が、この端末に移りました。`;
+      $('mvYes').hidden=true;$('mvNo').textContent='はじめる';$('mvNo').onclick=()=>location.replace(location.pathname);sfx('clear')}
+    catch(e){$('mvYes').disabled=false;$('mvYes').textContent='受けとる';$('mvSub').textContent='うまく受けとれませんでした。電波のよいところで、もう一度おしてください。'}}}
+
 /* ===== おうちの人（PIN・おねがい） ===== */
 const pinHash=v=>{let h=5381;for(const c of 'kq:'+v)h=(h*33+c.charCodeAt(0))>>>0;return h.toString(36)};
 let pinCb=null,pinCheck=null;
@@ -2784,12 +2870,12 @@ function renderParent(){const b=$('parentBox'),adm=!!(S.share&&S.share.admin);
     ?`<p>PINを設定ずみ。ごほうびの編集と、交換のOKにはPINが必要です。</p><div class="row"><button class="btn white" id="pinChg">PINを変える</button><button class="btn white" id="pinDel">PINを外す</button></div>`
     :`<p>PIN（数字4けた）を決めると、ごほうびの編集と交換のOKを、おうちの人だけができるようになります。1台のスマホでも使えます。</p><button class="btn white" id="pinSet">PINを決める</button>`)
     +(adm?`<p>共有先の「管理する人」のスマホからも、OKやごほうびの編集ができます。</p>`:'');
-  const setNew=()=>pinAsk('新しいPIN（数字4けた）を入れてください',null,v1=>pinAsk('もう一度入れてください',v=>v===v1||'さっきとちがいます',()=>{S.pin=pinHash(v1);save();sfx('clear');renderShop()}));
+  const setNew=()=>pinAsk('新しいPIN（数字4けた）を入れてください',null,v1=>pinAsk('もう一度入れてください',v=>v===v1||'さっきとちがいます',()=>{S.pin=pinHash(v1);save();sfx('clear');renderParent()}));
   if($('pinSet'))$('pinSet').onclick=setNew;
   if($('pinChg'))$('pinChg').onclick=()=>withPin('今のPINを入れてください',setNew);
-  if($('pinDel'))$('pinDel').onclick=()=>withPin('PINを外すには、今のPINを入れてください',()=>{S.pin='';save();renderShop()});}
+  if($('pinDel'))$('pinDel').onclick=()=>withPin('PINを外すには、今のPINを入れてください',()=>{S.pin='';save();renderParent()});}
 function renderShop(){
-  $('pts2').textContent=S.points;renderReqs();renderParent();renderAmzRw();checkDecisions();
+  $('pts2').textContent=S.points;renderReqs();renderAmzRw();checkDecisions();
   $('items').innerHTML=S.shop.length?S.shop.map(it=>`<div class="panel item">${icon(it.icon)}<div><h3>${esc(it.name)}</h3><p>${esc(it.desc||'')}</p><div class="cost"><span class="coin"></span>${it.cost}pt</div></div>
     <button class="btn ${S.points>=it.cost?'yellow':'white'}" data-buy="${it.id}" ${S.points>=it.cost?'':'disabled'}>${needOK()?'おねがい':'交換'}</button></div>`).join('')
     :`<div class="panel item"><div></div><div><h3>ごほうびがありません</h3><p>「ごほうびを編集」で作れます</p></div><div></div></div>`;
@@ -2979,8 +3065,9 @@ document.addEventListener('pointerdown',e=>{if(e.target.closest('button,a,input,
     for(const f of fl.slice().reverse()){if(f.hx==null)continue;if(px>=f.hx-6&&px<=f.hx+f.hw+6&&py>=f.hy-6&&py<=f.hy+f.hh+6){if(!(f.sk>0))f.sk=.7;return true}}return false});
   requestAnimationFrame(step);
 })();
-{const m=/view=([A-Za-z0-9]{16,32})/.exec(location.hash);
-  if(m){history.replaceState(null,'',location.pathname+location.search);openWatch(m[1])}else renderHome();
+{const m=/view=([A-Za-z0-9]{16,32})/.exec(location.hash),mm=/move=([A-Za-z0-9]{24,40})/.exec(location.hash);
+  if(mm){history.replaceState(null,'',location.pathname+location.search);if(S.onboarded){renderHome();show('home')}else openWelcome();$('agreeModal').hidden=true;receiveMove(mm[1])}
+  else if(m){history.replaceState(null,'',location.pathname+location.search);openWatch(m[1])}else renderHome();
   if(S.share)syncSoon();}
 </script>
 
