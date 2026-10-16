@@ -406,6 +406,10 @@ button:focus-visible{outline:4px solid var(--ink);outline-offset:3px}
 .mk:not(.on){opacity:.95}
 .rv:has(.mk.on) .mk:not(.on){opacity:.35}
 .rv-why{font-size:13px;font-weight:500;color:var(--ink)}
+.rv-word{display:block;font-size:14px;line-height:1.7;color:var(--ink);margin-top:2px}
+.rv-hint{font-size:13px;font-weight:800;color:#C2410C}
+.learn-card .k.wordk{font:500 15px/1.7 var(--f-kanji);text-align:left;max-width:560px}
+.miss .t.wordk{font-size:13px;line-height:1.5}
 @media (max-width:420px){.rv-img,.rv-ans{height:84px}.rv-ans span{width:84px;font-size:60px}.mk{width:48px;height:40px;font-size:24px}}
 
 /* ---- 結果 ---- */
@@ -722,6 +726,7 @@ body:has(#quiz:not([hidden])){background-image:none!important;background-color:#
         <div class="qnum" id="qnum">1/10</div>
       </div>
       <div class="tools">
+        <button class="btn white small" id="speakBtn" hidden>🔊 よむ</button>
         <button class="btn white small" id="clearBtn">ぜんぶけす</button>
         <button class="btn white small mid" id="undoBtn">もどす</button>
         <button class="btn eraser" id="eraseBtn" aria-pressed="false"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 15.5 13.5 5a2 2 0 0 1 2.8 0l3.7 3.7a2 2 0 0 1 0 2.8L11 20.5H6.5z" fill="#FF8FA8" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/><path d="M7.5 11 14 17.5M11 20.5h10" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg><span>けしゴム</span></button>
@@ -855,6 +860,7 @@ body:has(#quiz:not([hidden])){background-image:none!important;background-color:#
   <div class="row"><button class="btn white" id="mvNo">やめる</button><button class="btn green" id="mvYes">受けとる</button></div></div></div>
 <div class="modal" id="modal" hidden><div class="panel"><p id="mMsg"></p><div class="row"><button class="btn white" id="mNo">やめる</button><button class="btn green" id="mYes">OK</button></div></div></div>
 
+<script src="/hissan/words.js"></script>
 <script>
 function mapTile(){const N=96,c=document.createElement('canvas');c.width=c.height=N;const x=c.getContext('2d');
   let seed=7;const rnd=()=>(seed=(seed*16807)%2147483647)/2147483647;
@@ -931,8 +937,34 @@ function nowTerm(){const m=new Date().getMonth()+1;return m>=4&&m<=8?0:m>=9?1:2}
 const gradeUnits=g=>UNITS.filter(u=>u.g===g);
 function defaultUnits(g){const us=gradeUnits(g),nt=nowTerm();const up=us.filter(u=>u.t<=nt);return (up.length?up:us).map(u=>u.id)}
 function makeProb(uid){const u=UNIT[uid]||UNITS[0];return{...u.gen(),u:u.id}}
-const probText=p=>`${p.a} ${p.op} ${p.b}`;
-const ansText=p=>p.kind==='frac'?`${p.ans.n}/${p.ans.d}`:(p.rem?`${p.ans} あまり ${p.rem}`:String(p.ans));
+const fracS=f=>`${f.n}/${f.d}`;
+const probText=p=>p.kind==='word'?p.text:`${p.a} ${p.op} ${p.b}`;
+const wordAns=p=>p.final!=null?`${p.final}${p.unit||''}`:typeof p.ans==='object'?`${fracS(p.ans)}${p.unit||''}`:`${p.ans}${p.unit||''}${p.rem?` あまり ${p.rem}`:''}`;
+const ansText=p=>p.kind==='word'?`しき ${p.a} ${p.op} ${p.b}　こたえ ${wordAns(p)}`:p.kind==='frac'?`${p.ans.n}/${p.ans.d}`:(p.rem?`${p.ans} あまり ${p.rem}`:String(p.ans));
+
+/* ===== 文章題（型は words.js。学年が上がるほど 10問の後半に多く出す） =====
+   同じ単元の型は「いちばん前に出した型」から順に出す（まだ出していない型・新しく入った型が先）。数字と名前は毎回かわる */
+const WB=window.HISSAN_WORDS||{BANK_VER:0,WORDS_PER_DAY:[0,0,0,0,0,0,0],NAMES:['ひろと'],TEMPLATES:[]};
+const wordTpls=uid=>WB.TEMPLATES.filter(t=>t.u===uid);
+const wordsPerDay=()=>Math.min(PER_DAY-1,WB.WORDS_PER_DAY[S.grade||4]||0);
+function pickTpl(uid,avoid){const ts=wordTpls(uid).filter(t=>!avoid||!avoid.has(t.id));if(!ts.length)return null;
+  const log=S.wordLog||{},last=t=>log[t.id]||'',old=ts.reduce((m,t)=>last(t)<m?last(t):m,'￿');
+  const c=ts.filter(t=>last(t)===old);return c[R(0,c.length-1)]}
+function makeWord(uid,tplId,avoid){
+  const t=(tplId&&WB.TEMPLATES.find(x=>x.id===tplId))||pickTpl(uid,avoid);if(!t)return makeProb(uid);
+  const used=new Set(),r={R,pick:a=>a[R(0,a.length-1)],gen:id=>UNIT[id].gen(),add:addGen,sub:subGen,mul:mulGen,div:divGen,frac:fracGen,
+    name(){let n;do n=WB.NAMES[R(0,WB.NAMES.length-1)];while(used.has(n)&&used.size<WB.NAMES.length);used.add(n);return n}};
+  const w=t.make(r);(S.wordLog||(S.wordLog={}))[t.id]=todayKey();
+  return{kind:'word',u:uid,tpl:t.id,op:w.op,a:w.a,b:w.b,ans:w.ans,rem:w.rem??null,final:w.final??null,unit:w.unit||'',text:w.text}}
+// 10問：計算の問題（にがての単元を少し先に）→ 後半に文章題
+function buildSet(useWeak){
+  const pool=selUnits(),wpool=pool.filter(id=>wordTpls(id).length),nW=wpool.length?wordsPerDay():0,ids=[];
+  if(useWeak)for(const w of S.weak){if(ids.length>=3)break;if(UNIT[w]&&pool.includes(w))ids.push(w)}
+  let bag=[];while(ids.length<PER_DAY-nW){if(!bag.length)bag=shuffle(pool.slice());ids.push(bag.shift())}
+  const words=[],avoid=new Set();let wb=[];
+  for(let i=0;i<nW;i++){if(!wb.length)wb=shuffle(wpool.slice());const p=makeWord(wb.shift(),null,avoid);if(p.tpl)avoid.add(p.tpl);words.push(p)}
+  return[...shuffle(ids).map(makeProb),...words]}
+const remake=p=>p.kind==='word'?makeWord(p.u,p.tpl):makeProb(p.u); // 同じ形（文章題は同じ型）の 新しい問題
 
 /* ===== ルール ===== */
 const PER_DAY=10, PASS=80;
@@ -1073,10 +1105,7 @@ const selUnits=()=>{const us=(S.units||[]).filter(id=>UNIT[id]);return us.length
 // 今日の10問：にがての単元を少し先に、あとは えらんだ単元から まんべんなく
 function ensureToday(){
   const t=todayKey(); if(S.today&&S.today.date===t)return;
-  const pool=selUnits(),ids=[];
-  for(const w of S.weak){if(ids.length>=3)break;if(UNIT[w]&&pool.includes(w))ids.push(w)}
-  let bag=[];while(ids.length<PER_DAY){if(!bag.length)bag=shuffle(pool.slice());ids.push(bag.shift())}
-  S.today={date:t,items:shuffle(ids).map(makeProb)}; save();
+  S.today={date:t,items:buildSet(true)}; save();
 }
 function dayRec(){const t=todayKey();const d=S.days[t]||(S.days[t]={tries:0,passed:false,best:0,earned:0});
   if(d.testDone===undefined)d.testDone=d.tries>0;if(!Array.isArray(d.pending))d.pending=[];if(d.rewrites===undefined)d.rewrites=0;return d}
@@ -1132,21 +1161,22 @@ function renderHome(){
 let qs=[],qi=0,results=[],written=[],strokes=[],cur=null,mode='test';
 function startQuiz(m){ensureToday();mode=m;const d=dayRec();
   if(m==='test')qs=S.today.items.slice(0,PER_DAY).map(p=>({...p}));
-  else if(m==='practice')qs=d.pending.map(p=>makeProb(p.u)); // 同じ形の 新しい問題
-  else qs=Array.from({length:PER_DAY},()=>makeProb(selUnits()[R(0,selUnits().length-1)]));
+  else if(m==='practice')qs=d.pending.map(remake); // 同じ形の 新しい問題
+  else qs=buildSet(false);
   if(!qs.length){renderHome();show('home');return}
   qi=0;results=[];written=[];pend=[];reads=[];aiCtl?.abort();show('quiz');showQ()}
 function home(){const d=dayRec();
   if(!d.testDone)startQuiz('test');else if(d.pending.length)openLearn();else startQuiz('free')}
 function openLearn(){const d=dayRec();
   $('learnNote').textContent=`${d.pending.length}問。正しい答えをたしかめたら、同じ形の新しい問題をとこう。`+(d.passed?'':` 全部とけたら合格（+${PTS[Math.min(d.rewrites+1,RW_MAX)]}pt）！`);
-  $('learnList').innerHTML=d.pending.map(p=>`<div class="panel learn-card"><div class="q">${esc(UNIT[p.u]?.name||'')}</div><div class="k">${esc(probText(p))}</div><div class="ans">${esc(ansText(p))}</div>${p.read?`<div class="q">自分の答え：${esc(p.read)}</div>`:''}</div>`).join('');
+  $('learnList').innerHTML=d.pending.map(p=>`<div class="panel learn-card"><div class="q">${esc(UNIT[p.u]?.name||'')}${p.kind==='word'?'・文章題':''}</div><div class="k ${p.kind==='word'?'wordk':''}">${esc(probText(p))}</div><div class="ans">${esc(ansText(p))}</div>${p.read?`<div class="q">自分の答え：${esc(p.read)}</div>`:''}</div>`).join('');
   show('learn')}
 function showQ(){
   cur=qs[qi];strokes=written[qi]?written[qi].strokes:[];hist=[];setEraser(false);hideToast();extra=written[qi]?written[qi].extra:0;
   $('qnum').textContent=`${qi+1}/${qs.length}`;
   $('dots').innerHTML=qs.map((_,i)=>`<span class="coin ${i<qi?'done':(i===qi?'now':'')}"></span>`).join('');
   $('nextBtn').textContent=qi===qs.length-1?'おわり！':'つぎへ';
+  $('speakBtn').hidden=!(cur.kind==='word'&&'speechSynthesis' in window);
   L=layoutOf(cur);layout();updateBtns();
 }
 function esc(s){return String(s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]))}
@@ -1156,6 +1186,8 @@ function updateBtns(){$('nextBtn').disabled=!strokes.length;$('undoBtn').disable
 const digitsAt=(s,end)=>[...String(s)].map((ch,i)=>({c:end-String(s).length+1+i,t:ch}));
 const writeRow=(from,to)=>{const a=[];for(let c=from;c<=to;c++)a.push({c,w:1});return a};
 function layoutOf(p){
+  if(p.kind==='word'){const lines=wrapWord(p.text,WORD_COLS);
+    return{cols:WORD_COLS,kind:'word',lines,rows:[{h:lines.length*WORD_LH+.35,cells:[]},{h:2.7,cells:[]},{h:.6,cells:[]}]}}
   if(p.kind==='frac')return{cols:8.6,kind:'frac',rows:[{h:3.3,cells:[]},{h:2.4,cells:[]}]};
   if(p.kind==='expr')return{cols:p.rem!=null?11:8,kind:'expr',rows:[{h:2.6,cells:[]}]};
   const A=String(p.a),B=String(p.b);
@@ -1209,6 +1241,35 @@ function layout(){
 const INK2='#7C8AA8',DASH='#C9DAF5';
 const FONT=U=>`500 ${Math.round(U*.72)}px "M PLUS Rounded 1c","Hiragino Maru Gothic ProN",sans-serif`;
 // 板の絵（画面用と AIに送る画像で共通）
+/* 文章題：上に文、その下に「しき」「こたえ」のわく。そのあとは 自由に筆算できる場所 */
+const WORD_COLS=12,WORD_FS=.4,WORD_LH=.62,wordMeasure=document.createElement('canvas').getContext('2d'),wrapCache=new Map();
+const WFONT=U=>`500 ${Math.round(U*WORD_FS)}px "M PLUS Rounded 1c","Hiragino Maru Gothic ProN",sans-serif`;
+function wrapWord(text,cols){const k=text+'|'+cols;if(wrapCache.has(k))return wrapCache.get(k);
+  const x=wordMeasure;x.font=WFONT(100);const max=cols*100,out=[];let line='';
+  // 空白と「、」「。」のあとで 行をかえられる（空白はそのまま、句読点のあとは つめる）
+  const toks=[];text.replace(/[^ 、。]+[、。]?|[、。]/g,(t,i)=>{toks.push({t,sp:text[i-1]===' '});return t});
+  for(const {t:tok,sp} of toks){const add=line?line+(sp?' ':'')+tok:tok;
+    if(x.measureText(add).width<=max){line=add;continue}
+    if(line)out.push(line);line='';
+    for(const ch of tok){if(x.measureText(line+ch).width>max&&line){out.push(line);line=ch}else line+=ch}}
+  if(line)out.push(line);wrapCache.set(k,out);return out}
+document.fonts?.ready?.then(()=>{wrapCache.clear();if(L&&L.kind==='word'){L=layoutOf(cur);layout()}});
+function drawWord(x,U,ox,y,p,Lp,rx){
+  x.fillStyle='#46557A';x.font=WFONT(U);x.textAlign='left';x.textBaseline='middle';
+  Lp.lines.forEach((ln,i)=>x.fillText(ln,ox,y+(i+.5)*WORD_LH*U));
+  const by=y+Lp.rows[0].h*U,bh=2.4*U,W=rx-ox;
+  x.font=`500 ${Math.round(U*.42)}px "M PLUS Rounded 1c",sans-serif`;
+  const uw=p.unit?x.measureText(p.unit).width+U*.2:0,withRem=p.rem!=null&&p.final==null&&typeof p.ans!=='object';
+  const sw=W*(withRem?.42:.5);ansBox(x,U,ox,by,sw,bh,'しき');
+  let ax=ox+sw+U*.3;const room=rx-ax-uw;
+  if(!withRem){ansBox(x,U,ax,by,room,bh,'こたえ');ax+=room}
+  else{const lab=1.15*U,r2=rx-ax-uw-lab,w1=Math.max(1.8*U,r2*.55),w2=Math.max(1.4*U,r2-w1);
+    ansBox(x,U,ax,by,w1,bh,'こたえ');x.fillStyle=INK2;x.textAlign='left';x.textBaseline='middle';
+    if(p.unit)x.fillText(p.unit,ax+w1+U*.1,by+bh/2);
+    x.fillText('あまり',ax+w1+uw+U*.05,by+bh/2);ansBox(x,U,ax+w1+uw+lab,by,w2,bh,'');return labelFree()}
+  if(p.unit){x.fillStyle=INK2;x.textAlign='left';x.textBaseline='middle';x.fillText(p.unit,ax+U*.1,by+bh/2)}
+  labelFree();
+  function labelFree(){x.fillStyle='#B9CBEA';x.font=`500 ${Math.round(U*.22)}px "M PLUS Rounded 1c",sans-serif`;x.textAlign='left';x.textBaseline='top';x.fillText('ひっさん・メモは この下に 自由に',ox,by+bh+U*.18)}}
 function drawGuide(x,U,cw,ch,p){
   x.fillStyle='#fff';x.fillRect(0,0,cw,ch);
   const Lp=layoutOf(p),ox=(originU(Lp,cw/U)+(Lp.left||0))*U;let y=PADU*U;
@@ -1216,6 +1277,7 @@ function drawGuide(x,U,cw,ch,p){
   const rx=ox+Lp.cols*U; // 問題の右はし（＝板の右はし）
   if(Lp.kind==='frac'){drawFrac(x,U,ox,y,p,lw,rx);return}
   if(Lp.kind==='expr'){drawExpr(x,U,ox,y,p,lw,rx);return}
+  if(Lp.kind==='word'){drawWord(x,U,ox,y,p,Lp,rx);return}
   const vlines=(y0,h)=>{x.setLineDash([U*.06,U*.07]);x.strokeStyle=DASH;x.lineWidth=Math.max(1.5,U*.025);
     for(let c=from;c<=Lp.cols;c++){x.beginPath();x.moveTo(ox+c*U,y0);x.lineTo(ox+c*U,y0+h);x.stroke()}x.setLineDash([])};
   if(extra&&Lp.kind!=='expr'&&Lp.kind!=='frac'){const bh=Lp.rows.reduce((s,r)=>s+r.h,0);vlines(PADU*U+bh*U,extra*U)}
@@ -1292,6 +1354,11 @@ ink.addEventListener('pointermove',e=>{
   if(scrolling){if(touches.size>=2)lastMid=mid();if(!touches.size)scrolling=false;return}
   if(erLast){erLast=null;redraw();if(hist.length&&hist[hist.length-1].length===strokes.length&&hist[hist.length-1].every((s,i)=>s===strokes[i]))hist.pop();else{showToast();setEraser(false)}updateBtns()} // 1回 消したら 書くモードにもどす
   drawing=null}));
+// 文章題の読み上げ（端末の音声）。分数は「4ぶんの3」、単位は 読みに直す
+const SAY_UNIT={'m²':'平方メートル','cm':'センチメートル','mL':'ミリリットル','dL':'デシリットル','km':'キロメートル','kg':'キログラム','L':'リットル','g':'グラム','m':'メートル'};
+const sayText=t=>t.replace(/(\d+)\/(\d+)/g,'$2ぶんの$1').replace(/(\d|の\d+)(m²|cm|mL|dL|km|kg|L|g|m)(?![a-zA-Z])/g,(_,a,u)=>a+SAY_UNIT[u]);
+$('speakBtn').onclick=()=>{if(!cur||cur.kind!=='word'||!window.speechSynthesis)return;speechSynthesis.cancel();
+  const ut=new SpeechSynthesisUtterance(sayText(cur.text));ut.lang='ja-JP';ut.rate=.9;speechSynthesis.speak(ut)};
 $('growBtn').onclick=()=>{extra+=2;layout();$('growBtn').scrollIntoView({block:'nearest',behavior:'smooth'})};
 /* 向き：たて向き（タッチの端末）なら 横向きをすすめる */
 let rotSkip=false;
@@ -1325,6 +1392,7 @@ const aiUsed=()=>(S.days[todayKey()]||{}).ai||0;
 let reads=[],marks=[],aiState='';
 const OP_NAME={'+':'たし算','−':'ひき算','×':'かけ算','÷':'わり算'};
 function itemLine(w,k){const p=w.p;
+  if(p.kind==='word')return `画像${k+1}: 文章題（上の活字の文は読まない。式の答えは教えない）／読むもの: shiki＝「しき」のわくの式そのまま（× ÷ + − 、分数は / 。例 38÷5、3/4−2/5）、answer＝「こたえ」のわくの数${p.rem!=null&&p.final==null&&typeof p.ans!=='object'?'、remainder＝「あまり」の右のわくの数':''}（単位の文字は入れない）`;
   let what;
   if(p.kind==='frac')what='answer＝「こたえ」の点線のわくに書いた答え。分数は 分子/分母（例 7/12）、帯分数は 整数 分子/分母（例 1 1/12）。下の「とちゅうの計算」は読まなくてよい';
   else if(p.kind==='expr')what=p.rem!=null?'answer＝「こたえ」のわくに書いた数、remainder＝「あまり」の右のわくに書いた数':'answer＝「こたえ」のわくに書いた数';
@@ -1342,8 +1410,10 @@ ${items.map(itemLine).join('\n')}
 - 答えは「大きく書いた数字」だけ。どこに書いてあっても、小さい数字・数字の右上や左上の小さな1・点やチョンという線は くり上がりのメモなので、answer に入れず carries に入れる。
 - 印刷された数字を ななめ線で消して小さく書きなおしたものは、くり下がりのメモ。
 - 問題は右上にあります。左や下の線のない広い所は 自由に書けるメモ用なので、答えとして読みません。
+- 文章題は、上に活字の文、その下に「しき」と「こたえ」のわくがあります。わくの右の活字（単位）は問題の一部。
 
 1まいごとに読み取るもの:
+- shiki: 文章題の「しき」のわくに書いた式（文章題でなければ空文字）
 - answer: 答え（数字だけ。分数は 7/12 のように / を使う）
 - remainder: あまり（わり算でなければ、または書いていなければ空文字）
 - carries: くり上がり・くり下がりのメモ（左から順に。なければ空文字）
@@ -1356,15 +1426,33 @@ ${items.map(itemLine).join('\n')}
 - 指で書いているので、線のふるえや字の大きさは気にしません。
 
 JSONの配列だけで答えてください。画像1つにつき1つ、順番どおり:
-[{"n":1,"answer":"85","remainder":"","carries":"1","clear":true,"note":"くらいが そろっていて 見やすいよ"}]`}
+[{"n":1,"shiki":"","answer":"85","remainder":"","carries":"1","clear":true,"note":"くらいが そろっていて 見やすいよ"}]`}
 const digits=s=>String(s??'').replace(/[^0-9?]/g,'');
 function parseFrac(s){s=String(s??'').replace(/[／]/g,'/').trim();
   let m=s.match(/^(\d+)\s+(\d+)\s*\/\s*(\d+)$/);if(m)return{w:+m[1],n:+m[2],d:+m[3]};
   m=s.match(/^(\d+)\s*\/\s*(\d+)$/);if(m)return{w:0,n:+m[1],d:+m[2]};
   m=s.match(/^(\d+)$/);if(m)return{w:+m[1],n:0,d:1};return null}
 // AIの読みから 正誤をきめる（決めるのはプログラム）
+// 文章題の式：書いた式の値が 正しい式の値と同じならOK（5×4 と 4×5 はどちらも正解）。演算子が1つもなければ式ではない
+function evalShiki(s){
+  s=String(s??'').split(/[=＝]/)[0].replace(/[０-９]/g,c=>String.fromCharCode(c.charCodeAt(0)-65248)).replace(/\s/g,'')
+    .replace(/＋/g,'+').replace(/[−－ー‐–—]/g,'-').replace(/[×xX＊*]/g,'*').replace(/[÷:：]/g,'d').replace(/／/g,'/').replace(/[（]/g,'(').replace(/[）]/g,')');
+  const tk=s.match(/\d+\/\d+|\d+|[-+*d()]|./g)||[];if(!tk.some(t=>/^[-+*d]$/.test(t)))return null;
+  const nm=([n,d])=>{if(!d)throw 0;if(d<0){n=-n;d=-d}const g=gcd(Math.abs(n),d)||1;return[n/g,d/g]};let i=0;
+  const atom=()=>{const t=tk[i++];if(t==='('){const v=sum();if(tk[i++]!==')')throw 0;return v}
+    if(/^\d+\/\d+$/.test(t)){const[a,b]=t.split('/');return nm([+a,+b])}if(/^\d+$/.test(t))return[+t,1];throw 0};
+  const prod=()=>{let v=atom();while(tk[i]==='*'||tk[i]==='d'){const o=tk[i++],w=atom();v=nm(o==='*'?[v[0]*w[0],v[1]*w[1]]:[v[0]*w[1],v[1]*w[0]])}return v};
+  const sum=()=>{let v=prod();while(tk[i]==='+'||tk[i]==='-'){const o=tk[i++],w=prod();v=nm([v[0]*w[1]+(o==='+'?1:-1)*w[0]*v[1],v[1]*w[1]])}return v};
+  try{const v=sum();return i===tk.length?v:null}catch(e){return null}}
 function judge(p,o){
   if(!o)return{ok:null,read:'',unk:true};
+  if(p.kind==='word'){
+    const raw=String(o.shiki??'').trim(),sv=evalShiki(raw),ev=evalShiki(`${p.a}${p.op}${p.b}`);
+    const shikiOk=!!(sv&&ev&&sv[0]*ev[1]===ev[0]*sv[1]);
+    const a=p.final!=null?judge({kind:'line',ans:p.final},o):typeof p.ans==='object'?judge({kind:'frac',ans:p.ans},o):judge({kind:'line',ans:p.ans,rem:p.rem},o);
+    const read=`しき ${raw||'（なし）'}／こたえ ${a.read||'？'}`;
+    if(a.unk||raw.includes('?'))return{ok:null,read,unk:true,word:true};
+    return{ok:a.ok&&shikiOk,read,word:true,shikiOk,ansOk:a.ok,noShiki:!raw,reduce:a.reduce}}
   if(p.kind==='frac'){const raw=String(o.answer??'').trim(),f=parseFrac(raw);
     if(!f||raw.includes('?')||!f.d)return{ok:null,read:raw,unk:true};
     const same=(f.w*f.d+f.n)*p.ans.d===p.ans.n*f.d,red=gcd(f.n,f.d)===1&&f.n<f.d;
@@ -1444,11 +1532,12 @@ function renderReview(){
   $('rvList').innerHTML=written.map((w,i)=>{const m=marks[i],o=reads[i],j=judge(w.p,o);
     const tag=j.reduce?'（約分しよう）':'';
     return `<div class="panel rv">
-      <div class="rv-q">${i+1}. <b>${esc(probText(w.p))}</b></div>
+      <div class="rv-q">${i+1}. ${w.p.kind==='word'?`<span class="rv-word">${esc(probText(w.p))}</span>`:`<b>${esc(probText(w.p))}</b>`}</div>
       <div class="rv-pair">
         <div class="rv-col">
           <div class="rv-box"><small>自分</small><img class="rv-img" src="${w.url}" alt="${i+1}問目に書いた答え"></div>
           ${o?`<div class="rv-read">AIの読み <b>${esc(j.read||'？')}</b>${tag}</div>`:''}
+          ${j.word&&!j.unk?`<div class="rv-hint">${j.noShiki?'しきも かこう':j.ansOk&&!j.shikiOk?'こたえは 合ってるよ。しきを 見なおそう':j.shikiOk&&!j.ansOk?'しきは できてるよ。こたえを たしかめよう':''}</div>`:''}
           <div class="rv-box"><small>答え</small><div class="rv-txt">${esc(ansText(w.p))}</div></div>
         </div>
         <div class="marks"><button class="mk ok ${m===true?'on':''}" data-mark="${i}" data-v="1" aria-label="正解">○</button><button class="mk ng ${m===false?'on':''}" data-mark="${i}" data-v="0" aria-label="まちがい">×</button></div>
@@ -1510,7 +1599,7 @@ function finish(){
   $('scoreBox').innerHTML=head+body;
   const miss=results.filter(r=>!r.ok);
   $('missBox').hidden=!miss.length;
-  $('missBox').innerHTML=`<h3>まちがえた問題</h3>`+miss.map(r=>`<div class="miss"><span class="t">${esc(probText(r.p))}</span><span class="k">${esc(ansText(r.p))}</span></div>`).join('');
+  $('missBox').innerHTML=`<h3>まちがえた問題</h3>`+miss.map(r=>`<div class="miss"><span class="t ${r.p.kind==='word'?'wordk':''}">${esc(probText(r.p))}</span><span class="k">${esc(ansText(r.p))}</span></div>`).join('');
   const more=mode!=='free'&&d.pending.length;
   $('resultBtns').innerHTML=(more?`<button class="btn" id="practiceBtn">とけるまで練習！</button>`:'')+`<button class="btn ${more?'white':'green'}" id="homeBtn">${more?'あとで':'ホームへ'}</button>`;
   $('homeBtn').onclick=()=>{renderHome();show('home')};

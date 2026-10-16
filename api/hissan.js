@@ -1,7 +1,7 @@
 // ひっさんクエスト：AIの読み取りAPI（Vercel Functions）※アルファ版。かんじクエストの本番画面からは使っていない
 //
 // POST /api/hissan  {careful:false, items:[{desc:"画像1: 47 + 38（たし算）／読むもの: ...", image:"data:image/png;base64,..."}]}
-//   → {results:[{n:1, answer:"85", remainder:"", carries:"1", clear:true, note:"..."}]}
+//   → {results:[{n:1, shiki:"", answer:"85", remainder:"", carries:"1", clear:true, note:"..."}]}
 //   AIは「書いてあるとおりに読む」だけ。正しいかどうかは アプリ側のプログラムが判定する。
 //   careful=false は速くて安いモデル、true は読めなかった問題の読み直し用（ていねいなモデル）。
 // GET  /api/hissan  動作確認
@@ -25,8 +25,10 @@ const RULES = `画像の説明:
 - 答えは「大きく書いた数字」だけ。どこに書いてあっても、小さい数字・数字の右上や左上の小さな1・点やチョンという線は くり上がりのメモなので、answer に入れず carries に入れる。
 - 印刷された数字を ななめ線で消して小さく書きなおしたものは、くり下がりのメモ。
 - 問題は右上にあります。左や下の線のない広い所は 自由に書けるメモ用なので、答えとして読みません。
+- 文章題は、上に活字の文、その下に「しき」と「こたえ」のわくがあります。わくの右の活字（単位）は問題の一部。
 
 1まいごとに読み取るもの:
+- shiki: 文章題の「しき」のわくに書いた式（× ÷ + − 、分数は / 。文章題でなければ空文字）
 - answer: 答え（数字だけ。分数は 7/12 のように / を使う）
 - remainder: あまり（わり算でなければ、または書いていなければ空文字）
 - carries: くり上がり・くり下がりのメモ（左から順に。なければ空文字）
@@ -39,7 +41,7 @@ const RULES = `画像の説明:
 - 指で書いているので、線のふるえや字の大きさは気にしません。
 
 JSONの配列だけで答えてください。画像1つにつき1つ、順番どおり:
-[{"n":1,"answer":"85","remainder":"","carries":"1","clear":true,"note":"くらいが そろっていて 見やすいよ"}]`;
+[{"n":1,"shiki":"","answer":"85","remainder":"","carries":"1","clear":true,"note":"くらいが そろっていて 見やすいよ"}]`;
 
 function send(res, code, body) {
   res.statusCode = code;
@@ -80,7 +82,7 @@ module.exports = async (req, res) => {
   const content = [], lines = [];
   for (let i = 0; i < items.length; i++) {
     const it = items[i] || {};
-    const desc = String(it.desc || '').replace(/[\r\n]+/g, ' ').slice(0, 220);
+    const desc = String(it.desc || '').replace(/[\r\n]+/g, ' ').slice(0, 260);
     const m = /^data:image\/png;base64,([A-Za-z0-9+/=]+)$/.exec(String(it.image || ''));
     if (!m || m[1].length > 1500000) return send(res, 400, { error: 'bad_item', index: i });
     lines.push(desc || `画像${i + 1}`);
@@ -105,6 +107,6 @@ module.exports = async (req, res) => {
     if (!Array.isArray(results)) { results = []; for (const mm of text.matchAll(/\{[^{}]*\}/g)) { try { results.push(JSON.parse(mm[0])); } catch {} } }
     if (!results.length) { console.error('parse_failed', text.slice(0, 300)); return send(res, 502, { error: 'parse_failed' }); }
     const s = (v, n) => String(v == null ? '' : v).slice(0, n);
-    return send(res, 200, { model, results: results.map(x => ({ n: Number(x && x.n) || 0, answer: s(x && x.answer, 20), remainder: s(x && x.remainder, 10), carries: s(x && x.carries, 20), clear: !(x && x.clear === false), note: s(x && x.note, 60) })) });
+    return send(res, 200, { model, results: results.map(x => ({ n: Number(x && x.n) || 0, shiki: s(x && x.shiki, 40), answer: s(x && x.answer, 20), remainder: s(x && x.remainder, 10), carries: s(x && x.carries, 20), clear: !(x && x.clear === false), note: s(x && x.note, 60) })) });
   } catch (e) { console.error(e); return send(res, 502, { error: 'failed' }); }
 };
