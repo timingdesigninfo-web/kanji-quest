@@ -1634,10 +1634,11 @@ function smallJpeg(url){return new Promise(async ok=>{const im=await loadImg(url
 $('rpBtn').onclick=()=>{const n=reportTargets().length;$('rpCount').textContent=`（${n}問ぶん）`;$('rpMsg').textContent='';
   $('rpYes').disabled=false;$('rpYes').textContent='送る';$('rpModal').hidden=false};
 $('rpNo').onclick=()=>{$('rpModal').hidden=true};
-// 送ったあと：キャラが ぴょんと出てきて 吹き出しで お礼（タップか 数秒で きえる）
-function showThanks(){document.querySelector('.thanks')?.remove();
+// 送ったあと：数字のなかま（毎回ちがう）が ぴょんと出てきて 吹き出しで お礼（タップか 数秒で きえる）
+function showThanks(ch){document.querySelector('.thanks')?.remove();
+  ch=ch||'01234678'[Math.floor(Math.random()*8)]; // 数字のなかまから 毎回ちがうキャラ
   const box=document.createElement('div');box.className='thanks';box.setAttribute('role','status');
-  let cv=null;try{cv=window.kanjiSprite?window.kanjiSprite('5',1,0):null}catch(e){}
+  let cv=null;try{cv=window.kanjiSprite?window.kanjiSprite(ch,1,0):null}catch(e){}
   const img=document.createElement('canvas');
   if(cv){img.width=cv.width;img.height=cv.height;img.getContext('2d').drawImage(cv,0,0)}
   box.innerHTML=`<div class="bub">ありがとうございます！<br>読みとりを よくするのに 役立てます。<small>タップで とじる</small></div>`;
@@ -1647,7 +1648,7 @@ function showThanks(){document.querySelector('.thanks')?.remove();
     sp.style.cssText=`left:44px;bottom:60px;--dx:${Math.cos(a)*70}px;--dy:${Math.sin(a)*-70}px;animation-delay:${.3+i*.03}s`;box.appendChild(sp)}
   document.body.appendChild(box);
   // あしを うごかす（2コマ）
-  let f=0;const tick=cv?setInterval(()=>{f^=1;try{const c2=window.kanjiSprite('5',1,f),x=img.getContext('2d');x.clearRect(0,0,img.width,img.height);x.drawImage(c2,0,0)}catch(e){}},260):0;
+  let f=0;const tick=cv?setInterval(()=>{f^=1;try{const c2=window.kanjiSprite(ch,1,f),x=img.getContext('2d');x.clearRect(0,0,img.width,img.height);x.drawImage(c2,0,0)}catch(e){}},260):0;
   const close=()=>{clearInterval(tick);box.classList.add('out');setTimeout(()=>box.remove(),400)};
   box.onclick=close;setTimeout(close,4500)}
 $('rpYes').onclick=async()=>{$('rpYes').disabled=true;$('rpYes').textContent='送っています…';
