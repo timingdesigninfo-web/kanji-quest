@@ -8,7 +8,8 @@
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-title" content="ひっさんクエスト">
-<style>:root{color-scheme:light;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}html{scroll-padding-top:env(safe-area-inset-top,0px)}body{margin:0;padding:0;font:14px -apple-system,BlinkMacSystemFont,sans-serif}img{max-width:100%}[hidden]:not([hidden=until-found i]){display:none!important}</style>
+<style>:root{color-scheme:light;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}html{scroll-padding-top:env(safe-area-inset-top,0px)}body{margin:0;padding:0;font:14px -apple-system,BlinkMacSystemFont,sans-serif}img{max-width:100%}[hidden]:not([hidden=until-found i]){display:none!important}ruby{ruby-align:center}rt{font-size:.5em;letter-spacing:0}
+</style>
 <title>ひっさんクエスト｜AIが丸つけする筆算・計算練習。文章題も（小学生・無料）</title>
 <meta name="description" content="AIが丸つけする、筆算・計算の練習アプリ。小学1〜6年の計算（たし算・ひき算・かけ算・わり算・分数）と文章題を、指で筆算して毎日5問。自分で決めたごほうびに向けてポイントを貯める。無料・登録なし。">
 <link rel="apple-touch-icon" href="/hissan/og.png">
@@ -1274,8 +1275,8 @@ function renderHome(){
     const bl=BONUS_MAX-(d.bonus||0);
     $('qTitle').textContent='今日のクエスト クリア！';
     $('status').innerHTML=`${d.passRw?`とき直し${d.passRw}回で`:'一発'}合格！ <b>+${d.earned+(d.bonus||0)*BONUS_PT+(d.streakBonus||0)}pt</b><br>`
-      +(bl>0?`復習で80点以上なら <b>+${linkPt(BONUS_PT)}pt</b>（あと${bl}回）`:'今日の復習ポイントは終了。練習は続けられます。');
-    $('startBtn').textContent=bl>0?`復習（+${linkPt(BONUS_PT)}pt）`:'もう一度テスト';$('startBtn').className=bl>0?'btn yellow bigstart':'btn white bigstart';
+      +(bl>0?`<ruby>復習<rt>ふくしゅう</rt></ruby>で80点以上なら <b>+${linkPt(BONUS_PT)}pt</b>（あと${bl}回）`:'今日の<ruby>復習<rt>ふくしゅう</rt></ruby>ポイントは終了。練習は続けられます。');
+    $('startBtn').innerHTML=bl>0?`<ruby>復習<rt>ふくしゅう</rt></ruby>（+${linkPt(BONUS_PT)}pt）`:'もう一度テスト';$('startBtn').className=bl>0?'btn yellow bigstart':'btn white bigstart';
   }
   const ln=linkN();$('rule').innerHTML=PTS.map((p,i)=>`<div class="${cur===i?'on':''}"><span>${PTS_LABEL[i]}</span><strong>+${linkPt(p)}</strong></div>`).join('');
   $('range').textContent=selUnits().map(id=>UNIT[id].name).join('、');
@@ -1877,7 +1878,7 @@ const STREAK_DAYS=15,STREAK_PT=100;
 
 // ポイントの説明（連携中は じっさいにもらえる量で出す）
 function renderPtNote(){const el=$('ptNote');if(!el)return;const n=linkN();
-  el.innerHTML=`まちがえた問題は、同じ形の新しい問題でとけるまで練習！ クリア後の復習は80点以上で+${linkPt(10)}pt（1日4回）。15日連続で+${linkPt(STREAK_PT)}pt。`
+  el.innerHTML=`まちがえた問題は、同じ形の新しい問題でとけるまで練習！ クリア後の<ruby>復習<rt>ふくしゅう</rt></ruby>は80点以上で+${linkPt(10)}pt（1日4回）。15日連続で+${linkPt(STREAK_PT)}pt。`
     +(n>1?`<br><b>${n}教科 連携中</b>：ポイントは${n}教科で分けあうので、1教科でもらえるのは ${n===2?'半分':n+'分の1'} です。${n===2?'両方':'全部'}クリアした日は、その日のポイントが ×${linkMul(n)} になります。`:'')}
 function streakNow(){let st=0;const dt=new Date();if(!(S.days[todayKey()]||{}).passed)dt.setDate(dt.getDate()-1);
   while((S.days[dkey(dt)]||{}).passed){st++;dt.setDate(dt.getDate()-1)}return st}
@@ -1909,9 +1910,9 @@ function finish(){
   }else{
     const sc=score100(correct,total);
     if(sc>=PASS&&(d.bonus||0)<BONUS_MAX){d.bonus=(d.bonus||0)+1;earned=earn(BONUS_PT)}
-    head=`<div class="badge ${earned?'':'ng'}">復習</div><div class="big">${sc}<small>点</small></div>`;
+    head=`<div class="badge ${earned?'':'ng'}"><ruby>復習<rt>ふくしゅう</rt></ruby></div><div class="big">${sc}<small>点</small></div>`;
     body=earned?`<div class="earn"><span class="coin"></span><span class="pixel">+${earned}</span>pt</div><div class="sub">ナイス！ ${BONUS_MAX-d.bonus?`あと${BONUS_MAX-d.bonus}回`:'今日の分は終了'}</div>`
-      :(d.bonus||0)>=BONUS_MAX?`<div class="sub">おつかれさま。今日の復習ポイントは終了。</div>`
+      :(d.bonus||0)>=BONUS_MAX?`<div class="sub">おつかれさま。今日の<ruby>復習<rt>ふくしゅう</rt></ruby>ポイントは終了。</div>`
       :`<div class="sub">80点以上で +${linkPt(BONUS_PT)}pt。もう一度！</div>`;
   }
   settleLink();body=body.replace(/合計 \d+pt/,`合計 ${S.points}pt`); // 連携ボーナスをふくめた合計にする
@@ -1945,7 +1946,7 @@ const OB=[
   {pic:()=>`<div class="ob-board ob-hissan"><span>47<br><u>+38</u></span></div>`,h:'毎日5問、指で筆算',p:'問題は板に印刷されています。答えや くり上がりを指で書こう。点線のたて線で 位をそろえます。',note:'タブレットがおすすめです（スマホでもできます）'},
   {pic:()=>`<div class="ob-mark">80点</div>`,h:'AIがまとめて丸つけ',p:'全部書いたら、AIがまとめて答えを読みます。正しいかどうかはアプリが判定。80点以上で一発合格です。'},
   {pic:()=>icon('star'),h:'とけるまで練習！',p:'まちがえた問題は、正しい答えをたしかめてから、同じ形の新しい問題にチャレンジ。とき直しが少ないほどポイントアップ。'},
-  {pic:()=>icon('gem'),h:'ポイントでごほうび',p:'ためたポイントで、自分で決めたごほうびと交換。合格のあとの復習でも+'+linkPt(10)+'pt（1日4回）。'},
+  {pic:()=>icon('gem'),h:'ポイントでごほうび',p:'ためたポイントで、自分で決めたごほうびと交換。合格のあとの復習（ふくしゅう）でも+'+linkPt(10)+'pt（1日4回）。'},
 ];
 function renderOb(){const o=OB[obStep];
   $('obCard').innerHTML=`<div class="ob-pic">${o.pic()}</div><h2>${o.h}</h2><p>${o.p}</p>${o.note?`<p class="ob-note"><svg viewBox="0 0 32 22" aria-hidden="true"><rect x="1.5" y="1.5" width="29" height="19" rx="3.5" fill="#fff" stroke="currentColor" stroke-width="2.2"/><rect x="5" y="4.5" width="20.5" height="13" rx="1" fill="#D3F5DF"/><circle cx="28" cy="11" r="1.2" fill="currentColor"/></svg>${o.note}</p>`:''}`;

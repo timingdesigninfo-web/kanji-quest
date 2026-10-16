@@ -24,7 +24,8 @@
 <meta name="twitter:description" content="小学生の漢字を、指で書いてAIが採点。ごほうびを決めて、ポイント集めをがんばろう！">
 <meta name="twitter:image" content="https://kanji-quest-black.vercel.app/og.png">
 <script type="application/ld+json">{"@context": "https://schema.org", "@type": "WebApplication", "name": "かんじクエスト", "alternateName": "Kanji Quest", "url": "https://kanji-quest-black.vercel.app/", "image": "https://kanji-quest-black.vercel.app/og.png", "description": "AIが採点する、漢字練習アプリ。小学生の漢字（1〜6年）を、子どもも大人も。指で書いた漢字をAIが○×で採点し、まちがえた字は書けるまで練習。みんなで決めたごほうびに向けてポイントを貯める。1〜6年生（全1026字）・無料・登録なし。", "applicationCategory": "EducationalApplication", "operatingSystem": "iOS, iPadOS, Android, Windows, macOS（Webブラウザ）", "inLanguage": "ja", "isAccessibleForFree": true, "offers": {"@type": "Offer", "price": "0", "priceCurrency": "JPY"}, "audience": {"@type": "EducationalAudience", "educationalRole": "student", "audienceType": "子ども（小学生）と大人"}, "educationalLevel": "小学1年生〜6年生", "keywords": "漢字練習, 子どもの漢字練習, 大人の漢字練習, 小学生の漢字, 漢字テスト, 書き取り, 手書き, AI採点, ごほうび, ポイント", "featureList": ["指で書いた漢字をAIが採点（どこがちがうかも教える）", "ごほうびをみんなで決めて、ポイントを貯めて交換", "交換は管理する人のOK（PIN・管理する人のスマホ）", "まちがえた漢字は書けるまで練習", "1〜6年生の漢字 全1026字・教科書順", "1回5・10・20問", "家族と共有（QRコード）", "会員登録なし・個人情報を集めない"], "publisher": {"@type": "Organization", "name": "TIMING", "url": "https://kanji-quest-black.vercel.app"}, "author": {"@type": "Organization", "name": "TIMING", "url": "https://kanji-quest-black.vercel.app"}}</script>
-<style>:root{color-scheme:light;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}body{margin:0;font:14px system-ui,sans-serif}img{max-width:100%}[hidden]{display:none!important}</style>
+<style>:root{color-scheme:light;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}body{margin:0;font:14px system-ui,sans-serif}img{max-width:100%}[hidden]{display:none!important}ruby{ruby-align:center}rt{font-size:.5em;letter-spacing:0}
+</style>
 </head>
 <body>
 <noscript><div style="padding:16px;background:#fff;color:#1C2A5C;font:15px/1.8 sans-serif">
@@ -2294,8 +2295,8 @@ function renderHome(){
     const bl=BONUS_MAX-(d.bonus||0);
     $('qTitle').textContent='今日のクエスト クリア！';
     $('status').innerHTML=`${d.passRw?`書き直し${d.passRw}回で`:'一発'}合格！ <b>+${d.earned+bonusSum(d.bonus||0)+(d.streakBonus||0)}pt</b><br>`
-      +(bl>0?`復習で80点以上なら <b>+${linkPt(bonusPt(d.bonus||0))}pt</b>（あと${bl}回）`:'今日の復習ポイントは終了。練習は続けられます。');
-    $('startBtn').textContent=bl>0?`復習（+${linkPt(bonusPt(d.bonus||0))}pt）`:'もう一度テスト';$('startBtn').className=bl>0?'btn yellow bigstart':'btn white bigstart';
+      +(bl>0?`<ruby>復習<rt>ふくしゅう</rt></ruby>で80点以上なら <b>+${linkPt(bonusPt(d.bonus||0))}pt</b>（あと${bl}回）`:'今日の<ruby>復習<rt>ふくしゅう</rt></ruby>ポイントは終了。練習は続けられます。');
+    $('startBtn').innerHTML=bl>0?`<ruby>復習<rt>ふくしゅう</rt></ruby>（+${linkPt(bonusPt(d.bonus||0))}pt）`:'もう一度テスト';$('startBtn').className=bl>0?'btn yellow bigstart':'btn white bigstart';
   }
   $('rule').innerHTML=PTS.map((p,i)=>`<div class="${cur===i?'on':''}"><span>${PTS_LABEL[i]}</span><strong>+${linkPt(p)}</strong></div>`).join('');
   const fc=focusChars();
@@ -2502,7 +2503,7 @@ const STREAK_DAYS=15,STREAK_PT=100; // 15日連続で +100pt
 
 // ポイントの説明（連携中は じっさいにもらえる量で出す）
 function renderPtNote(){const el=$('ptNote');if(!el)return;const n=linkN();
-  el.innerHTML=`まちがえた漢字は書けるまで練習！ クリア後の復習は80点以上で+${linkPt(10)}pt（1日4回）。15日連続で+${linkPt(STREAK_PT)}pt。`
+  el.innerHTML=`まちがえた漢字は書けるまで練習！ クリア後の<ruby>復習<rt>ふくしゅう</rt></ruby>は80点以上で+${linkPt(10)}pt（1日4回）。15日連続で+${linkPt(STREAK_PT)}pt。`
     +(n>1?`<br><b>${n}教科 連携中</b>：ポイントは${n}教科で分けあうので、1教科でもらえるのは ${n===2?'半分':n+'分の1'} です。${n===2?'両方':'全部'}クリアした日は、その日のポイントが ×${linkMul(n)} になります。`:'')}
 function streakNow(){let st=0;const dt=new Date();if(!(S.days[todayKey()]||{}).passed)dt.setDate(dt.getDate()-1);
   while((S.days[dkey(dt)]||{}).passed){st++;dt.setDate(dt.getDate()-1)}return st}
@@ -2533,9 +2534,9 @@ function finish(){
   }else{
     const sc=toScore(correct,total);
     if(sc>=PASS&&(d.bonus||0)<BONUS_MAX){earned=earn(bonusPt(d.bonus||0));d.bonus=(d.bonus||0)+1}
-    head=`<div class="badge ${earned?'':'ng'}">復習</div><div class="big">${sc}<small>点</small></div>`;
+    head=`<div class="badge ${earned?'':'ng'}"><ruby>復習<rt>ふくしゅう</rt></ruby></div><div class="big">${sc}<small>点</small></div>`;
     body=earned?`<div class="earn"><span class="coin"></span><span class="pixel">+${earned}</span>pt</div><div class="sub">ナイス！ ${BONUS_MAX-d.bonus?`あと${BONUS_MAX-d.bonus}回`:'今日の分は終了'}</div>`
-      :(d.bonus||0)>=BONUS_MAX?`<div class="sub">おつかれさま。今日の復習ポイントは終了。</div>`
+      :(d.bonus||0)>=BONUS_MAX?`<div class="sub">おつかれさま。今日の<ruby>復習<rt>ふくしゅう</rt></ruby>ポイントは終了。</div>`
       :`<div class="sub">80点以上で +${linkPt(bonusPt(d.bonus||0))}pt。もう一度！</div>`;
   }
   settleLink();body=body.replace(/合計 \d+pt/,`合計 ${S.points}pt`);
@@ -2965,7 +2966,7 @@ const OB=[
   {pic:()=>`<div class="ob-board"><span>漢</span></div>`,h:'毎日10問、指で書く',p:'文の中の［よみがな］を漢字で書きます。書く場所は大きく、ほかには何も置いていません。'},
   {pic:()=>`<div class="ob-mark">80点</div>`,h:'AIが採点',p:'10問書いたら、AIがまとめて丸つけ。80点以上で一発合格です。使えないときは自分で○×をつけます。'},
   {pic:()=>icon('star'),h:'書けるまで練習！',p:'まちがえた漢字は、答えを見て覚えて、書けるまでくり返します。書き直しが少ないほどポイントアップ。'},
-  {pic:()=>icon('gem'),h:'ポイントでごほうび',p:'ためたポイントで、自分で決めたごほうびと交換。合格のあとの復習でも+'+linkPt(10)+'pt（1日4回）。'},
+  {pic:()=>icon('gem'),h:'ポイントでごほうび',p:'ためたポイントで、自分で決めたごほうびと交換。合格のあとの復習（ふくしゅう）でも+'+linkPt(10)+'pt（1日4回）。'},
 ];
 let obAdmin=false;
 const OB_PHONE=`<svg viewBox="0 0 120 120"><rect x="34" y="8" width="52" height="104" rx="10" fill="#fff" stroke="#1C2A5C" stroke-width="5"/><rect x="44" y="30" width="32" height="32" fill="#fff" stroke="#1C2A5C" stroke-width="3"/><rect x="48" y="34" width="9" height="9" fill="#1C2A5C"/><rect x="63" y="34" width="9" height="9" fill="#1C2A5C"/><rect x="48" y="49" width="9" height="9" fill="#1C2A5C"/><rect x="63" y="51" width="5" height="5" fill="#1C2A5C"/><rect x="68" y="56" width="4" height="4" fill="#1C2A5C"/><rect x="44" y="72" width="32" height="8" rx="4" fill="#FFCF1F"/><rect x="44" y="86" width="22" height="8" rx="4" fill="#C9DAF5"/></svg>`;
