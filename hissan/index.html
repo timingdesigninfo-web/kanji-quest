@@ -1359,7 +1359,7 @@ ink.addEventListener('pointermove',e=>{
   if(erasing&&!scrolling){erLast=null;redraw();if(hist.length&&hist[hist.length-1].length===strokes.length&&hist[hist.length-1].every((s,i)=>s===strokes[i]))hist.pop();else showToast();setEraser(false);updateBtns()} // けしゴムは 1回なぞったら（消えても消えなくても）書くモードにもどす
   drawing=null}));
 /* 指2本のスクロール：2本の指の位置を同じタッチイベントから取り（指ごとの順番ずれでガタガタしない）、
-   動きは 画面の書きかえ1回につき1回だけ反映。指を離したら 少しだけ すべって止まる */
+   動きは 画面の書きかえ1回につき1回だけ反映。指を離したら その場で止まる */
 let tMid=null,scrollAcc=0,scrollRaf=0,vel=0,lastT=0,flingRaf=0;
 const tMidOf=ts=>{let y=0;for(const t of ts)y+=t.clientY;return y/ts.length};
 function stopFling(){cancelAnimationFrame(flingRaf);flingRaf=0}
@@ -1370,12 +1370,7 @@ ink.addEventListener('touchmove',e=>{if(!scrolling||e.touches.length<2||tMid==nu
   vel=vel*.6+(dy/dt)*.4;scrollAcc+=dy;if(!scrollRaf)scrollRaf=requestAnimationFrame(flushScroll)},{passive:false});
 ['touchend','touchcancel'].forEach(t=>ink.addEventListener(t,e=>{
   if(e.touches.length>=2){tMid=tMidOf(e.touches);return} // 3本→2本など：つづけてスクロール
-  if(tMid==null)return;tMid=null;
-  if(Math.abs(vel)<.15||e.timeStamp-lastT>80)return; // ゆっくり止めたときは すべらない
-  let v=vel*16,prev=performance.now();stopFling();
-  const step=now=>{const k=Math.min(3,(now-prev)/16);prev=now;window.scrollTo({top:scrollY+v*k,behavior:'instant'});v*=Math.pow(.92,k);
-    flingRaf=Math.abs(v)>.4?requestAnimationFrame(step):0};
-  flingRaf=requestAnimationFrame(step)}));
+  tMid=null;if(scrollRaf){cancelAnimationFrame(scrollRaf);flushScroll()}})); // 離したら その場で止める（すべらせない）
 // 文章題の読み上げ（端末の音声）。分数は「4ぶんの3」、単位は 読みに直す
 const SAY_UNIT={'m²':'平方メートル','cm':'センチメートル','mL':'ミリリットル','dL':'デシリットル','km':'キロメートル','kg':'キログラム','L':'リットル','g':'グラム','m':'メートル'};
 const sayText=t=>t.replace(/(\d+)\/(\d+)/g,'$2ぶんの$1').replace(/(\d|の\d+)(m²|cm|mL|dL|km|kg|L|g|m)(?![a-zA-Z])/g,(_,a,u)=>a+SAY_UNIT[u]);
@@ -1388,7 +1383,10 @@ const portrait=matchMedia('(orientation:portrait) and (pointer:coarse)');
 function checkRotate(){$('rotate').hidden=rotSkip||!portrait.matches||$('quiz').hidden}
 portrait.addEventListener?portrait.addEventListener('change',()=>{checkRotate();layout()}):portrait.addListener(checkRotate);
 $('rotateSkip').onclick=()=>{rotSkip=true;checkRotate()};
-addEventListener('resize',()=>layout());
+// 幅が変わったとき（回転など）だけ 書く板を作り直す。スクロールでアドレスバーが出入りして高さだけ変わったときは そのまま（ガタつき防止）
+let lastVW=innerWidth,lastVH=innerHeight;
+addEventListener('resize',()=>{const w=innerWidth,h=innerHeight;
+  if(w===lastVW&&Math.abs(h-lastVH)<160&&!$('quiz').hidden)return;lastVW=w;lastVH=h;layout()});
 
 /* 書いた筆算を画像にする（1マス90px。AIに見せる用・見なおし用） */
 function snapshot(p,st,ex,wu,hu){const U=90,Lp=layoutOf(p),cw=Math.round(U*wu),ch=Math.round(U*hu);
