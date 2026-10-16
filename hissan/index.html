@@ -47,6 +47,16 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Klee+One:wght@600&family=M+PLUS+Rounded+1c:wght@500;800&display=swap">
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=DotGothic16&text=0123456789%2B%2F%25.%2C%C3%97%C3%B7%E2%88%92%3D%EF%BC%8B%E3%81%82%E3%81%BE%E3%82%8A%E7%82%B9&display=swap">
+<title>ひっさんクエスト</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Klee+One:wght@600&family=M+PLUS+Rounded+1c:wght@500;800&display=swap">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=DotGothic16&text=0123456789%2B%2F%25.%2C%C3%97%C3%B7%E2%88%92%3D%EF%BC%8B%E3%81%82%E3%81%BE%E3%82%8A%E7%82%B9&display=swap">
+<title>ひっさんクエスト</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Klee+One:wght@600&family=M+PLUS+Rounded+1c:wght@500;800&display=swap">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=DotGothic16&text=0123456789%2B%2F%25.%2C%C3%97%C3%B7%E2%88%92%3D%EF%BC%8B%E3%81%82%E3%81%BE%E3%82%8A%E7%82%B9&display=swap">
 </head>
 <body>
 <style>
@@ -183,6 +193,12 @@ button:focus-visible{outline:4px solid var(--ink);outline-offset:3px}
 .tools .btn{font-size:18px;padding:12px}
 .tools .btn.small{flex:0 0 auto;min-width:76px}
 .tools .btn.grow{flex:1}
+.tools .btn.small{font-size:14px;padding:8px 10px;min-width:0}
+.tools .btn.eraser{flex:0 0 auto;background:#fff;color:var(--ink);box-shadow:0 6px 0 var(--line);text-shadow:none;padding-inline:16px}
+.tools .btn.eraser svg{width:26px;height:26px;flex:none}
+.tools .btn.eraser[aria-pressed="true"]{background:#FFD9E2;box-shadow:0 6px 0 #E58AA0;outline:3px solid var(--ink)}
+.board.erasing #ink{cursor:cell}
+.qtop{display:none}
 .walk{position:absolute;left:0;bottom:100%;width:100%;height:120px;overflow:visible;pointer-events:none;image-rendering:pixelated}
 
 .now-pt{display:flex;align-items:center;justify-content:space-between;gap:8px;padding-bottom:8px;border-bottom:2px dashed var(--line)}
@@ -466,7 +482,7 @@ body:has(#quiz:not([hidden])){background-image:none!important;background-color:#
 .ground{background:linear-gradient(#4E9E43 0 6px,transparent 6px),
   radial-gradient(circle at 18px 30px,#E8CB92 0 3px,transparent 4px) 0 0/46px 56px,
   radial-gradient(circle at 40px 44px,#B8935A 0 2px,transparent 3px) 0 0/62px 56px,#D9B77A;
-  box-shadow:inset 0 -6px 0 #C49A5A}
+  box-shadow:inset 0 -6px 0 #C49A5A,0 200px 0 #D9B77A} /* 下の すき間（ホームバーなど）も 地面の色で うめる */
 .rotate{background:#6DBE5A}
 .top .logo,.wl-hero{filter:drop-shadow(0 4px 0 rgba(28,42,92,.25))}
 .wl-tag,.logo small{text-shadow:0 2px 0 var(--ink)}
@@ -476,9 +492,13 @@ body:has(#quiz:not([hidden])){background-image:none!important;background-color:#
   .work-side .qbar{flex-wrap:wrap;justify-content:space-between;gap:8px;background:#fff;border:4px solid var(--ink);border-radius:20px;box-shadow:0 6px 0 var(--ink);padding:12px}
   .work-side .dots{order:3;flex-basis:100%;flex-wrap:wrap}
   .work-side .qnum{font-size:26px;width:auto}
-  .work-side .tools{flex-direction:column}
+  .work-side .tools{flex-direction:row;flex-wrap:wrap}
   .work-side .tools .btn{width:100%}
-  .work-side .tools #nextBtn{order:-1;font-size:24px;padding:22px 16px}
+  .work-side .tools #nextBtn{order:-2;font-size:24px;padding:22px 16px}
+  .work-side .tools #eraseBtn{order:-1;width:100%;font-size:22px;padding:18px 12px}
+  .work-side .tools .btn.small{flex:1 1 0;width:auto}
+  .work-side .qbar .xbtn{display:none}
+  .qtop{display:flex;margin-bottom:8px}
 }
 @media (orientation:landscape) and (max-height:520px){
   #quiz{padding-block:8px 20px}
@@ -486,6 +506,9 @@ body:has(#quiz:not([hidden])){background-image:none!important;background-color:#
   .work-side .qbar{padding:8px}.work-side .qnum{font-size:20px}
   .work-side .tools .btn{padding:10px;font-size:16px}
   .work-side .tools #nextBtn{font-size:18px;padding:14px 10px}
+  .work-side .tools #eraseBtn{font-size:16px;padding:10px}
+  .work-side .tools .btn.small{font-size:13px;padding:7px 4px;white-space:nowrap}
+  .qtop{margin-bottom:4px}.qtop .xbtn{width:34px;height:34px;font-size:18px}
   .dots .coin{font-size:14px}
 }
 /* たて向きのとき：横向きにしてね */
@@ -623,6 +646,7 @@ body:has(#quiz:not([hidden])){background-image:none!important;background-color:#
 <main id="quiz" class="screen" hidden>
   <section class="work">
     <div class="work-main">
+      <div class="qtop"><button class="xbtn" id="quitBtn2" aria-label="やめる">×</button></div>
       <div class="stage" id="stage">
         <div class="board" id="board"><canvas id="guide"></canvas><canvas id="ink"></canvas><span class="twofinger">指2本でスクロール</span></div>
         <button class="pagetab" id="growBtn"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 4v15M5 12l7 7 7-7"/></svg>ページを伸ばす</button>
@@ -635,8 +659,9 @@ body:has(#quiz:not([hidden])){background-image:none!important;background-color:#
         <div class="qnum" id="qnum">1/10</div>
       </div>
       <div class="tools">
-        <button class="btn white" id="undoBtn">もどす</button>
-        <button class="btn white" id="clearBtn">けす</button>
+        <button class="btn white small" id="undoBtn">もどす</button>
+        <button class="btn white small" id="clearBtn">ぜんぶけす</button>
+        <button class="btn eraser" id="eraseBtn" aria-pressed="false"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 15.5 13.5 5a2 2 0 0 1 2.8 0l3.7 3.7a2 2 0 0 1 0 2.8L11 20.5H6.5z" fill="#FF8FA8" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/><path d="M7.5 11 14 17.5M11 20.5h10" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg><span>けしゴム</span></button>
         <button class="btn grow" id="nextBtn">つぎへ</button>
       </div>
     </div>
@@ -1033,14 +1058,14 @@ function openLearn(){const d=dayRec();
   $('learnList').innerHTML=d.pending.map(p=>`<div class="panel learn-card"><div class="q">${esc(UNIT[p.u]?.name||'')}</div><div class="k">${esc(probText(p))}</div><div class="ans">${esc(ansText(p))}</div>${p.read?`<div class="q">自分の答え：${esc(p.read)}</div>`:''}</div>`).join('');
   show('learn')}
 function showQ(){
-  cur=qs[qi];strokes=written[qi]?written[qi].strokes:[];extra=written[qi]?written[qi].extra:0;
+  cur=qs[qi];strokes=written[qi]?written[qi].strokes:[];hist=[];setEraser(false);extra=written[qi]?written[qi].extra:0;
   $('qnum').textContent=`${qi+1}/${qs.length}`;
   $('dots').innerHTML=qs.map((_,i)=>`<span class="coin ${i<qi?'done':(i===qi?'now':'')}"></span>`).join('');
   $('nextBtn').textContent=qi===qs.length-1?'おわり！':'つぎへ';
   L=layoutOf(cur);layout();updateBtns();
 }
 function esc(s){return String(s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]))}
-function updateBtns(){$('nextBtn').disabled=!strokes.length;$('undoBtn').disabled=!strokes.length;$('clearBtn').disabled=!strokes.length}
+function updateBtns(){$('nextBtn').disabled=!strokes.length;$('undoBtn').disabled=!hist.length;$('clearBtn').disabled=!strokes.length}
 
 /* ---- 筆算のレイアウト（単位：マス） ---- */
 const digitsAt=(s,end)=>[...String(s)].map((ch,i)=>({c:end-String(s).length+1+i,t:ch}));
@@ -1087,7 +1112,7 @@ function layout(){
   const cols=L.cols+(L.left||0)+PADU*2,rowsH=totalH()+PADU*2,fitH=baseH()+PADU*2;
   const avW=Math.min(stage.clientWidth||innerWidth,1100)-8;
   const land=matchMedia('(orientation:landscape) and (min-width:640px)').matches,low=innerHeight<=520;
-  const avH=land&&low?Math.max(200,innerHeight-40):Math.max(260,innerHeight*(land?.78:.62));
+  const avH=land&&low?Math.max(200,innerHeight-80):Math.max(260,innerHeight*(land?.78:.62)-(land?48:0));
   u=Math.floor(Math.max(30,Math.min(Math.min(innerWidth,innerHeight)>=700?124:100,avW/cols,avH/fitH)));
   // 板は 使える幅・高さいっぱいに広げる。問題は左上、残りは自由に書ける場所
   WU=Math.max(cols,avW/u);HU=Math.max(rowsH,avH/u+extra);
@@ -1147,6 +1172,16 @@ function drawFrac(x,U,ox,y,p,lw,rx){
   x.fillStyle='#B9CBEA';x.font=`500 ${Math.round(U*.22)}px "M PLUS Rounded 1c",sans-serif`;x.textAlign='left';x.textBaseline='top';x.fillText('とちゅうの計算',ox,y+3.4*U)}
 const penW=U=>Math.max(4,U*.065);
 function redraw(){ictx.clearRect(0,0,ink.width,ink.height);for(const s of strokes)drawStroke(ictx,s,u,OX)}
+/* けしゴム：さわった所の線だけ消す（線をとちゅうで切る）。もどすは 1回の操作ずつ */
+let erasing=false,hist=[],erLast=null;const ER=.32;
+function setEraser(on){erasing=on;$('eraseBtn').setAttribute('aria-pressed',on);$('eraseBtn').querySelector('span').textContent=on?'けしゴム中':'けしゴム';board.classList.toggle('erasing',on)}
+function eraseAt(p){const r2=ER*ER;let hit=false;const out=[];
+  for(const s of strokes){if(!s.some(q=>(q[0]-p[0])**2+(q[1]-p[1])**2<=r2)){out.push(s);continue}
+    hit=true;let seg=[];for(const q of s){if((q[0]-p[0])**2+(q[1]-p[1])**2<=r2){if(seg.length)out.push(seg);seg=[]}else seg.push(q)}if(seg.length)out.push(seg)}
+  if(hit)strokes=out;return hit}
+function eraseTo(p){const a=erLast||p,d=Math.hypot(p[0]-a[0],p[1]-a[1]),n=Math.max(1,Math.ceil(d/(ER/2)));
+  for(let i=1;i<=n;i++)eraseAt([a[0]+(p[0]-a[0])*i/n,a[1]+(p[1]-a[1])*i/n]);erLast=p;
+  redraw();ictx.strokeStyle='rgba(229,138,160,.9)';ictx.lineWidth=2;ictx.beginPath();ictx.arc((p[0]+OX)*u,p[1]*u,ER*u,0,7);ictx.stroke()}
 function drawStroke(x,s,U,O=OX){x.strokeStyle='#1C2A5C';x.lineWidth=penW(U);x.lineCap='round';x.lineJoin='round';
   x.beginPath();x.moveTo((s[0][0]+O)*U,s[0][1]*U);if(s.length===1)x.lineTo((s[0][0]+O)*U+.1,s[0][1]*U+.1);
   for(let i=1;i<s.length;i++)x.lineTo((s[i][0]+O)*U,s[i][1]*U);x.stroke()}
@@ -1156,17 +1191,21 @@ function pos(e){const b=ink.getBoundingClientRect();return[(e.clientX-b.left)/u-
 const mid=()=>{let X=0,Y=0;for(const p of touches.values()){X+=p.x;Y+=p.y}return{x:X/touches.size,y:Y/touches.size}};
 ink.addEventListener('pointerdown',e=>{e.preventDefault();ink.setPointerCapture(e.pointerId);
   if(e.pointerType==='touch')touches.set(e.pointerId,{x:e.clientX,y:e.clientY});
-  if(touches.size>=2){if(drawing){strokes.splice(strokes.indexOf(drawing),1);drawing=null;redraw();updateBtns()}scrolling=true;lastMid=mid();return}
+  if(touches.size>=2){if(drawing||erLast){strokes=hist.pop()||[];drawing=null;erLast=null;redraw();updateBtns()}scrolling=true;lastMid=mid();return}
   if(scrolling)return;
+  hist.push(strokes.slice());
+  if(erasing){erLast=null;eraseTo(pos(e));updateBtns();return}
   drawing=[pos(e)];strokes.push(drawing);drawStroke(ictx,drawing,u);updateBtns()});
 ink.addEventListener('pointermove',e=>{
   if(touches.has(e.pointerId))touches.set(e.pointerId,{x:e.clientX,y:e.clientY});
   if(scrolling){e.preventDefault();if(touches.size>=2){const m=mid();scrollBy(lastMid.x-m.x,lastMid.y-m.y);lastMid=m}return}
+  if(erLast){e.preventDefault();for(const ev of (e.getCoalescedEvents?e.getCoalescedEvents():[e]))eraseTo(pos(ev));updateBtns();return}
   if(!drawing)return;e.preventDefault();
   for(const ev of (e.getCoalescedEvents?e.getCoalescedEvents():[e])){const a=drawing[drawing.length-1],p=pos(ev);drawing.push(p);
     ictx.strokeStyle='#1C2A5C';ictx.lineWidth=penW(u);ictx.lineCap='round';ictx.beginPath();ictx.moveTo((a[0]+OX)*u,a[1]*u);ictx.lineTo((p[0]+OX)*u,p[1]*u);ictx.stroke()}});
 ['pointerup','pointercancel'].forEach(t=>ink.addEventListener(t,e=>{touches.delete(e.pointerId);
   if(scrolling){if(touches.size>=2)lastMid=mid();if(!touches.size)scrolling=false;return}
+  if(erLast){erLast=null;redraw();if(hist.length&&hist[hist.length-1].length===strokes.length&&hist[hist.length-1].every((s,i)=>s===strokes[i]))hist.pop();updateBtns()}
   drawing=null}));
 $('growBtn').onclick=()=>{extra+=2;layout();$('growBtn').scrollIntoView({block:'nearest',behavior:'smooth'})};
 /* 向き：たて向き（タッチの端末）なら 横向きをすすめる */
@@ -1589,8 +1628,10 @@ $('learnGo').onclick=()=>startQuiz('practice');
 $('learnHome').onclick=()=>{renderHome();show('home')};
 $('shopBtn').onclick=()=>{renderShop();show('shop')};
 $('backBtn').onclick=()=>{renderHome();show('home')};
-$('undoBtn').onclick=()=>{strokes.pop();redraw();updateBtns()};
-$('clearBtn').onclick=()=>{strokes=[];redraw();updateBtns()};
+$('undoBtn').onclick=()=>{if(hist.length)strokes=hist.pop();redraw();updateBtns()};
+$('clearBtn').onclick=()=>{hist.push(strokes.slice());strokes=[];redraw();updateBtns()};
+$('eraseBtn').onclick=()=>setEraser(!erasing);
+$('quitBtn2').onclick=()=>$('quitBtn').onclick();
 $('nextBtn').onclick=nextQ;
 $('quitBtn').onclick=()=>ask('テストをやめる？ 今回は記録されません。','やめる',()=>{renderHome();show('home')},'つづける');
 new ResizeObserver(()=>layout()).observe(stage);
