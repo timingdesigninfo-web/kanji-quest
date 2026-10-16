@@ -274,7 +274,9 @@ button:focus-visible{outline:4px solid var(--ink);outline-offset:3px}
 .hs-it{display:flex;gap:10px;align-items:flex-start;border-top:2px dashed var(--line);padding:8px 0;font-size:14px;line-height:1.5}
 .hs-it .hs-mk{flex:none;font:800 22px/1.2 var(--f-body);width:24px;text-align:center}
 .hs-it.ok .hs-mk{color:var(--red)}.hs-it.ng .hs-mk{color:#2F8CFF}
-.hs-it .q{font-weight:800}.hs-it .a{font-size:12px;font-weight:500;opacity:.8}
+.hs-it .q{font-weight:800}
+.hs-b{min-width:0;flex:1;display:flex;flex-direction:column;gap:4px}
+.hs-img{max-width:100%;width:320px;height:auto;border:2px solid var(--line);border-radius:8px;background:#fff}.hs-it .a{font-size:12px;font-weight:500;opacity:.8}
 .wv .meta{font-size:12px;font-weight:500;opacity:.7}
 .wv .stamp-row{margin:0}
 
@@ -2589,7 +2591,7 @@ function renderHissanLog(){const h=wvH(),LG=(h.log||[]).slice().reverse(),DY=h.d
     html+=`<section class="panel hi-day"><div class="hi-dh"><b>${dLabel(k)}</b>${dayTag(DY[k])}</div>`
       +(ss.length?ss.map(x=>{const its=hiFilter==='ng'?x.items.filter(it=>!it.ok):x.items,ng=x.items.filter(it=>!it.ok).length;
         return `<details class="hi-s"><summary>${md[x.mode]||''} ${x.mode==='practice'?`${x.items.length-ng}/${x.items.length}`:`${x.score}点`}${ng?`<span class="ng">×${ng}</span>`:''}<span class="r">${hhmm(x.t)}</span></summary>
-          <div class="hi-items">${its.map(it=>`<div class="hs-it ${it.ok?'ok':'ng'}"><span class="hs-mk">${it.ok?'○':'×'}</span><div><div class="q">${esc(it.q)}</div><div class="a">答え：${esc(it.a)}${!it.ok&&it.rd?`<br>書いた答え：${esc(it.rd)}`:''}</div></div></div>`).join('')}</div></details>`}).join('')
+          <div class="hi-items">${its.map(it=>`<div class="hs-it ${it.ok?'ok':'ng'}"><span class="hs-mk">${it.ok?'○':'×'}</span><div class="hs-b"><div class="q">${esc(it.q)}</div>${/^data:image\/(jpeg|png);base64,[A-Za-z0-9+/=]+$/.test(it.img||'')?`<img class="hs-img" src="${it.img}" alt="書いた筆算">`:''}<div class="a">答え：${esc(it.a)}${!it.ok&&it.rd?`<br>書いた答え：${esc(it.rd)}`:''}</div></div></div>`).join('')}</div></details>`}).join('')
       :`<div class="hi-old">${(DY[k]||{}).best||0}点</div>`)+`</section>`}
   $('hiList').innerHTML=html||`<div class="panel hi-empty">${hiFilter==='ng'?'まちがえた問題はありません。':'まだ ひっさんの記録がありません。'}</div>`}
 function wvRestore(){const sub=$('wvSub');if(!sub)return;sub.hidden=true;if($('hiTabs').parentNode!==sub.parentNode){sub.after($('hiTabs'),$('hiList'))}}
@@ -2654,7 +2656,7 @@ async function syncHissanPart(){if(!S.share)return;
     let st=0;{const dt=new Date();if(!(days[todayKey()]||{}).passed)dt.setDate(dt.getDate()-1);while((h.days||{})[dkey(dt)]?.passed){st++;dt.setDate(dt.getDate()-1)}}
     const wl=h.walletJoined&&W.linked,g=goalItem();
     const data={v:1,at:Date.now(),name:S.share.name||'',grade:h.grade,points:wl?S.points:h.points,reqs:(wl?S.reqs:h.reqs||[]).slice(-30),tickets:(wl?S.tickets:h.tickets||[]).slice(-50),
-      shop:wl?S.shop:h.shop,shopV:(wl?S.shopV:h.shopV)||0,streak:st,goal:g?{name:g.name,cost:g.cost}:null,days,log:(h.hlog||[]).filter(x=>x.date>=cut)};
+      shop:wl?S.shop:h.shop,shopV:(wl?S.shopV:h.shopV)||0,streak:st,goal:g?{name:g.name,cost:g.cost}:null,days,log:(()=>{const L=JSON.parse(JSON.stringify((h.hlog||[]).filter(x=>x.date>=cut)));let n=JSON.stringify(L).length;for(let i=0;n>780000&&i<L.length;i++){L[i].items.forEach(it=>delete it.img);n=JSON.stringify(L).length}return L})()};
     await fetch(SYNC_URL,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({id:S.share.id,key:S.share.key,part:'hissan',data})})}catch(e){}}
 function syncSoon(){if(!S.share)return;clearTimeout(syncT);syncT=setTimeout(syncNow,800)}
 async function syncNow(){if(!S.share)return false;
