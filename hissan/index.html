@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
-<meta name="robots" content="noindex,nofollow">
+<link rel="canonical" href="https://kanji-quest-black.vercel.app/hissan/">
 <meta name="theme-color" content="#6DBE5A">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="mobile-web-app-capable" content="yes">
@@ -270,7 +270,7 @@ body{overflow-x:hidden;overflow-x:clip}
 /* ---- ホームの組み立て（スマホは1列、タブレット以上は2列） ---- */
 .home-main,.home-side{display:contents}
 @media (min-width:760px){
-  #home{max-width:1040px;display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);grid-template-rows:auto auto auto auto auto 1fr auto auto;column-gap:24px;row-gap:18px}
+  #home{max-width:1040px;display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);grid-template-rows:auto auto auto auto auto 1fr auto auto auto;column-gap:24px;row-gap:18px}
   #home>.top{grid-column:1/-1;grid-row:1}
   /* 左上：今のポイント／右上：今日のクエスト／左下：ごほうび・広告／右下：シェア */
   #home .goal{grid-column:1;grid-row:2}
@@ -280,9 +280,10 @@ body{overflow-x:hidden;overflow-x:clip}
   #home .share-home{grid-column:2;grid-row:3/span 2;align-self:start}
   #home .share-home .share-img{display:none}
   #home>.info{grid-column:1/-1;grid-row:5}
-  #home>.legal{grid-column:1/-1;grid-row:6;align-self:start}
-  #home>.walk-space{grid-column:1/-1;grid-row:7}
-  #home>.ground{grid-column:1/-1;grid-row:8}
+  #home>.news{grid-column:1/-1;grid-row:6;align-self:start}
+  #home>.legal{grid-column:1/-1;grid-row:7;align-self:start}
+  #home>.walk-space{grid-column:1/-1;grid-row:8}
+  #home>.ground{grid-column:1/-1;grid-row:9}
   .bigstart{font-size:32px;padding:26px}
   .logo-img{width:360px}
   #welcome{max-width:760px}
@@ -342,6 +343,7 @@ body{overflow-x:hidden;overflow-x:clip}
 .ob-board::after{top:50%;left:10px;right:10px;border-top:2px dashed #C9DAF5}
 .ob-board span{position:relative;z-index:1}
 .ob-mark{flex:none;box-sizing:border-box;width:140px;height:140px;border-radius:50%;border:12px solid var(--red);display:flex;align-items:center;justify-content:center;font:800 34px var(--f-pixel);color:var(--ink);background:#fff}
+.ob-card p.ob-note{font-size:12px;opacity:.6;margin-top:-6px;max-width:none}
 .ob-btns{display:flex;gap:12px}.ob-btns .btn{flex:1;font-size:20px}
 .howto{align-self:center;font-size:13px;text-decoration:underline;color:var(--ink)}
 /* ---- せってい ---- */
@@ -611,6 +613,21 @@ body:has(#quiz:not([hidden])){background-image:none!important;background-color:#
 .link-warn b{color:var(--red)}
 .release{position:absolute;top:6px;left:50%;transform:translateX(-50%);z-index:2;display:flex;align-items:center;gap:6px;white-space:nowrap;padding:7px 14px;border:3px solid var(--ink);border-radius:999px;background:#FFF4C7;color:var(--ink);font:800 14px var(--f-body);box-shadow:0 3px 0 var(--ink);cursor:pointer}
 .release .new{background:var(--red);color:#fff;border-radius:6px;padding:0 6px;font-size:11px}
+.news{padding:12px 16px}
+.news summary{list-style:none;cursor:pointer;display:flex;align-items:center;gap:4px 8px;flex-wrap:wrap}
+.news-l{flex-basis:100%;font-size:14px;font-weight:800;padding-left:19px}
+.news-l small{display:block;font-size:11px;font-weight:500;opacity:.65}
+.news details[open] .news-l small{display:none}
+.news-s{font-weight:800;margin:8px 0 2px}
+.news-old{margin-top:14px;padding-top:10px;border-top:2px dashed var(--line)}
+.news summary::-webkit-details-marker{display:none}
+.news summary::before{content:'▶';font-size:11px;transition:transform .15s}
+.news details[open] summary::before{transform:rotate(90deg)}
+.news-h{font-size:15px;font-weight:800}
+.news-v{margin-left:auto;font-size:12px;font-weight:800;background:var(--yellow);border-radius:999px;padding:2px 10px}
+.news-body{padding-top:8px;font-size:13px;font-weight:500;line-height:1.65}
+.news-d{font-weight:800;margin-bottom:4px}
+.news ul{margin:0;padding-left:1.2em;display:flex;flex-direction:column;gap:4px}
 .subjects a.off{background:rgba(255,255,255,.55);color:rgba(28,42,92,.45);border-style:dashed;box-shadow:none}
 .ob-board.ob-hissan{font:800 38px/1.25 var(--f-pixel);text-align:right}
 .ob-board.ob-hissan::before,.ob-board.ob-hissan::after{display:none}
@@ -706,6 +723,32 @@ body:has(#quiz:not([hidden])){background-image:none!important;background-color:#
     <p class="info-p">※AIの読み取りは、回数や利用の上限で使えないことがあります。そのときは自分で○×をつけます。</p>
     <button class="howto" id="howtoBtn">使い方</button>
     <button class="howto" id="linkBtn">教科の連携</button>
+  </section>
+  <section class="panel news" id="news">
+    <details>
+      <summary><span class="news-h">アップデートのお知らせ</span><span class="news-v">ベータ版 1.0</span>
+        <span class="news-l">ひっさんクエストを公開しました。文章題も出るようになりました。<small>タップでくわしく</small></span></summary>
+      <div class="news-body">
+        <div class="news-d">ベータ版 1.0（2026年10月16日）</div>
+        <div class="news-s">文章題</div>
+        <ul>
+          <li>毎日の10問の後半に、文章題が出ます（1年 1問・2年 2問・3〜4年 3問・5〜6年 4問）。</li>
+          <li>「しき」と「こたえ」のわくに書きます。筆算は下のあいた所に自由に書けます。</li>
+          <li>しきは答えが合っていれば正解です（5×4 と 4×5 はどちらも○）。単位は書かなくてもだいじょうぶです。</li>
+          <li>「🔊 よむ」で、文を読み上げます。</li>
+          <li>問題は数字や名前が毎回かわります。アップデートのたびに、文章題の一部を新しくしていきます。</li>
+        </ul>
+        <div class="news-s">そのほか</div>
+        <ul>
+          <li>学年ごとの計算を毎日10問。指で書いた答えをAIが読んで、○×をつけます。</li>
+          <li>まちがえた問題は、同じ形の新しい問題で、とけるまで練習します。</li>
+          <li>けしゴム：1回なぞると、書くモードにもどります。</li>
+          <li>指2本で、書く板をスクロールできます（なめらかになりました）。</li>
+          <li>ホームの一番下の「管理メニュー」に、PIN・機種変更・全部消す をまとめました。</li>
+          <li>ポイントとごほうびは、かんじクエストとは別です。</li>
+        </ul>
+      </div>
+    </details>
   </section>
   <div class="legal" id="legal"><button class="btn navy admin-btn" id="adminBtn"><span>管理メニュー</span><small>PIN・機種変更・データ</small></button><a class="lg-a" href="/terms.html">利用規約</a><a class="lg-a" href="/privacy.html">プライバシー</a><span class="copy">© 2026 TIMING</span></div>
   <div class="walk-space"></div>
@@ -1639,13 +1682,13 @@ let obGrade=4,obStep=0,obFromHome=false;
 function openWelcome(){$('wlGrades').innerHTML=[1,2,3,4,5,6].map(g=>`<button data-wg="${g}">${g}<small>年</small></button>`).join('');show('welcome')}
 $('wlGrades').addEventListener('click',e=>{const b=e.target.closest('[data-wg]');if(!b)return;sfx('reveal');obGrade=+b.dataset.wg;obFromHome=false;obStep=0;renderOb();show('onboard')});
 const OB=[
-  {pic:()=>`<div class="ob-board ob-hissan"><span>47<br><u>+38</u></span></div>`,h:'毎日10問、指で筆算',p:'問題は板に印刷されています。答えや くり上がりを指で書こう。点線のたて線で 位をそろえます。'},
+  {pic:()=>`<div class="ob-board ob-hissan"><span>47<br><u>+38</u></span></div>`,h:'毎日10問、指で筆算',p:'問題は板に印刷されています。答えや くり上がりを指で書こう。点線のたて線で 位をそろえます。',note:'タブレットがおすすめです（スマホでもできます）'},
   {pic:()=>`<div class="ob-mark">80点</div>`,h:'AIがまとめて丸つけ',p:'10問書いたら、AIがまとめて答えを読みます。正しいかどうかはアプリが判定。80点以上で一発合格です。'},
   {pic:()=>icon('star'),h:'とけるまで練習！',p:'まちがえた問題は、正しい答えをたしかめてから、同じ形の新しい問題にチャレンジ。とき直しが少ないほどポイントアップ。'},
   {pic:()=>icon('gem'),h:'ポイントでごほうび',p:'ためたポイントで、自分で決めたごほうびと交換。合格のあとの自主練でも+10pt（1日4回）。'},
 ];
 function renderOb(){const o=OB[obStep];
-  $('obCard').innerHTML=`<div class="ob-pic">${o.pic()}</div><h2>${o.h}</h2><p>${o.p}</p>`;
+  $('obCard').innerHTML=`<div class="ob-pic">${o.pic()}</div><h2>${o.h}</h2><p>${o.p}</p>${o.note?`<p class="ob-note">${o.note}</p>`:''}`;
   $('obDots').innerHTML=OB.map((_,i)=>`<i class="${i===obStep?'on':''}"></i>`).join('');
   $('obBack').hidden=obStep===0;
   $('obNext').textContent=obStep<OB.length-1?'つぎへ':(obFromHome?'閉じる':'問題を選ぶ');

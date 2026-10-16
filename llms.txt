@@ -6,6 +6,7 @@
 - このアプリについて・よくある質問: https://kanji-quest-black.vercel.app/about.html
 - 利用規約: https://kanji-quest-black.vercel.app/terms.html
 - プライバシーポリシー: https://kanji-quest-black.vercel.app/privacy.html
+- 姉妹アプリ「ひっさんクエスト」（小学生の計算・筆算と文章題。指で書いた答えをAIが読んで採点）: https://kanji-quest-black.vercel.app/hissan/
 
 ## 特徴
 - 指で書いた漢字をAIが採点（どこがちがうかも教える）
