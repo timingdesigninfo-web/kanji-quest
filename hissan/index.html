@@ -430,6 +430,9 @@ body{overflow-x:hidden;overflow-x:clip}
 .modal .am-sub{font-size:14px;font-weight:500}
 .am-links{display:flex;justify-content:center;gap:18px;font-size:15px;font-weight:800}.am-links a{color:var(--ink)}
 .am-chk{display:flex;gap:10px;align-items:center;justify-content:center;font-size:16px;font-weight:800;cursor:pointer}.am-chk input{width:24px;height:24px;accent-color:var(--green)}
+.rp-btn{display:block;margin-top:8px;font-size:13px;font-weight:800;text-decoration:underline;color:var(--ink);padding:4px 0}
+.rp-btn:disabled{text-decoration:none;opacity:.6}
+.rp-list{margin:0;padding-left:1.2em;text-align:left;font-size:13px;font-weight:500;line-height:1.6;display:flex;flex-direction:column;gap:4px}
 .modal .row{display:flex;gap:10px}.modal .row .btn{flex:1;font-size:17px}
 .pop{position:fixed;left:50%;top:40%;transform:translate(-50%,-50%);font-family:var(--f-pixel);font-size:64px;color:#fff;
   text-shadow:3px 3px 0 var(--ink);pointer-events:none;z-index:60;animation:pop .7s ease-out forwards}
@@ -779,7 +782,8 @@ body:has(#quiz:not([hidden])){background-image:none!important;background-color:#
 <!-- ============ 見なおし ============ -->
 <main id="review" class="screen" hidden>
   <section class="panel rv-head">
-    <div><div class="pixel" id="rvScore" style="font-size:40px">0点</div><div class="sub" id="rvNote"></div></div>
+    <div><div class="pixel" id="rvScore" style="font-size:40px">0点</div><div class="sub" id="rvNote"></div>
+      <button class="rp-btn" id="rpBtn" hidden>読めなかった理由を製作者に送る</button></div>
   </section>
   <div class="rv-list" id="rvList"></div>
   <button class="btn green" id="decideBtn" style="font-size:22px">けってい</button>
@@ -866,6 +870,16 @@ body:has(#quiz:not([hidden])){background-image:none!important;background-color:#
   <p id="mvMsg">データを受けとりますか？</p>
   <p class="am-sub" id="mvSub">この端末の今のデータは、受けとったデータで上書きされます。</p>
   <div class="row"><button class="btn white" id="mvNo">やめる</button><button class="btn green" id="mvYes">受けとる</button></div></div></div>
+<div class="modal" id="rpModal" hidden><div class="panel">
+  <p style="font-weight:800">読めなかった理由を製作者に送りますか？</p>
+  <p class="am-sub">AIがうまく読めなかった例を見て、読み取りをよくするために使います。</p>
+  <ul class="rp-list">
+    <li>送るもの：読めなかった問題の画像（書いた答え）<span id="rpCount"></span>、AIの読み取り結果、うまくいかなかった理由、学年と問題の種類</li>
+    <li>名前など、だれか分かることは送りません</li>
+    <li>30日たつと自動で消えます。製作者だけが見ます</li>
+  </ul>
+  <p class="am-sub" id="rpMsg"></p>
+  <div class="row"><button class="btn white" id="rpNo">やめる</button><button class="btn green" id="rpYes">送る</button></div></div></div>
 <div class="modal" id="agreeModal" hidden><div class="panel">
   <p id="amMsg" style="font-weight:800">利用規約とプライバシーポリシー</p>
   <p class="am-sub">ひっさんクエストを使う前に、読んでください。お子さんが使うときは、保護者の方が確認してください。</p>
@@ -1526,7 +1540,7 @@ function startRead(i){
     reads[i]=out[0]||null})().catch(e=>{reads[i]=null;if(e?.code==='not_granted'||e?.code==='sampling_disabled')aiState='denied'});
 }
 async function toReview(){
-  aiErr='';
+  aiErr='';rpSent=false;
   if(pend.length){ // 1問ずつ読んだ結果を待つ
     marks=written.map(()=>null);aiState='';
     show('grading');$('gradingNote').innerHTML='AIが答えを読んでいます。<br>少しお待ちください。';
@@ -1566,6 +1580,7 @@ function renderReview(){
     limit:'今日のAIの読み取りは上限です。正しい答えを見て自分で○×をつけてください。',
     manual:'正しい答えを見て○×をタップ。'}[aiState]||'';
   $('rvNote').textContent=note+(aiState==='failed'&&aiErr?`（コード：${aiErr}）`:'');
+  const rpN=reportTargets().length;$('rpBtn').hidden=!AI_URL||!rpN||rpSent;$('rpBtn').disabled=false;$('rpBtn').textContent='読めなかった理由を製作者に送る';
   $('rvList').innerHTML=written.map((w,i)=>{const m=marks[i],o=reads[i],j=judge(w.p,o);
     const tag=j.reduce?'（約分しよう）':'';
     return `<div class="panel rv">
@@ -1592,6 +1607,29 @@ $('rvList').addEventListener('click',e=>{const b=e.target.closest('[data-mark]')
   marks[i]=v;sfx(v?'coin':'miss');
   b.parentNode.querySelectorAll('.mk').forEach(x=>x.classList.toggle('on',x===b));updateReviewScore()});
 $('decideBtn').onclick=()=>{results=written.map((w,i)=>({p:w.p,ok:marks[i]===true,read:reads[i]?judge(w.p,reads[i]).read:''}));finish()};
+
+/* ===== 読めなかった理由を 製作者に送る（押した人だけ。画像は30日で消える） ===== */
+let rpSent=false;
+// 送る問題：全部失敗したときは全部、一部だけ読めなかったときは その問題だけ（最大10）
+function reportTargets(){if(aiState==='failed')return written.map((_,i)=>i).slice(0,10);
+  if(aiState!=='partial')return [];return written.map((_,i)=>i).filter(i=>marks[i]===null||(reads[i]&&judge(written[i].p,reads[i]).unk)).slice(0,10)}
+// 送る画像は 小さいJPEGにする（はば 最大800px）
+function smallJpeg(url){return new Promise(async ok=>{const im=await loadImg(url);if(!im){ok(null);return}
+  const k=Math.min(1,800/im.width),c=document.createElement('canvas');c.width=Math.round(im.width*k);c.height=Math.round(im.height*k);
+  const x=c.getContext('2d');x.fillStyle='#fff';x.fillRect(0,0,c.width,c.height);x.drawImage(im,0,0,c.width,c.height);ok(c.toDataURL('image/jpeg',.75))})}
+$('rpBtn').onclick=()=>{const n=reportTargets().length;$('rpCount').textContent=`（${n}問ぶん）`;$('rpMsg').textContent='';
+  $('rpYes').disabled=false;$('rpYes').textContent='送る';$('rpModal').hidden=false};
+$('rpNo').onclick=()=>{$('rpModal').hidden=true};
+$('rpYes').onclick=async()=>{$('rpYes').disabled=true;$('rpYes').textContent='送っています…';
+  try{const ix=reportTargets();
+    const items=[];for(const i of ix){const w=written[i],o=reads[i];
+      items.push({img:await smallJpeg(w.url),q:w.p.kind==='word'?`文章題 ${w.p.tpl}`:`${probText(w.p)}`,ans:ansText(w.p),
+        read:o?{shiki:o.shiki||'',answer:o.answer||'',remainder:o.remainder||'',clear:o.clear!==false}:null})}
+    const body=JSON.stringify({act:'report',state:aiState,err:aiErr,grade:S.grade||0,units:[...new Set(ix.map(i=>written[i].p.u))],ua:(navigator.userAgent||'').slice(0,120),items});
+    const r=await fetch(AI_URL,{method:'POST',headers:{'Content-Type':'application/json'},body});
+    if(!r.ok)throw r.status;
+    rpSent=true;$('rpModal').hidden=true;$('rpBtn').disabled=true;$('rpBtn').textContent='送りました。ありがとう！';sfx('clear')}
+  catch(e){$('rpYes').disabled=false;$('rpYes').textContent='送る';$('rpMsg').textContent='うまく送れませんでした。電波のよいところで、もう一度おしてください。'}};
 
 /* ===== 結果 ===== */
 const STREAK_DAYS=15,STREAK_PT=100;

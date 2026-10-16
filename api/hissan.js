@@ -6,6 +6,8 @@
 //   careful=false は速くて安いモデル、true は読めなかった問題の読み直し用（ていねいなモデル）。
 // GET  /api/hissan  動作確認
 // GET  /api/hissan?diag=1  今日の成功・失敗の数と、最近のエラー（画像は残さない）
+// POST {act:'report',...}  「読めなかった理由を製作者に送る」（下の saveReport）
+// GET  /api/hissan?reports=<合言葉>  送られた報告を見る（環境変数 HISSAN_ADMIN_KEY）
 //
 // 環境変数：ANTHROPIC_API_KEY（必須。かんじクエストと共通）
 //           HISSAN_MODEL（任意。省略時 claude-haiku-5-5）／HISSAN_MODEL_CAREFUL（任意。省略時 claude-sonnet-5-5）
@@ -85,9 +87,55 @@ async function diag(res) {
   } catch (e) { return send(res, 200, { error: String(e).slice(0, 100) }); }
 }
 
+// ---- 「読めなかった理由を製作者に送る」（押した人だけ。画像つき。30日で消える） ----
+// POST {act:'report', state, err, grade, units, ua, items:[{img:"data:image/jpeg;base64,...", q, ans, read}]}
+// GET  /api/hissan?reports=<HISSAN_ADMIN_KEY>  製作者が見るページ（合言葉を知っている人だけ）
+const RP_TTL = 30 * 86400, RP_PER_DAY = 300;
+async function db(cmds) {
+  const r = await fetch(DB_URL + '/pipeline', { method: 'POST', headers: { Authorization: 'Bearer ' + DB_TOKEN, 'Content-Type': 'application/json' }, body: JSON.stringify(cmds) });
+  if (!r.ok) throw new Error('db ' + r.status);
+  return (await r.json()).map(x => x.result);
+}
+async function saveReport(res, body) {
+  if (!DB_URL || !DB_TOKEN) return send(res, 503, { error: 'no_db' });
+  const items = (Array.isArray(body.items) ? body.items : []).slice(0, 10);
+  const clean = [];
+  for (const it of items) {
+    const m = /^data:image\/jpeg;base64,([A-Za-z0-9+/=]+)$/.exec(String((it && it.img) || ''));
+    if (!m || m[1].length > 300000) continue;
+    const rd = it.read && typeof it.read === 'object' ? it.read : null;
+    clean.push({ img: m[1], q: String(it.q || '').slice(0, 80), ans: String(it.ans || '').slice(0, 60),
+      read: rd ? { shiki: String(rd.shiki || '').slice(0, 40), answer: String(rd.answer || '').slice(0, 20), remainder: String(rd.remainder || '').slice(0, 10), clear: rd.clear !== false } : null });
+  }
+  if (!clean.length) return send(res, 400, { error: 'empty' });
+  const day = 'hissan:rp:n:' + jstDay();
+  const [n] = await db([['INCR', day], ['EXPIRE', day, 172800]]);
+  if (Number(n) > RP_PER_DAY) return send(res, 429, { error: 'too_many' });
+  const id = Date.now().toString(36) + Math.random().toString(36).slice(2, 7);
+  const meta = { id, t: new Date(Date.now() + 9 * 3600e3).toISOString().slice(0, 19).replace('T', ' '), state: String(body.state || '').slice(0, 12), err: String(body.err || '').slice(0, 60),
+    grade: Number(body.grade) || 0, units: (Array.isArray(body.units) ? body.units : []).slice(0, 10).map(x => String(x).slice(0, 12)), ua: String(body.ua || '').slice(0, 120), n: clean.length };
+  await db([['SET', 'hissan:rp:' + id, JSON.stringify({ ...meta, items: clean }), 'EX', RP_TTL], ['LPUSH', 'hissan:rp:list', id], ['LTRIM', 'hissan:rp:list', 0, 499]]);
+  return send(res, 200, { ok: true });
+}
+async function showReports(res, k) {
+  const admin = process.env.HISSAN_ADMIN_KEY;
+  if (!admin || k !== admin) return send(res, 403, { error: admin ? 'key' : 'HISSAN_ADMIN_KEY が未設定です' });
+  const esc = v => String(v).replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
+  const ids = (await db([['LRANGE', 'hissan:rp:list', 0, 59]]))[0] || [];
+  const got = ids.length ? await db(ids.map(id => ['GET', 'hissan:rp:' + id])) : [];
+  const cards = got.filter(Boolean).map(x => { let d; try { d = JSON.parse(x); } catch { return ''; }
+    return `<section><h3>${esc(d.t)}　${esc(d.state)} ${esc(d.err)}　${d.grade}年 ${esc((d.units || []).join(' '))}</h3><p class="ua">${esc(d.ua)}</p>` +
+      d.items.map(it => `<div class="it"><img src="data:image/jpeg;base64,${it.img}"><div><b>${esc(it.q)}</b><br>正しい答え：${esc(it.ans)}<br>AIの読み：${it.read ? esc(`しき「${it.read.shiki}」 こたえ「${it.read.answer}」${it.read.remainder ? ' あまり「' + it.read.remainder + '」' : ''}${it.read.clear ? '' : '（自信なし）'}`) : '（読めず）'}</div></div>`).join('') + '</section>'; }).join('');
+  res.statusCode = 200; res.setHeader('Content-Type', 'text/html; charset=utf-8'); res.setHeader('Cache-Control', 'no-store'); res.setHeader('X-Robots-Tag', 'noindex');
+  return res.end(`<!doctype html><meta charset="utf-8"><meta name="viewport" content="width=device-width"><meta name="robots" content="noindex"><title>ひっさん 読めなかった報告</title>
+<style>body{font:14px/1.6 sans-serif;margin:16px;color:#1C2A5C}section{border:2px solid #1C2A5C;border-radius:12px;padding:10px;margin:0 0 14px}h3{margin:0;font-size:15px}.ua{font-size:11px;opacity:.6;margin:2px 0 8px}.it{display:flex;gap:10px;align-items:flex-start;margin:6px 0;border-top:1px dashed #ccd}.it img{max-width:60%;border:1px solid #ccd;background:#fff}</style>
+<h1>読めなかった報告（新しい順・30日で消える）</h1>${cards || '<p>まだありません</p>'}`);
+}
+
 module.exports = async (req, res) => {
   const key = process.env.ANTHROPIC_API_KEY;
   if (req.method === 'GET' && /[?&]diag=1/.test(req.url || '')) return diag(res);
+  { const m = /[?&]reports=([^&]+)/.exec(req.url || ''); if (req.method === 'GET' && m) { try { return await showReports(res, decodeURIComponent(m[1])); } catch (e) { return send(res, 500, { error: String(e).slice(0, 100) }); } } }
   if (req.method === 'GET') return send(res, 200, { ok: true, key_set: !!key, daily_limit: DAILY, counter: !!(DB_URL && DB_TOKEN) });
   if (req.method !== 'POST') return send(res, 405, { error: 'method' });
   const origin = req.headers.origin;
@@ -99,6 +147,7 @@ module.exports = async (req, res) => {
 
   let body = req.body;
   if (typeof body === 'string') { try { body = JSON.parse(body); } catch { body = {}; } }
+  if (body && body.act === 'report') { try { return await saveReport(res, body); } catch (e) { console.error(e); return send(res, 500, { error: 'save' }); } }
   const items = Array.isArray(body && body.items) ? body.items.slice(0, 10) : [];
   if (!items.length) return send(res, 200, { results: [] });
   const content = [], lines = [];
