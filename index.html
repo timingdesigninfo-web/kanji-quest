@@ -129,6 +129,12 @@ button:focus-visible{outline:4px solid var(--ink);outline-offset:3px}
 .lk.done{background:var(--green);color:#fff}
 .link-note{font-size:13px;font-weight:500}
 .link-got{color:var(--violet);font-weight:800}
+.link-sum{margin-top:8px;padding:10px 12px;border:2px dashed var(--violet);border-radius:12px;font-size:13px;font-weight:500;line-height:1.6;text-align:left}
+.link-sum .ls-h{font-weight:800;color:var(--violet)}
+.link-sum .ls-row{display:flex;flex-wrap:wrap;gap:4px 8px;align-items:baseline}
+.link-sum b{font-weight:800}
+.link-sum .ls-r{margin-top:2px}
+
 .linkbox.offer{border-style:solid;border-color:var(--ink);background:#FFF8D6}
 .linkbox .new{display:inline-block;background:var(--red);color:#fff;border-radius:6px;padding:0 6px;font-size:11px;margin-right:4px;vertical-align:2px}
 .linkbox .link-more{align-self:flex-start;font-size:14px;padding:8px 14px}
@@ -2131,6 +2137,14 @@ function linkedApps(){if(!W.linked)return [{id:APP,name:APP_NAME}];
 const otherApps=()=>Object.entries(W.apps).filter(([id,a])=>id!==APP&&recent(a)).map(([id,a])=>({id,name:a.name||id}));
 const linkN=()=>Math.max(1,linkedApps().length);
 const linkMul=k=>1+.5*Math.max(0,k-1);
+// 連携中：今日のポイントの内わけ（教科ごと → 両方クリアで ×1.5 → ボーナス）
+function linkSummary(){if(!W.linked||linkN()<2)return '';const d=wDay(),ap=linkedApps();
+  const rows=ap.map(a=>{const r=d[a.id]||{};return `<span>${wesc(a.name)} ${r.cleared?'✓':'まだ'} <b>${r.earned||0}</b>pt</span>`}).join('<span>＋</span>');
+  const k=ap.filter(a=>(d[a.id]||{}).cleared).length,sum=ap.reduce((s,a)=>s+((d[a.id]||{}).earned||0),0),bonus=d.bonus||0;
+  const tail=k>=2?`<div class="ls-r">${ap.length===k?'全部':k+'つ'}クリアで ×${linkMul(k)} → <b>${sum+bonus}pt</b>（ボーナス +${bonus}pt）</div>`
+    :`<div class="ls-r">あと ${wesc(ap.filter(a=>!(d[a.id]||{}).cleared).map(a=>a.name).join('・'))}も合格すると、今日のポイントが ×${linkMul(2)} に！</div>`;
+  return `<div class="link-sum"><div class="ls-h">今日の連携ポイント</div><div class="ls-row">${rows}<span>＝ <b>${sum}</b>pt</span></div>${tail}</div>`}
+
 const linkPt=v=>Math.max(1,Math.round(v/linkN()));
 function wDay(){const t=todayKey();return W.days[t]||(W.days[t]={bonus:0})}
 let linkGot=0;
@@ -2150,7 +2164,8 @@ function renderLink(){const box=document.getElementById('linkBox');if(!box)retur
     box.hidden=false;box.className='linkbox';
     box.innerHTML=`<div class="link-h">${n}教科 連携中</div>
       <div class="link-row">${ap.map(a=>`<span class="lk ${d[a.id]&&d[a.id].cleared?'done':''}">${wesc(a.name)}${d[a.id]&&d[a.id].cleared?' ✓':''}</span>`).join('')}</div>
-      <div class="link-note">${k>=n?`今日は全部クリア！ 連携ボーナス ×${linkMul(k)}`:(k?`あと${n-k}教科クリアで ×${linkMul(n)}${k>1?`（今は ×${linkMul(k)}）`:''}`:`${n===2?'両方':'全部'} クリアで ×${linkMul(n)}`)}</div>`;return}
+      <div class="link-note">${k>=n?`今日は全部クリア！ 連携ボーナス ×${linkMul(k)}`:(k?`あと${n-k}教科クリアで ×${linkMul(n)}${k>1?`（今は ×${linkMul(k)}）`:''}`:`${n===2?'両方':'全部'} クリアで ×${linkMul(n)}`)}</div>
+      ${(()=>{const sum=ap.reduce((t,a)=>t+((d[a.id]||{}).earned||0),0),bo=d.bonus||0;return sum||bo?`<div class="link-note">今日のポイント：${ap.map(a=>`${wesc(a.name)} ${(d[a.id]||{}).earned||0}`).join('＋')}${bo?`＋連携ボーナス ${bo}`:''} ＝ <b>${sum+bo}pt</b></div>`:''})()}`;return}
   box.hidden=true}
 function linkModal(html,btns){const m=document.createElement('div');m.className='modal link-intro';
   m.innerHTML=`<div class="panel">${html}<div class="row">${btns.map((b,i)=>`<button class="btn ${b.cls||'green'}" data-i="${i}">${b.t}</button>`).join('')}</div></div>`;
@@ -2495,6 +2510,7 @@ function finish(){
   }
   settleLink();body=body.replace(/合計 \d+pt/,`合計 ${S.points}pt`);
   if(linkGot)body+=`<div class="sub link-got">連携ボーナス +${linkGot}pt！（${linkedApps().length}教科）</div>`;
+  body+=linkSummary();
   if(streakGot)body+=`<div class="sub" style="color:var(--red)">${STREAK_DAYS}日連続ボーナス +${STREAK_PT}pt！</div>`;
   save();
   addLog({t:Date.now(),date:todayKey(),mode,rw:mode==='practice'?d.rewrites:0,ai:aiState==='ai'||aiState==='partial',earned,
