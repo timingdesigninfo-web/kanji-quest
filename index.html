@@ -2159,7 +2159,7 @@ function linkModal(html,btns){const m=document.createElement('div');m.className=
 const LINK_TEXT=n=>`<p style="font-size:15px;font-weight:500;line-height:1.7;text-align:left;margin:0">・ポイント・ごほうび・チケットを 教科どうしで 共有します。<br>・同じ日に ${n===2?'両方':'全部'} クリアすると <b>連携ボーナス ×${linkMul(n)}</b>。</p>
   <div class="link-warn"><b>ご注意</b><br>・ポイントは ${n}つの教科で わけあうので、1つの教科で もらえるポイントは へります。<br>・ごほうびの中身と ひつようなポイントは そのままです。連携したあとに 一度 確認してください。<br>・連携は あとからでも できます。</div>`;
 // 新しく できた教科（ほかの教科のホームの上に「リリース」として出す）
-const NEW_APPS={hissan:{name:'ひっさんクエスト（筆算）',short:'ひっさん',desc:'計算の筆算を 指で書いて、AIが まるつけ。毎日10問、学年ごとの計算に チャレンジ！'}};
+const NEW_APPS={hissan:{name:'ひっさんクエスト（筆算）',short:'ひっさん',desc:'計算の筆算を 指で書いて、AIが まるつけ。毎日5問、学年ごとの計算に チャレンジ！'}};
 const appName=id=>(W.apps[id]&&W.apps[id].name)||(NEW_APPS[id]&&NEW_APPS[id].short)||((document.querySelector(`.subjects a[data-app="${id}"]`)||{}).textContent||'').trim()||id;
 // 上の教科ボタン：連携していない教科は うすい表示。押すと「連携しますか？」
 function renderNav(){const nav=document.querySelector('.subjects');if(!nav)return;

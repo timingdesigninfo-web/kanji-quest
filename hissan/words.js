@@ -1,7 +1,7 @@
 /* ひっさんクエスト：文章題の型（テンプレート）
  *
  * 1つの型 ＝ 1つの場面。数字・名前は 出すたびに自動で変わる（同じ問題は ほぼ出ない）。
- * 毎日10問のうち、後半に 学年ごとの数（WORDS_PER_DAY）だけ 文章題を出す。
+ * 毎日の問題（ふつうは5問、10問にもできる）の後半に、学年ごとの数だけ 文章題を出す（5問は WORDS_PER_5、10問は WORDS_PER_DAY）。
  *
  * ■ 問題のリニューアルのルール（アップデートのたびに必ず守る）
  *   1. 文章題を変えるアップデートでは BANK_VER を 1つ上げる。
@@ -22,7 +22,8 @@
  */
 (function (root) {
   const BANK_VER = 1;
-  const WORDS_PER_DAY = [0, 1, 2, 3, 3, 4, 4]; // 学年ごと（10問中）
+  const WORDS_PER_DAY = [0, 1, 2, 3, 3, 4, 4]; // 学年ごと（10問のとき）
+  const WORDS_PER_5 = [0, 1, 1, 1, 2, 2, 2];   // 学年ごと（5問のとき）
 
   const NAMES = ['ひろと', 'ゆい', 'そうた', 'めい', 'りく', 'さくら', 'はると', 'あおい', 'ゆうま', 'こはる', 'れん', 'みお', 'たいが', 'ひなた'];
   // 1つの問題の数字・答えをまとめる
@@ -219,7 +220,7 @@
       return W(p, `さとうが ${p.a}kg、塩が ${p.b}kg あります。さとうは 塩より 何kg 多いですか。`, 'kg') } },
   ];
 
-  const api = { BANK_VER, WORDS_PER_DAY, NAMES, TEMPLATES: T };
+  const api = { BANK_VER, WORDS_PER_DAY, WORDS_PER_5, NAMES, TEMPLATES: T };
   root.HISSAN_WORDS = api;
   if (typeof module !== 'undefined' && module.exports) module.exports = api;
 })(typeof window !== 'undefined' ? window : globalThis);
