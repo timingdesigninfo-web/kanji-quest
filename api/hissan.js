@@ -8,7 +8,7 @@
 //
 // 環境変数：ANTHROPIC_API_KEY（必須。かんじクエストと共通）
 //           HISSAN_MODEL（任意。省略時 claude-haiku-5-5）／HISSAN_MODEL_CAREFUL（任意。省略時 claude-sonnet-5-5）
-//           HISSAN_AI_PER_DAY（任意。サイト全体で1日に使える回数。省略時 60）
+//           HISSAN_AI_PER_DAY（任意。サイト全体で1日に使える回数＝10問のまとまりの数。省略時 60）
 
 const DAILY = Number(process.env.HISSAN_AI_PER_DAY || 60);
 function envEnding(suffix) {
@@ -49,18 +49,18 @@ function send(res, code, body) {
   res.setHeader('Cache-Control', 'no-store');
   res.end(JSON.stringify(body));
 }
-async function overDailyLimit() {
+async function overDailyLimit(n) { // n問ぶん数える（10問で1回。分けて送っても回数は同じ）
   if (!DB_URL || !DB_TOKEN) return false;
   try {
     const key = 'hissan:ai:' + jstDay();
     const r = await fetch(DB_URL + '/pipeline', {
       method: 'POST',
       headers: { Authorization: 'Bearer ' + DB_TOKEN, 'Content-Type': 'application/json' },
-      body: JSON.stringify([['INCR', key], ['EXPIRE', key, 172800]]),
+      body: JSON.stringify([['INCRBY', key + ':q', n], ['EXPIRE', key + ':q', 172800]]),
     });
     if (!r.ok) return false;
     const [count] = await r.json();
-    return Number(count.result) > DAILY;
+    return Number(count.result) > DAILY * 10;
   } catch { return false; }
 }
 
@@ -90,16 +90,17 @@ module.exports = async (req, res) => {
   }
   content.push({ type: 'text', text: `小学生がタブレットに指で書いた算数の答えの画像が ${items.length}まい あります。順番は下のリストと同じです。1まいずつ読み取ってください。\n\n${lines.join('\n')}\n\n${RULES}` });
 
-  if (await overDailyLimit()) return send(res, 429, { error: 'きょうのAIの読み取りは おしまい' });
+  if (await overDailyLimit(items.length)) return send(res, 429, { error: 'きょうのAIの読み取りは おしまい' });
   const model = body.careful ? (process.env.HISSAN_MODEL_CAREFUL || 'claude-sonnet-5-5') : (process.env.HISSAN_MODEL || 'claude-haiku-5-5');
   try {
     const r = await fetch('https://api.anthropic.com/v1/messages', {
       method: 'POST',
       headers: { 'x-api-key': key, 'anthropic-version': '2023-06-01', 'content-type': 'application/json' },
-      body: JSON.stringify({ model, max_tokens: 3000, messages: [{ role: 'user', content }] }),
+      body: JSON.stringify({ model, max_tokens: 4096, messages: [{ role: 'user', content }] }),
     });
     if (!r.ok) { console.error('anthropic', r.status, (await r.text()).slice(0, 300)); return send(res, 502, { error: 'anthropic_error', status: r.status }); }
     const data = await r.json();
+    if (data.stop_reason === 'max_tokens') console.warn('truncated', model, items.length);
     const text = (data.content || []).filter(c => c.type === 'text').map(c => c.text).join('');
     let results = null;
     const a = text.indexOf('['), b = text.lastIndexOf(']');

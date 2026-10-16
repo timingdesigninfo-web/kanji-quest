@@ -1399,7 +1399,7 @@ addEventListener('resize',()=>{const w=innerWidth,h=innerHeight;
   if(w===lastVW&&Math.abs(h-lastVH)<160&&!$('quiz').hidden)return;lastVW=w;lastVH=h;layout()});
 
 /* 書いた筆算を画像にする（1マス90px。AIに見せる用・見なおし用） */
-function snapshot(p,st,ex,wu,hu){const U=90,Lp=layoutOf(p),cw=Math.round(U*wu),ch=Math.round(U*hu);
+function snapshot(p,st,ex,wu,hu){const U=80,Lp=layoutOf(p),cw=Math.round(U*wu),ch=Math.round(U*hu);
   const c=document.createElement('canvas');c.width=cw;c.height=ch;const x=c.getContext('2d');
   const keep=extra;extra=ex;const keepL=L;L=Lp;drawGuide(x,U,cw,ch,p);extra=keep;L=keepL;
   const O=originU(Lp,wu);for(const s of st)drawStroke(x,s,U,O);
@@ -1495,12 +1495,17 @@ function judge(p,o){
 const AI_URL=/claude|usercontent/.test(location.host)||location.protocol==='file:'?'':'/api/hissan';
 const useSample=()=>!!(sampleFn&&aiMax>0);
 const aiOK=()=>useSample()||!!AI_URL;
+// 5問ずつに分けて 同時に送る（1回の送信を小さく・速くして、時間切れや大きすぎを防ぐ）。失敗したら1回だけ やりなおす
 async function readWorker(items,idxs,tier,signal,outs){
-  for(let i=0;i<idxs.length;i+=10){const ix=idxs.slice(i,i+10);
+  const parts=[];for(let i=0;i<idxs.length;i+=5)parts.push(idxs.slice(i,i+5));
+  await Promise.all(parts.map(async ix=>{
     const body=JSON.stringify({careful:tier!=='quick',items:ix.map((j,k)=>({desc:itemLine(items[j],k),image:items[j].url}))});
-    const r=await fetch(AI_URL,{method:'POST',headers:{'Content-Type':'application/json'},body,signal});
+    let r=null;
+    for(let t=0;t<2;t++){r=await fetch(AI_URL,{method:'POST',headers:{'Content-Type':'application/json'},body,signal}).catch(e=>{if(signal.aborted)throw e;return null});
+      if(r&&(r.ok||r.status===429||r.status===403||r.status===503||r.status===400))break;if(t===0)await new Promise(z=>setTimeout(z,900))}
+    if(!r)throw{code:'network'};
     if(!r.ok)throw{code:r.status===429?'rate_limited':r.status===503?'sampling_disabled':'upstream_error'};
-    const d=await r.json();(d.results||[]).forEach((o,k)=>{const j=(Number(o?.n)||k+1)-1;if(j>=0&&j<ix.length&&o)outs[ix[j]]=o})}}
+    const d=await r.json();(d.results||[]).forEach((o,k)=>{const j=(Number(o?.n)||k+1)-1;if(j>=0&&j<ix.length&&o)outs[ix[j]]=o})}))}
 async function readChunks(items,idxs,tier,signal,outs){
   if(!useSample())return readWorker(items,idxs,tier,signal,outs);
   const chunks=[];for(let i=0;i<idxs.length;i+=aiMax)chunks.push(idxs.slice(i,i+aiMax));
