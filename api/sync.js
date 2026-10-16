@@ -71,6 +71,11 @@ module.exports = async (req, res) => {
     try { h = JSON.parse(hs.result); } catch {}
     // かんじの記録がまだない（ひっさんだけ）ときは、ひっさんの名前・ポイントなどを使う
     if (!d.result) main = { v: 1, at: h.at, name: h.name, grade: h.grade, points: h.points, reqs: h.reqs, tickets: h.tickets, shop: h.shop, shopV: h.shopV, streak: 0, goal: h.goal, days: {}, log: [], noKanji: true };
+    // ポイント・ごほうび・おねがいは 2教科で共通の財布。新しく送られたほうを使う
+    else if ((h.at || 0) > (main.at || 0)) {
+      for (const k of ['points', 'reqs', 'tickets', 'goal']) if (h[k] !== undefined) main[k] = h[k];
+      if ((h.shopV || 0) >= (main.shopV || 0) && h.shop) { main.shop = h.shop; main.shopV = h.shopV; }
+    }
     main.hissan = h;
     return send(res, 200, main);
   }
