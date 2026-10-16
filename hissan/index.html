@@ -77,6 +77,11 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Klee+One:wght@600&family=M+PLUS+Rounded+1c:wght@500;800&display=swap">
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=DotGothic16&text=0123456789%2B%2F%25.%2C%C3%97%C3%B7%E2%88%92%3D%EF%BC%8B%E3%81%82%E3%81%BE%E3%82%8A%E7%82%B9&display=swap">
+<title>ひっさんクエスト</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Klee+One:wght@600&family=M+PLUS+Rounded+1c:wght@500;800&display=swap">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=DotGothic16&text=0123456789%2B%2F%25.%2C%C3%97%C3%B7%E2%88%92%3D%EF%BC%8B%E3%81%82%E3%81%BE%E3%82%8A%E7%82%B9&display=swap">
 </head>
 <body>
 <style>
@@ -220,6 +225,34 @@ button:focus-visible{outline:4px solid var(--ink);outline-offset:3px}
 .tools .btn.eraser[aria-pressed="true"]{background:#FFD9E2;box-shadow:0 6px 0 #E58AA0;outline:3px solid var(--ink)}
 .board.erasing #ink{cursor:cell}
 .qtop{display:none}
+/* ---- 管理メニュー（かんじクエストと同じ） ---- */
+.btn.navy{background:var(--ink);color:#fff;box-shadow:0 6px 0 #0D1638}
+.btn.navy:active{box-shadow:0 1px 0 #0D1638}
+.legal{display:flex;justify-content:center;gap:18px;font-size:13px;font-weight:800;flex-wrap:wrap;align-items:center}
+.legal .copy{flex-basis:100%;text-align:center;font-size:11px;color:#fff;text-shadow:1px 1px 0 var(--ink);opacity:.9}
+.legal .lg-a{padding:4px;color:#fff;text-decoration:underline;text-shadow:1px 1px 0 var(--ink)}
+.legal .admin-btn{flex-basis:100%;display:flex;flex-direction:column;align-items:center;gap:2px;padding:12px;font-size:17px;color:#fff;text-decoration:none;text-shadow:none}
+.legal .admin-btn small{font-size:11px;font-weight:500;opacity:.8}
+#admin{gap:14px;padding-bottom:24px}
+.adp{padding:14px 16px;display:flex;flex-direction:column;gap:10px;text-align:left}
+.adp h3{margin:0;font-size:16px}
+.adp p{margin:0;font-size:13px;font-weight:500;line-height:1.6}
+.adp .row{display:flex;gap:8px;flex-wrap:wrap}.adp .row .btn{flex:1;font-size:15px;padding:10px}
+.adp .qr{align-self:center;background:#fff;border:3px solid var(--ink);border-radius:14px;padding:8px;line-height:0}
+.adp .qr svg{width:200px;height:200px;display:block}
+.adp .lnk{display:flex;gap:8px;align-items:center}
+.adp .lnk input{flex:1;min-width:0;border:3px solid var(--ink);border-radius:10px;padding:8px;font:500 13px var(--f-body);color:var(--ink);background:#fff}
+.adp .meta{font-size:12px;font-weight:500;opacity:.7}
+.adp .btn.small{padding:8px 14px;font-size:14px;width:auto;flex:none}
+.ad-danger{color:var(--red)!important;font-size:15px;padding:10px}
+.pin-in{align-self:center;width:180px;text-align:center;font:800 34px var(--f-pixel);letter-spacing:.4em;border:3px solid var(--ink);border-radius:12px;padding:8px 0 8px .4em;color:var(--ink);background:#fff}
+.pin-err{min-height:1.2em;font-size:14px;font-weight:800;color:var(--red)}
+.am-sub{font-size:14px!important;font-weight:500}
+.ed-icons{display:flex;gap:6px;flex-wrap:wrap}
+.ed-ic{width:44px;height:44px;border:2px solid #C9D6EE;border-radius:10px;background:#fff;padding:4px;display:flex;align-items:center;justify-content:center;opacity:.55}
+.ed-ic svg{width:32px;height:32px}
+.ed-ic.on{border:3px solid var(--ink);background:var(--yellow);opacity:1}
+.ed-f{display:flex;flex-direction:column;gap:3px;min-width:0;font-size:11px;font-weight:800}
 .undo-toast{position:absolute;left:12px;bottom:12px;z-index:3;display:flex;align-items:center;gap:6px;padding:10px 16px;border-radius:999px;border:3px solid var(--ink);background:var(--yellow);color:var(--ink);font-size:17px;font-weight:800;box-shadow:0 4px 0 var(--ink);animation:toastIn .2s ease-out}
 .undo-toast svg{width:22px;height:22px}
 @keyframes toastIn{from{transform:translateY(10px);opacity:0}to{transform:none;opacity:1}}
@@ -244,6 +277,7 @@ button:focus-visible{outline:4px solid var(--ink);outline-offset:3px}
   #home .share-home{grid-column:2;grid-row:3/span 2;align-self:start}
   #home .share-home .share-img{display:none}
   #home>.info{grid-column:1/-1;grid-row:5}
+  #home>.legal{grid-column:1/-1;grid-row:6;align-self:start}
   #home>.walk-space{grid-column:1/-1;grid-row:7}
   #home>.ground{grid-column:1/-1;grid-row:8}
   .bigstart{font-size:32px;padding:26px}
@@ -666,6 +700,7 @@ body:has(#quiz:not([hidden])){background-image:none!important;background-color:#
     <button class="howto" id="howtoBtn">使い方</button>
     <button class="howto" id="linkBtn">教科の連携</button>
   </section>
+  <div class="legal" id="legal"><button class="btn navy admin-btn" id="adminBtn"><span>管理メニュー</span><small>PIN・機種変更・データ</small></button><a class="lg-a" href="/terms.html">利用規約</a><a class="lg-a" href="/privacy.html">プライバシー</a><span class="copy">© 2026 TIMING</span></div>
   <div class="walk-space"></div>
   <div class="ground"><canvas class="walk"></canvas></div>
 </main>
@@ -793,9 +828,31 @@ body:has(#quiz:not([hidden])){background-image:none!important;background-color:#
   </section>
   <button class="btn white" id="setupBtn2">学年</button>
   <button class="btn white" id="backBtn">戻る</button>
-  <div class="parent">チケットは使ったら「使った」を押してください。<br><button id="resetBtn">データをリセット</button></div>
+  <div class="parent">チケットは使ったら「使った」を押してください。</div>
 </main>
 
+<!-- ============ 管理メニュー ============ -->
+<main id="admin" class="screen" hidden>
+  <div class="shop-head"><h2>管理メニュー</h2><button class="btn white small" id="adBack">もどる</button></div>
+  <section class="panel adp" id="parentBox"></section>
+  <section class="panel adp" id="moveBox"></section>
+  <section class="panel adp">
+    <h3>そのほか</h3>
+    <div class="row"><button class="btn white" id="adSetup">学年・問題</button><button class="btn white" id="adHowto">使い方</button></div>
+    <p>この端末の ひっさんクエストの ポイント・記録・ごほうびを全部消します。元に戻せません。</p>
+    <button class="btn white ad-danger" id="resetBtn">全部消す</button>
+  </section>
+  <button class="btn white" id="adBack2">もどる</button>
+</main>
+
+<div class="modal" id="pinModal" hidden><div class="panel"><p id="pinMsg"></p>
+  <input id="pinIn" class="pin-in" type="password" inputmode="numeric" pattern="[0-9]*" maxlength="4" autocomplete="off" aria-label="PIN">
+  <div class="pin-err" id="pinErr"></div>
+  <div class="row"><button class="btn white" id="pinNo">やめる</button><button class="btn green" id="pinYes">OK</button></div></div></div>
+<div class="modal" id="moveModal" hidden><div class="panel">
+  <p id="mvMsg">データを受けとりますか？</p>
+  <p class="am-sub" id="mvSub">この端末の今のデータは、受けとったデータで上書きされます。</p>
+  <div class="row"><button class="btn white" id="mvNo">やめる</button><button class="btn green" id="mvYes">受けとる</button></div></div></div>
 <div class="modal" id="modal" hidden><div class="panel"><p id="mMsg"></p><div class="row"><button class="btn white" id="mNo">やめる</button><button class="btn green" id="mYes">OK</button></div></div></div>
 
 <script>
@@ -1027,7 +1084,7 @@ const day=()=>dayRec();
 
 /* ===== 画面切りかえ ===== */
 const $=id=>document.getElementById(id);
-function show(id){['home','quiz','learn','grading','review','result','shop','setup','welcome','onboard'].forEach(s=>$(s).hidden=s!==id);window.scrollTo(0,0);
+function show(id){['home','quiz','learn','grading','review','result','shop','setup','welcome','onboard','admin'].forEach(s=>$(s).hidden=s!==id);window.scrollTo(0,0);
   if(id==='quiz'){checkRotate();requestAnimationFrame(layout)}}
 
 /* ===== ホーム ===== */
@@ -1628,10 +1685,107 @@ function renderShop(){
     :`<div class="empty">まだありません。ポイントをためて交換しよう！</div>`;
 }
 $('items').addEventListener('click',e=>{const b=e.target.closest('[data-buy]');if(!b)return;const it=S.shop.find(s=>s.id===b.dataset.buy);if(!it)return;
-  ask(`${it.name}と${it.cost}ptを交換する？`,'交換',()=>{if(S.points<it.cost)return;S.points-=it.cost;S.tickets.push({id:Date.now(),name:it.name,date:todayKey(),used:false});save();sfx('clear');renderShop()})});
+  const doIt=()=>{if(S.points<it.cost)return;S.points-=it.cost;S.tickets.push({id:Date.now(),name:it.name,cost:it.cost,date:todayKey(),used:false});save();sfx('clear');renderShop()};
+  if(S.pin)withPin(`${it.name}（${it.cost}pt）と交換するには、管理する人のPINを入れてください`,doIt); // PINがあれば 管理する人のOK＝PIN
+  else ask(`${it.name}と${it.cost}ptを交換する？`,'交換',doIt)});
 $('ticketList').addEventListener('click',e=>{const b=e.target.closest('[data-use]');if(!b)return;const t=S.tickets.find(x=>String(x.id)===b.dataset.use);
   ask('このチケットを使った？','使った',()=>{t.used=true;save();renderShop()})});
 function onWalletChange(){if(!$('home').hidden)renderHome();if(!$('shop').hidden)renderShop()}
+
+/* ===== ごほうび へんしゅう ===== */
+let edDraft=[];
+function renderEd(){$('edList').innerHTML=edDraft.map((it,i)=>`<div class="ed-row">
+  <input class="full" data-f="name" data-i="${i}" value="${esc(it.name)}" placeholder="名前（例：ゲーム 1時間）" maxlength="20">
+  <input class="full" data-f="desc" data-i="${i}" value="${esc(it.desc||'')}" placeholder="説明（なくてもOK）" maxlength="30">
+  <div class="ed-icons full" role="radiogroup" aria-label="アイコン">${Object.keys(ICONS).map(k=>`<button type="button" class="ed-ic ${k===it.icon?'on':''}" data-ic="${k}" data-i="${i}" aria-label="${ICONS[k][0]}">${icon(k)}</button>`).join('')}</div>
+  <label class="ed-f full"><span>必要なポイント</span><input type="number" inputmode="numeric" min="1" max="99999" data-f="cost" data-i="${i}" value="${it.cost}"></label>
+  <button class="del full" data-del="${i}">消す</button></div>`).join('')}
+function edOpen(){edDraft=S.shop.map(x=>({...x}));renderEd();$('shopEdit').hidden=false;$('editShopBtn').hidden=true;$('shopEdit').scrollIntoView({block:'start'})}
+function edClose(){$('shopEdit').hidden=true;$('editShopBtn').hidden=false}
+$('editShopBtn').onclick=()=>withPin('ごほうびを編集するには、管理する人のPINを入れてください',edOpen);
+$('edList').addEventListener('input',e=>{const el=e.target,i=+el.dataset.i,f=el.dataset.f;if(!f)return;edDraft[i][f]=f==='cost'?Math.max(1,Math.round(+el.value||1)):el.value});
+$('edList').addEventListener('click',e=>{const ic=e.target.closest('[data-ic]');if(ic){const i=+ic.dataset.i;edDraft[i].icon=ic.dataset.ic;ic.parentNode.querySelectorAll('.ed-ic').forEach(x=>x.classList.toggle('on',x===ic));return}
+  const b=e.target.closest('[data-del]');if(!b)return;edDraft.splice(+b.dataset.del,1);renderEd()});
+$('edAdd').onclick=()=>{edDraft.push({id:'s'+Date.now(),icon:'star',name:'',desc:'',cost:100});renderEd()};
+$('edCancel').onclick=edClose;
+$('edSave').onclick=()=>{S.shop=edDraft.filter(x=>x.name.trim()).map(x=>({...x,name:x.name.trim(),desc:(x.desc||'').trim(),icon:x.icon||'star'}));S.shopV=Date.now();save();edClose();sfx('reveal');renderShop()};
+
+/* ===== 管理メニュー ===== */
+function openAdmin(){renderParent();if(!mv)renderMove();show('admin')}
+$('adminBtn').onclick=()=>withPin('管理メニューを開くには、管理する人のPINを入れてください',openAdmin);
+$('adBack').onclick=$('adBack2').onclick=()=>{renderHome();show('home')};
+$('adSetup').onclick=()=>openSetup();
+$('adHowto').onclick=()=>{obFromHome=true;obStep=0;renderOb();show('onboard')};
+
+/* ===== 管理する人（PIN） ===== */
+const pinHash=v=>{let h=5381;for(const c of 'kq:'+v)h=(h*33+c.charCodeAt(0))>>>0;return h.toString(36)}; // かんじクエストと同じ（連携したら共通）
+let pinCb=null,pinCheck=null;
+function pinAsk(msg,check,cb){$('pinMsg').textContent=msg;$('pinIn').value='';$('pinErr').textContent='';pinCheck=check;pinCb=cb;$('pinModal').hidden=false;setTimeout(()=>$('pinIn').focus(),50)}
+function pinSubmit(){const v=$('pinIn').value.trim();if(!/^\d{4}$/.test(v)){$('pinErr').textContent='数字4けたで入れてください';return}
+  const r=pinCheck?pinCheck(v):true;if(r!==true){$('pinErr').textContent=r||'PINがちがいます';$('pinIn').value='';sfx('miss');return}
+  $('pinModal').hidden=true;const cb=pinCb;pinCb=null;cb&&cb(v)}
+$('pinYes').onclick=pinSubmit;$('pinIn').onkeydown=e=>{if(e.key==='Enter')pinSubmit()};
+$('pinNo').onclick=()=>{$('pinModal').hidden=true;pinCb=null};
+function withPin(msg,cb){if(!S.pin){cb();return}pinAsk(msg,v=>pinHash(v)===S.pin||'PINがちがいます',cb)}
+function renderParent(){const b=$('parentBox');
+  b.innerHTML=`<h3>管理する人の設定</h3>`+(S.pin
+    ?`<p>PINを設定ずみ。ごほうびの編集と交換、管理メニューを開くときにPINが必要です。</p><div class="row"><button class="btn white" id="pinChg">PINを変える</button><button class="btn white" id="pinDel">PINを外す</button></div>`
+    :`<p>PIN（数字4けた）を決めると、ごほうびの編集と交換を、管理する人だけができるようになります。</p><button class="btn yellow" id="pinSet">PINを決める</button>`);
+  const setNew=()=>pinAsk('新しいPIN（数字4けた）を入れてください',null,v1=>pinAsk('もう一度入れてください',v=>v===v1||'さっきとちがいます',()=>{S.pin=pinHash(v1);save();sfx('clear');renderParent()}));
+  if($('pinSet'))$('pinSet').onclick=setNew;
+  if($('pinChg'))$('pinChg').onclick=()=>withPin('今のPINを入れてください',setNew);
+  if($('pinDel'))$('pinDel').onclick=()=>withPin('PINを外すには、今のPINを入れてください',()=>{S.pin='';save();renderParent()})}
+
+/* ===== 機種変更（データの引っ越し）※かんじクエストと同じ仕組み ===== */
+const MOVE_URL='/api/move';
+const rid=n=>{const c='ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnpqrstuvwxyz23456789',a=crypto.getRandomValues(new Uint8Array(n));return [...a].map(x=>c[x%c.length]).join('')};
+let mv=null,qrLib=null;
+function loadQR(){return qrLib||(qrLib=new Promise((ok,ng)=>{const sc=document.createElement('script');sc.src='/qr.js';sc.onload=()=>ok(window.qrcode);sc.onerror=ng;document.head.appendChild(sc)}))}
+async function drawQR(el,text){try{const q=(await loadQR())(0,'M');q.addData(text);q.make();el.innerHTML=q.createSvgTag({cellSize:4,margin:2,scalable:true})}catch(e){el.textContent='QRを表示できませんでした'}}
+function movePayload(){return JSON.stringify({v:1,kind:'hissanQuest',at:Date.now(),S:JSON.parse(JSON.stringify(S)),W:JSON.parse(JSON.stringify(W))})}
+function renderMove(){const b=$('moveBox');
+  if(mv&&mv.done){b.innerHTML=`<h3>引っ越しが終わりました</h3><p>新しい端末にデータが移りました。この端末は、もう使わなくてOKです。</p>
+      <p class="meta">この端末のデータを消すときは、下の「全部消す」を押してください。</p><button class="btn white" id="mvClose">閉じる</button>`;
+    $('mvClose').onclick=()=>{mv=null;renderMove()};return}
+  if(mv){const left=Math.max(0,Math.ceil((mv.until-Date.now())/60000));
+    b.innerHTML=`<h3>新しい端末で読みとってください</h3><p>新しい端末のカメラで、このQRを読みとってください。<b>${left}分</b>以内・1回だけ使えます。</p>
+      <div class="qr" id="mvQR"></div>
+      <div class="lnk"><input readonly value="${mv.url}" id="mvURL"><button class="btn white small" id="mvCopy">コピー</button></div>
+      <p class="meta">ほかの人には見せないでください。読みとった端末に、ポイントや記録が全部移ります。</p>
+      <button class="btn white" id="mvCancel">やめる</button>`;
+    drawQR($('mvQR'),mv.url);
+    $('mvCopy').onclick=()=>{navigator.clipboard?.writeText(mv.url).then(()=>{$('mvCopy').textContent='OK!'}).catch(()=>$('mvURL').select())};
+    $('mvCancel').onclick=cancelMove;return}
+  b.innerHTML=`<h3>機種変更（データの引っ越し）</h3><p>新しいスマホやタブレットに、ひっさんクエストのポイント・記録・ごほうびを全部移します。この端末でQRを出して、新しい端末で読みとるだけです。</p>
+    <button class="btn violet" id="mvStart">新しい端末に移す</button>`;
+  $('mvStart').onclick=()=>withPin('データを移すには、管理する人のPINを入れてください',startMove)}
+async function startMove(){const bt=$('mvStart');if(bt){bt.disabled=true;bt.textContent='準備中…'}
+  const code=rid(32);
+  try{const r=await fetch(MOVE_URL,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({code,data:movePayload()})});
+    if(!r.ok)throw r.status;
+    mv={code,url:`${SHARE_URL.replace(/\/?$/,'/')}#move=${code}`,until:Date.now()+30*60000};
+    mv.timer=setInterval(pollMove,4000);renderMove();sfx('reveal')}
+  catch(e){if(bt){bt.disabled=false;bt.textContent='新しい端末に移す'}ask(e===503?'引っ越しの準備がまだできていません。':'うまくいきませんでした。電波のよいところで、もう一度おしてください。','OK',()=>{})}}
+async function pollMove(){if(!mv||mv.done)return;
+  if(Date.now()>mv.until){clearInterval(mv.timer);mv=null;renderMove();return}
+  try{const r=await fetch(MOVE_URL+'?peek=1&code='+mv.code,{cache:'no-store'});const d=await r.json();
+    if(!d.waiting){clearInterval(mv.timer);mv.done=true;sfx('clear');renderMove()}else if(!$('admin').hidden)renderMove()}catch(e){}}
+async function cancelMove(){if(!mv)return;clearInterval(mv.timer);const c=mv.code;mv=null;renderMove();
+  try{await fetch(MOVE_URL,{method:'DELETE',headers:{'Content-Type':'application/json'},body:JSON.stringify({code:c})})}catch(e){}}
+// 新しい端末：#move=... で開いたとき
+function receiveMove(code){$('mvMsg').textContent='データを受けとりますか？';
+  $('mvSub').textContent=S.onboarded?'この端末の今のポイントや記録は、受けとったデータで上書きされます。':'前の端末のポイント・記録・ごほうびが、この端末に移ります。';
+  $('moveModal').hidden=false;
+  $('mvNo').onclick=()=>{$('moveModal').hidden=true;S.onboarded?(renderHome(),show('home')):openWelcome()};
+  $('mvYes').onclick=async()=>{$('mvYes').disabled=true;$('mvYes').textContent='受けとり中…';
+    try{const r=await fetch(MOVE_URL+'?code='+encodeURIComponent(code),{cache:'no-store'});
+      if(r.status===404){$('mvMsg').textContent='このQRは使えません';$('mvSub').textContent='時間切れか、すでに使われています。前の端末で、もう一度QRを出してください。';
+        $('mvYes').hidden=true;$('mvNo').textContent='閉じる';return}
+      if(!r.ok)throw 0;const d=await r.json();if(d.kind!=='hissanQuest'||!d.S)throw 0;
+      localStorage.setItem(KEY,JSON.stringify(d.S));if(d.W&&d.W.linked)localStorage.setItem(WKEY,JSON.stringify(d.W));
+      $('mvMsg').textContent='引っ越しが終わりました！';$('mvSub').textContent=`${(d.W&&d.W.linked?d.W:d.S).points||0}pt と記録が、この端末に移りました。`;
+      $('mvYes').hidden=true;$('mvNo').textContent='はじめる';$('mvNo').onclick=()=>location.replace(location.pathname);sfx('clear')}
+    catch(e){$('mvYes').disabled=false;$('mvYes').textContent='受けとる';$('mvSub').textContent='うまく受けとれませんでした。電波のよいところで、もう一度おしてください。'}}}
 $('resetBtn').onclick=()=>ask('ポイント・記録・チケットを全部消します。'+(linkN()>1?'連携しているほかの教科と共通のポイントも消えます。':'')+'元に戻せません。','消す',()=>ask('本当に消しますか？','全部消す',()=>{S=fresh();resetWallet();save();openWelcome()}));
 
 /* ===== モーダル ===== */
@@ -1852,6 +2006,7 @@ document.addEventListener('pointerdown',e=>{if(e.target.closest('button,a,input,
 })();
 
 if(!S.grade||!S.onboarded)openWelcome();else{renderHome();show('home')}
+{const mm=location.hash.match(/^#move=([A-Za-z0-9]{16,64})$/);if(mm){history.replaceState(null,'',location.pathname+location.search);receiveMove(mm[1])}}
 </script>
 
 </body>
