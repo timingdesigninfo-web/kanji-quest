@@ -97,7 +97,7 @@
   color-scheme:light;
 }
 html,body{height:100%}
-html{font-synthesis:none}
+html{font-synthesis:none;overflow-x:hidden;overflow-x:clip}
 body{background:var(--sky);color:var(--ink);font-family:var(--f-body);font-weight:800;
   padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));
   -webkit-tap-highlight-color:transparent;overflow-x:hidden}
@@ -187,6 +187,9 @@ button:focus-visible{outline:4px solid var(--ink);outline-offset:3px}
 .legend span{display:flex;align-items:center;gap:4px}
 .legend .st{width:12px;height:12px}
 
+body{overflow-x:hidden;overflow-x:clip}
+/* 地面は いつも画面の左はしから右はしまで（iPad横で右が切れる対策。かんじクエストと同じ） */
+.ground{width:100vw!important;margin-left:calc(50% - 50vw)!important;margin-right:0!important;box-sizing:border-box}
 .ground{position:relative;margin-top:auto;height:56px;margin-left:calc(50% - 50vw);margin-right:calc(50% - 50vw);
   background:
    linear-gradient(var(--green) 0 10px,var(--green-d) 10px 14px,transparent 14px),
@@ -1352,7 +1355,7 @@ ink.addEventListener('pointermove',e=>{
     ictx.strokeStyle='#1C2A5C';ictx.lineWidth=penW(u);ictx.lineCap='round';ictx.beginPath();ictx.moveTo((a[0]+OX)*u,a[1]*u);ictx.lineTo((p[0]+OX)*u,p[1]*u);ictx.stroke()}});
 ['pointerup','pointercancel'].forEach(t=>ink.addEventListener(t,e=>{touches.delete(e.pointerId);
   if(scrolling){if(touches.size>=2)lastMid=mid();if(!touches.size)scrolling=false;return}
-  if(erLast){erLast=null;redraw();if(hist.length&&hist[hist.length-1].length===strokes.length&&hist[hist.length-1].every((s,i)=>s===strokes[i]))hist.pop();else{showToast();setEraser(false)}updateBtns()} // 1回 消したら 書くモードにもどす
+  if(erasing&&!scrolling){erLast=null;redraw();if(hist.length&&hist[hist.length-1].length===strokes.length&&hist[hist.length-1].every((s,i)=>s===strokes[i]))hist.pop();else showToast();setEraser(false);updateBtns()} // けしゴムは 1回なぞったら（消えても消えなくても）書くモードにもどす
   drawing=null}));
 // 文章題の読み上げ（端末の音声）。分数は「4ぶんの3」、単位は 読みに直す
 const SAY_UNIT={'m²':'平方メートル','cm':'センチメートル','mL':'ミリリットル','dL':'デシリットル','km':'キロメートル','kg':'キログラム','L':'リットル','g':'グラム','m':'メートル'};
