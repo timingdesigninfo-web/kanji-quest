@@ -2145,8 +2145,8 @@ function linkModal(html,btns){const m=document.createElement('div');m.className=
   m.innerHTML=`<div class="panel">${html}<div class="row">${btns.map((b,i)=>`<button class="btn ${b.cls||'green'}" data-i="${i}">${b.t}</button>`).join('')}</div></div>`;
   m.addEventListener('click',e=>{const b=e.target.closest('[data-i]');if(!b)return;m.remove();btns[+b.dataset.i].on&&btns[+b.dataset.i].on()});
   document.body.appendChild(m)}
-const LINK_TEXT=n=>`<p style="font-size:15px;font-weight:500;line-height:1.7;text-align:left;margin:0">・ポイントと ごほうび・チケットが 1つになります。<br>・ポイントは ${n}つの教科で わけあいます（1つの教科で もらえるポイントは へります）。<br>・そのかわり、同じ日に ${n===2?'両方':'全部'} クリアすると <b>連携ボーナス ×${linkMul(n)}</b>。</p>
-  <div class="link-warn"><b>ご注意</b><br>・連携すると、もらえるポイントの量が かわります。<br>・ごほうびの中身と ひつようなポイントは そのままです。連携したあとに 一度 確認してください。</div>`;
+const LINK_TEXT=n=>`<p style="font-size:15px;font-weight:500;line-height:1.7;text-align:left;margin:0">・ポイントと ごほうび・チケットが 1つになります。<br>・同じ日に ${n===2?'両方':'全部'} クリアすると <b>連携ボーナス ×${linkMul(n)}</b>。</p>
+  <div class="link-warn"><b>ご注意</b><br>・ポイントは ${n}つの教科で わけあうので、1つの教科で もらえるポイントは へります。<br>・ごほうびの中身と ひつようなポイントは そのままです。連携したあとに 一度 確認してください。<br>・連携は あとからでも できます。</div>`;
 // 新しく できた教科（ほかの教科のホームの上に「リリース」として出す）
 const NEW_APPS={hissan:{name:'ひっさんクエスト（筆算）',short:'ひっさん',desc:'計算の筆算を 指で書いて、AIが まるつけ。毎日10問、学年ごとの計算に チャレンジ！'}};
 const appName=id=>(W.apps[id]&&W.apps[id].name)||(NEW_APPS[id]&&NEW_APPS[id].short)||((document.querySelector(`.subjects a[data-app="${id}"]`)||{}).textContent||'').trim()||id;
@@ -2163,8 +2163,7 @@ function renderNav(){const nav=document.querySelector('.subjects');if(!nav)retur
 function seeRelease(id){W.seenRelease=W.seenRelease||{};W.seenRelease[id]=todayKey();saveW();renderNav()}
 function openRelease(id){const r=NEW_APPS[id];
   linkModal(`<p style="font-size:20px;font-weight:800;margin:0">${wesc(r.name)}が できました！</p><p style="font-size:15px;font-weight:500;line-height:1.7;margin:0">${wesc(r.desc)}</p>
-    <p style="font-size:15px;font-weight:800;margin:0">${wesc(APP_NAME)}と 連携すると…</p>${LINK_TEXT(2)}
-    <p style="font-size:13px;font-weight:500;margin:0">あとで はじめるときは、上の「${wesc(r.short)}」ボタンから。</p>`,
+    <p style="font-size:15px;font-weight:800;margin:0">${wesc(APP_NAME)}と 連携すると…</p>${LINK_TEXT(2)}`,
     [{t:'あとで',cls:'white',on:()=>seeRelease(id)},{t:'連携して はじめる',on:()=>{seeRelease(id);startLink(id)}}])}
 function openLinkOffer(id){
   if(W.linked){linkModal(`<p style="font-size:20px;font-weight:800;margin:0">${linkN()}教科 連携中</p>${LINK_TEXT(Math.max(2,linkN()))}`,[{t:'とじる'}]);return}
