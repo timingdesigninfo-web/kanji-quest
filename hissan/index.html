@@ -882,10 +882,10 @@ function linkModal(html,btns){const m=document.createElement('div');m.className=
 const LINK_TEXT=n=>`<p style="font-size:15px;font-weight:500;line-height:1.7;text-align:left;margin:0">・ポイントと ごほうび・チケットが 1つになります。<br>・ポイントは ${n}つの教科で わけあいます（1つの教科で もらえるポイントは へります）。<br>・そのかわり、同じ日に ${n===2?'両方':'全部'} クリアすると <b>連携ボーナス ×${linkMul(n)}</b>。<br>・ごほうびの ポイントは そのままです。</p>`;
 // 新しく できた教科（ほかの教科のホームの上に「リリース」として出す）
 const NEW_APPS={hissan:{name:'ひっさんクエスト（筆算）',short:'ひっさん',desc:'計算の筆算を 指で書いて、AIが まるつけ。毎日10問、学年ごとの計算に チャレンジ！'}};
-const appName=id=>(W.apps[id]&&W.apps[id].name)||(NEW_APPS[id]&&NEW_APPS[id].short)||id;
+const appName=id=>(W.apps[id]&&W.apps[id].name)||(NEW_APPS[id]&&NEW_APPS[id].short)||((document.querySelector(`.subjects a[data-app="${id}"]`)||{}).textContent||'').trim()||id;
 // 上の教科ボタン：連携していない教科は うすい表示。押すと「連携しますか？」
 function renderNav(){const nav=document.querySelector('.subjects');if(!nav)return;
-  const rel=Object.keys(NEW_APPS).find(id=>id!==APP&&!(W.seenRelease||{})[id]&&!W.linked&&nav.querySelector(`a[data-app="${id}"]`));
+  const rel=Object.keys(NEW_APPS).find(id=>id!==APP&&!(W.seenRelease||{})[id]&&!W.linked&&!(W.apps[id]&&W.apps[id].last)&&nav.querySelector(`a[data-app="${id}"]`)); // もう使っている教科は「リリース」と言わない
   let ban=document.getElementById('releaseBan');
   if(rel){ // まだ見ていない新しい教科：ボタンのかわりに リリースのお知らせ
     nav.hidden=true;if(!ban){ban=document.createElement('button');ban.id='releaseBan';ban.className='release';nav.parentNode.insertBefore(ban,nav)}
