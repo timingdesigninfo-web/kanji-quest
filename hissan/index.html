@@ -10,6 +10,29 @@
 <meta name="apple-mobile-web-app-title" content="ひっさんクエスト">
 <style>:root{color-scheme:light;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}html{scroll-padding-top:env(safe-area-inset-top,0px)}body{margin:0;padding:0;font:14px -apple-system,BlinkMacSystemFont,sans-serif}img{max-width:100%}[hidden]:not([hidden=until-found i]){display:none!important}</style>
 <title>ひっさんクエスト</title>
+<meta name="description" content="小学生の計算を、指で筆算してAIが丸つけ。ポイントを貯めて、自分で決めたごほうびと交換しよう！">
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="ひっさんクエスト">
+<meta property="og:title" content="ひっさんクエスト｜指で筆算、AIが丸つけ。ごほうびを決めてポイント集め！">
+<meta property="og:description" content="小学生の計算を、指で筆算してAIが丸つけ。ポイントを貯めて、自分で決めたごほうびと交換しよう！">
+<meta property="og:url" content="https://kanji-quest-black.vercel.app/hissan/">
+<meta property="og:image" content="https://kanji-quest-black.vercel.app/hissan/og.png">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="ひっさんクエスト｜指で筆算、AIが丸つけ。ごほうびを決めてポイント集め！">
+<meta name="twitter:description" content="小学生の計算を、指で筆算してAIが丸つけ。ポイントを貯めて、自分で決めたごほうびと交換しよう！">
+<meta name="twitter:image" content="https://kanji-quest-black.vercel.app/hissan/og.png">
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Klee+One:wght@600&family=M+PLUS+Rounded+1c:wght@500;800&display=swap">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=DotGothic16&text=0123456789%2B%2F%25.%2C%C3%97%C3%B7%E2%88%92%3D%EF%BC%8B%E3%81%82%E3%81%BE%E3%82%8A%E7%82%B9&display=swap">
+<title>ひっさんクエスト</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Klee+One:wght@600&family=M+PLUS+Rounded+1c:wght@500;800&display=swap">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=DotGothic16&text=0123456789%2B%2F%25.%2C%C3%97%C3%B7%E2%88%92%3D%EF%BC%8B%E3%81%82%E3%81%BE%E3%82%8A%E7%82%B9&display=swap">
+<title>ひっさんクエスト</title>
 <meta name="claude:viewport-fit-sides" content="cover">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Klee+One:wght@600&family=M+PLUS+Rounded+1c:wght@500;800&display=swap">
@@ -150,7 +173,7 @@ button:focus-visible{outline:4px solid var(--ink);outline-offset:3px}
 .tools .btn{font-size:18px;padding:12px}
 .tools .btn.small{flex:0 0 auto;min-width:76px}
 .tools .btn.grow{flex:1}
-.walk{position:absolute;left:0;bottom:100%;width:100%;height:60px;overflow:visible;pointer-events:none;image-rendering:pixelated}
+.walk{position:absolute;left:0;bottom:100%;width:100%;height:120px;overflow:visible;pointer-events:none;image-rendering:pixelated}
 
 .now-pt{display:flex;align-items:center;justify-content:space-between;gap:8px;padding-bottom:8px;border-bottom:2px dashed var(--line)}
 .now-l{font-size:15px}
@@ -1414,7 +1437,7 @@ $('setupBtn').onclick=()=>openSetup();
 $('setupBtn2').onclick=()=>openSetup();
 
 /* ===== SNSシェア ===== */
-const SHARE_URL=/^https?:/.test(location.protocol)&&!/claude|usercontent/.test(location.host)?location.origin+location.pathname.replace(/index\.html$/,''):''; // 公開先が決まったらここに入れる
+const SHARE_URL=/^https?:/.test(location.protocol)&&!/claude|usercontent/.test(location.host)?location.origin+location.pathname.replace(/index\.html$/,''):'https://kanji-quest-black.vercel.app/hissan/';
 const URL_LINE=SHARE_URL?'\n'+SHARE_URL:'';
 function makeShare(d,correct,total){
   const st=streakNow(),g=S.grade;let line,comment;
@@ -1666,7 +1689,7 @@ document.fonts&&document.fonts.load('500 40px "M PLUS Rounded 1c"','0123456789+�
     flyers=flyers.filter(f=>f.foe?f.t<.5:f.y>-S*2);
     if(flyers.length)requestAnimationFrame(fstep);else{fctx.clearRect(0,0,innerWidth,innerHeight);fRun=false}}
   document.querySelectorAll('canvas.walk').forEach(cv=>{
-    const ctx=cv.getContext('2d');let W=0,H=60,dpr=1,actors=[],last=0,spawnT=0;
+    const ctx=cv.getContext('2d');let W=0,H=120,dpr=1,actors=[],last=0,spawnT=0;
     function size(){dpr=Math.min(devicePixelRatio||1,2);W=cv.clientWidth;cv.width=W*dpr;cv.height=H*dpr;ctx.setTransform(dpr,0,0,dpr,0,0)}
     function spawn(foe){const c=pick(foe?foes:friends),dir=foe?-1:1;
       actors.push({c,foe,dir,x:dir>0?-S:W+S,v:(foe?26:34)+Math.random()*16,y:0,vy:0,jump:0,t:Math.random()*1000})}
@@ -1728,7 +1751,7 @@ document.addEventListener('pointerdown',e=>{if(e.target.closest('button,a,input,
   function size(){dpr=Math.min(devicePixelRatio||1,2);W=innerWidth;H=innerHeight;cv.width=W*dpr;cv.height=H*dpr;ctx.setTransform(dpr,0,0,dpr,0,0)}
   addEventListener('resize',size);size();
   function spawn(kind,x){const dir=kind==='cloud'?(Math.random()<.5?1:-1):(Math.random()<.7?1:-1);
-    fl.push({kind,dir,x:x??(dir>0?-90:W+10),y:20+Math.random()*Math.max(60,H*.55),v:kind==='cloud'?10+Math.random()*8:45+Math.random()*25,t:Math.random()*1000,ph:Math.random()*6})}
+    fl.push({kind,dir,x:x??(dir>0?-90:W+10),y:72+Math.random()*Math.max(60,H*.5),v:kind==='cloud'?10+Math.random()*8:45+Math.random()*25,t:Math.random()*1000,ph:Math.random()*6})}
   spawn('cloud',W*.15);spawn('bird',W*.55);spawn('cloud',W*.7);
   function step(ts){requestAnimationFrame(step);
     const on=!$('home').hidden||!$('welcome').hidden;cv.style.display=on?'':'none';

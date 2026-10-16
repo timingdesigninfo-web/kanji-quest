@@ -282,7 +282,7 @@ button:focus-visible{outline:4px solid var(--ink);outline-offset:3px}
 .tools .btn{font-size:18px;padding:12px}
 .tools .btn.small{flex:0 0 auto;min-width:76px}
 .tools .btn.grow{flex:1}
-.walk{position:absolute;left:0;bottom:100%;width:100%;height:84px;overflow:visible;pointer-events:none;image-rendering:pixelated}
+.walk{position:absolute;left:0;bottom:100%;width:100%;height:120px;overflow:visible;pointer-events:none;image-rendering:pixelated}
 .now-pt{display:flex;align-items:center;justify-content:space-between;gap:8px;padding-bottom:8px;border-bottom:2px dashed var(--line)}
 .now-l{font-size:15px}
 .now-v{display:flex;align-items:center;gap:6px;font-size:40px;line-height:1}
@@ -3179,7 +3179,7 @@ document.fonts.load('600 40px "Klee One"','漢').catch(()=>{});
   const friends=CHARS.filter(c=>!c.foe),foes=CHARS.filter(c=>c.foe),pick=a=>a[Math.floor(Math.random()*a.length)];
   const S=50;
   document.querySelectorAll('canvas.walk').forEach(cv=>{
-    const ctx=cv.getContext('2d');let W=0,H=84,dpr=1,actors=[],last=0,spawnT=0;
+    const ctx=cv.getContext('2d');let W=0,H=120,dpr=1,actors=[],last=0,spawnT=0;
     // タップで びっくり
     window.KQ_HIT=window.KQ_HIT||[];
     KQ_HIT.push((px,py)=>{if(cv.offsetParent===null)return false;const r=cv.getBoundingClientRect(),h=S*H0/W0;
@@ -3248,7 +3248,7 @@ document.addEventListener('pointerdown',e=>{if(e.target.closest('button,a,input,
   function size(){dpr=Math.min(devicePixelRatio||1,2);W=innerWidth;H=innerHeight;cv.width=W*dpr;cv.height=H*dpr;ctx.setTransform(dpr,0,0,dpr,0,0)}
   addEventListener('resize',size);size();
   function spawn(kind,x){const dir=kind==='cloud'?(Math.random()<.5?1:-1):(Math.random()<.7?1:-1);
-    fl.push({kind,dir,x:x??(dir>0?-90:W+10),y:20+Math.random()*Math.max(60,H*.55),v:kind==='cloud'?10+Math.random()*8:45+Math.random()*25,t:Math.random()*1000,ph:Math.random()*6})}
+    fl.push({kind,dir,x:x??(dir>0?-90:W+10),y:72+Math.random()*Math.max(60,H*.5),v:kind==='cloud'?10+Math.random()*8:45+Math.random()*25,t:Math.random()*1000,ph:Math.random()*6})}
   spawn('cloud',W*.15);spawn('bird',W*.55);spawn('cloud',W*.7);
   function step(ts){requestAnimationFrame(step);
     const on=!$('home').hidden||!$('welcome').hidden;cv.style.display=on?'':'none';
