@@ -899,9 +899,9 @@ button:focus-visible{outline:4px solid var(--ink);outline-offset:3px}
     <p>AI採点のとき、<b>書いた字の画像</b>と<b>問題文・正しい答え</b>を、採点のためだけに Anthropic社（アメリカ）のAIに送ります（かんじクエスト）。ひっさんクエストでは、<b>書いた筆算・答えの画像</b>と<b>問題の種類の説明</b>を、答えを読み取るためだけに送ります（正しい答えは送りません）。名前などはいっしょに送りません。送ったデータの扱いは、Anthropic社の規約に従います。AI採点を使わず、自分で採点することもできます。</p>
     <h3>3. 「家族と共有」を使うときに保存するもの</h3>
     <ul>
-      <li>保存するもの：表示名（ニックネーム）、学年、ポイント、記録（問題・○×・書いた字の画像）、ごほうびの設定と交換の記録。</li>
+      <li>保存するもの：表示名（ニックネーム）、学年、ポイント、記録（問題・○×・書いた字や筆算の画像）、ごほうびの設定と交換の記録。</li>
       <li>置き場所：データ保存サービス Upstash（アメリカのサーバー）。</li>
-      <li>期間：最後に更新してから180日たつと自動で消えます。「共有をやめる」を押すと、すぐ消えます。</li>
+      <li>期間：最後に更新してから180日たつと自動で消えます（ひっさんの筆算の画像は、送ってから30日で消えます）。「共有をやめる」を押すと、すぐ消えます。</li>
       <li>QRやリンクを知っている人は見られます。表示名には、本名ではなくニックネームをおすすめします。</li>
     </ul>
     <h3>4. X・LINEで共有するときに保存するもの</h3>
@@ -2596,10 +2596,16 @@ function renderHissanLog(){const h=wvH(),LG=(h.log||[]).slice().reverse(),DY=h.d
   for(const k of Object.keys(byDay).sort().reverse()){const ss=byDay[k].filter(x=>hiFilter!=='ng'||x.items.some(it=>!it.ok));if(hiFilter==='ng'&&!ss.length)continue;
     html+=`<section class="panel hi-day"><div class="hi-dh"><b>${dLabel(k)}</b>${dayTag(DY[k])}</div>`
       +(ss.length?ss.map(x=>{const its=hiFilter==='ng'?x.items.filter(it=>!it.ok):x.items,ng=x.items.filter(it=>!it.ok).length;
-        return `<details class="hi-s"><summary>${md[x.mode]||''} ${x.mode==='practice'?`${x.items.length-ng}/${x.items.length}`:`${x.score}点`}${ng?`<span class="ng">×${ng}</span>`:''}<span class="r">${hhmm(x.t)}</span></summary>
-          <div class="hi-items">${its.map(it=>`<div class="hs-it ${it.ok?'ok':'ng'}"><span class="hs-mk">${it.ok?'○':'×'}</span><div class="hs-b"><div class="q">${esc(it.q)}</div>${/^data:image\/(jpeg|png);base64,[A-Za-z0-9+/=]+$/.test(it.img||'')?`<img class="hs-img" src="${it.img}" alt="書いた筆算">`:''}<div class="a">答え：${esc(it.a)}${!it.ok&&it.rd?`<br>書いた答え：${esc(it.rd)}`:''}</div></div></div>`).join('')}</div></details>`}).join('')
+        const im=(HS.imgs||{})[x.t]||[];
+        return `<details class="hi-s"${x.im&&!(HS.imgs||{})[x.t]?` data-imt="${x.t}"`:''}><summary>${md[x.mode]||''} ${x.mode==='practice'?`${x.items.length-ng}/${x.items.length}`:`${x.score}点`}${ng?`<span class="ng">×${ng}</span>`:''}<span class="r">${hhmm(x.t)}</span></summary>
+          <div class="hi-items">${its.map(it=>`<div class="hs-it ${it.ok?'ok':'ng'}"><span class="hs-mk">${it.ok?'○':'×'}</span><div class="hs-b"><div class="q">${esc(it.q)}</div>${hsImg(it.img||im[x.items.indexOf(it)])}<div class="a">答え：${esc(it.a)}${!it.ok&&it.rd?`<br>書いた答え：${esc(it.rd)}`:''}</div></div></div>`).join('')}</div></details>`}).join('')
       :`<div class="hi-old">${(DY[k]||{}).best||0}点</div>`)+`</section>`}
   $('hiList').innerHTML=html||`<div class="panel hi-empty">${hiFilter==='ng'?'まちがえた問題はありません。':'まだ ひっさんの記録がありません。'}</div>`}
+const hsImg=u=>/^data:image\/(jpeg|png|webp);base64,[A-Za-z0-9+/=]+$/.test(u||'')?`<img class="hs-img" src="${u}" alt="書いた筆算">`:'';
+// 答えの画像は ひらいたときに読みこむ（共有には 30日のこる）
+document.addEventListener('toggle',async e=>{const d=e.target;if(!d.open||!d.dataset||!d.dataset.imt||!HS)return;const t=d.dataset.imt;delete d.dataset.imt;
+  try{const r=await fetch(SYNC_URL+'?id='+encodeURIComponent(HS.id)+'&img='+t,{cache:'no-store'});const j=r.ok?await r.json():{};HS.imgs=HS.imgs||{};HS.imgs[t]=Array.isArray(j.imgs)?j.imgs:[];
+    if(!HS.imgs[t].some(Boolean))return;const keep=[...document.querySelectorAll('#hiList details.hi-s')].map(x=>x.open);renderHissanLog();document.querySelectorAll('#hiList details.hi-s').forEach((x,i)=>{if(keep[i])x.open=true})}catch(e){}},true);
 function wvRestore(){const sub=$('wvSub');if(!sub)return;sub.hidden=true;if($('hiTabs').parentNode!==sub.parentNode){sub.after($('hiTabs'),$('hiList'))}}
 function renderHistory(){
   if(!HS)wvRestore();
@@ -2662,7 +2668,7 @@ async function syncHissanPart(){if(!S.share)return;
     let st=0;{const dt=new Date();if(!(days[todayKey()]||{}).passed)dt.setDate(dt.getDate()-1);while((h.days||{})[dkey(dt)]?.passed){st++;dt.setDate(dt.getDate()-1)}}
     const wl=h.walletJoined&&W.linked,g=goalItem();
     const data={v:1,at:Date.now(),name:S.share.name||'',grade:h.grade,points:wl?S.points:h.points,reqs:(wl?S.reqs:h.reqs||[]).slice(-30),tickets:(wl?S.tickets:h.tickets||[]).slice(-50),
-      shop:wl?S.shop:h.shop,shopV:(wl?S.shopV:h.shopV)||0,streak:st,goal:g?{name:g.name,cost:g.cost}:null,days,log:(()=>{const L=JSON.parse(JSON.stringify((h.hlog||[]).filter(x=>x.date>=cut)));let n=JSON.stringify(L).length;for(let i=0;n>780000&&i<L.length;i++){L[i].items.forEach(it=>delete it.img);n=JSON.stringify(L).length}return L})()};
+      shop:wl?S.shop:h.shop,shopV:(wl?S.shopV:h.shopV)||0,streak:st,goal:g?{name:g.name,cost:g.cost}:null,days,log:(h.hlog||[]).filter(x=>x.date>=cut).map(x=>({...x,im:x.im||x.items.some(it=>it.img)?1:undefined,items:x.items.map(({img,...it})=>it)}))}; // 画像は ひっさんクエストが 別に送る
     await fetch(SYNC_URL,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({id:S.share.id,key:S.share.key,part:'hissan',data})})}catch(e){}}
 function syncSoon(){if(!S.share)return;clearTimeout(syncT);syncT=setTimeout(syncNow,800)}
 async function syncNow(){if(!S.share)return false;

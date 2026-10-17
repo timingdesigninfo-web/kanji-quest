@@ -1741,7 +1741,7 @@ function renderAmzRw(){const seen=new Set(),rows=[];
 
 // 家族と共有：書いた筆算を 小さな画像（はば360px）にして 記録に入れる。画像は新しい20回分だけ持つ
 async function addThumbs(rec,urls){try{const ims=await Promise.all(urls.map(u=>u?smallJpeg(u,360,.6):null));
-  rec.items.forEach((it,i)=>{if(ims[i])it.img=ims[i]});
+  rec.items.forEach((it,i)=>{if(ims[i])it.img=ims[i]});if(S.share)upImgs();
   const L=S.hlog||[];for(let i=0;i<L.length-20;i++)L[i].items.forEach(it=>delete it.img);save()}catch(e){}}
 /* ===== 家族と共有（かんじクエストと共通。子ども1人に共有1つ。ひっさんの記録は 同じ共有の「ひっさん」の欄に入る） ===== */
 const SYNC_URL='/api/sync';
@@ -1755,14 +1755,19 @@ function syncPayload(){
   for(const k in S.days)if(k>=cut){const d=S.days[k];days[k]={tries:d.tries,passed:d.passed,passRw:d.passRw,best:d.best,earned:d.earned,bonus:d.bonus,streakBonus:d.streakBonus}}
   const g=goalItem();
   return JSON.stringify({v:1,at:Date.now(),name:(S.share&&S.share.name)||'',grade:S.grade,qn:qn(),points:S.points,reqs:(S.reqs||[]).slice(-30),tickets:(S.tickets||[]).slice(-50),shop:S.shop,shopV:S.shopV||0,
-    streak:streakNow(),goal:g?{name:g.name,cost:g.cost}:null,days,log:fitLog((S.hlog||[]).filter(x=>x.date>=cut))})}
-// 共有の上限（900KB）に収まるよう、古い記録から画像を外す
-function fitLog(L){L=JSON.parse(JSON.stringify(L));let n=JSON.stringify(L).length;for(let i=0;n>780000&&i<L.length;i++){L[i].items.forEach(it=>delete it.img);n=JSON.stringify(L).length}return L}
-let syncT=0,syncErr='';
+    streak:streakNow(),goal:g?{name:g.name,cost:g.cost}:null,days,log:logNoImg((S.hlog||[]).filter(x=>x.date>=cut))})}
+// 画像は 毎回の同期では送らない（1回ぶんずつ 別に送る。im=画像あり）
+const logNoImg=L=>L.map(x=>({...x,im:x.im||x.items.some(it=>it.img)?1:undefined,items:x.items.map(({img,...it})=>it)}));
+let syncT=0,syncErr='',upBusy=false;
+// まだ送っていない答えの画像を送る。送れたら この端末からは消す（共有に IMG_DAYS 日のこる）
+async function upImgs(){if(!S.share||upBusy)return;upBusy=true;let n=0;
+  try{for(const x of (S.hlog||[]).filter(x=>x.items.some(it=>it.img))){
+    const r=await fetch(SYNC_URL,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({id:S.share.id,key:S.share.key,part:'img',t:x.t,imgs:x.items.map(it=>it.img||null)})});
+    if(!r.ok)break;x.im=1;x.items.forEach(it=>delete it.img);n++;try{localStorage.setItem(KEY,JSON.stringify(S))}catch(e){}}}catch(e){}upBusy=false;if(n)syncSoon()}
 function syncSoon(){if(!S.share)return;clearTimeout(syncT);syncT=setTimeout(syncNow,1500)}
 async function syncNow(){if(!S.share)return false;
   try{const r=await fetch(SYNC_URL,{method:'POST',headers:{'Content-Type':'application/json'},body:`{"id":"${S.share.id}","key":"${S.share.key}","part":"hissan","data":${syncPayload()}}`});
-    if(r.ok){S.share.at=Date.now();syncErr='';try{localStorage.setItem(KEY,JSON.stringify(S));localStorage.setItem(SHARE_KEY,JSON.stringify(S.share))}catch(e){}if(!$('admin').hidden)renderFam();return true}
+    if(r.ok){S.share.at=Date.now();syncErr='';upImgs();try{localStorage.setItem(KEY,JSON.stringify(S));localStorage.setItem(SHARE_KEY,JSON.stringify(S.share))}catch(e){}if(!$('admin').hidden)renderFam();return true}
     syncErr=r.status===503?'共有の準備がまだできていません。':'うまく送れませんでした。';}catch(e){syncErr='つながりませんでした。'}
   if(!$('admin').hidden)renderFam();return false}
 let famStep='';
@@ -1887,7 +1892,7 @@ function award(d,rw){const e=earn(PTS[Math.min(rw,RW_MAX)]);d.passed=true;d.earn
   streakGot=0;const st=streakNow();if(st>0&&st%STREAK_DAYS===0&&!d.streakBonus){d.streakBonus=earn(STREAK_PT);streakGot=d.streakBonus}
   return e}
 function finish(){
-  try{const c=results.filter(r=>r.ok).length;S.hlog=(S.hlog||[]).concat([{date:todayKey(),t:Date.now(),mode,score:score100(c,results.length),items:results.map(r=>({q:String(probText(r.p)).slice(0,90),a:ansText(r.p),ok:!!r.ok,rd:String(r.read||'').slice(0,40),w:r.p.kind==='word'}))}]).slice(-40);addThumbs(S.hlog[S.hlog.length-1],written.map(w=>w&&w.url))}catch(e){}
+  try{const c=results.filter(r=>r.ok).length;S.hlog=(S.hlog||[]).concat([{date:todayKey(),t:Date.now(),mode,score:score100(c,results.length),items:results.map(r=>({q:String(probText(r.p)).slice(0,90),a:ansText(r.p),ok:!!r.ok,rd:String(r.read||'').slice(0,40),w:r.p.kind==='word'}))}]).slice(-300);addThumbs(S.hlog[S.hlog.length-1],written.map(w=>w&&w.url))}catch(e){}
   const d=dayRec();
   const correct=results.filter(r=>r.ok).length,wrong=results.filter(r=>!r.ok).map(r=>({...r.p,read:r.read})),total=results.length;
   let earned=0,head='',body='';streakGot=0;const wasPassed=d.passed;

@@ -22,6 +22,7 @@ const DB_URL = process.env.KV_REST_API_URL || process.env.UPSTASH_REDIS_REST_URL
 const DB_TOKEN = process.env.KV_REST_API_TOKEN || process.env.UPSTASH_REDIS_REST_TOKEN || envEnding('KV_REST_API_TOKEN') || envEnding('REDIS_REST_TOKEN');
 const TTL = 180 * 24 * 3600;
 const MAX = 900 * 1024;
+const IMG_DAYS = 30, IMG_TTL = IMG_DAYS * 86400; // ひっさんの答えの画像を残す日数
 const ID_RE = /^[A-Za-z0-9]{16,32}$/, KEY_RE = /^[A-Za-z0-9]{32,64}$/, REQ_RE = /^[A-Za-z0-9]{6,20}$/;
 
 function send(res, code, body) {
@@ -56,6 +57,13 @@ module.exports = async (req, res) => {
     if (!id) return send(res, 200, { ok: true, db: true });
     if (!ID_RE.test(id)) return send(res, 400, { error: 'bad_id' });
     const q = req.query || {};
+    // ひっさんの答えの画像（1回ぶん）。?id=&img=記録の時刻
+    if (q.img) {
+      const t = String(q.img);
+      if (!/^\d{10,14}$/.test(t)) return send(res, 400, { error: 'bad_img' });
+      const [r] = await db([['GET', 'kq:img:' + id + ':' + t]]);
+      return send(res, 200, r.result || '{"imgs":[]}');
+    }
     if (q.dec) {
       const [a, h, sh] = await db([['EXISTS', 'kq:adm:' + id], ['HGETALL', 'kq:dec:' + id], ['GET', 'kq:shop:' + id]]);
       const dec = {}; const arr = h.result || [];
@@ -126,6 +134,15 @@ module.exports = async (req, res) => {
     if (data.length > MAX) return send(res, 413, { error: 'too_big' });
     const [set, cur] = await db([['SET', 'kq:own:' + id, owner, 'NX', 'EX', TTL], ['GET', 'kq:own:' + id]]);
     if (cur.result !== owner) return send(res, 403, { error: 'not_owner' });
+    if (b.part === 'img') {
+      // 答えの画像は 1回ぶんずつ 別に保存して、IMG_DAYS 日で消える（毎回の同期では送らない）
+      const t = String(b.t || ''), imgs = Array.isArray(b.imgs) ? b.imgs.slice(0, 10) : [];
+      if (!/^\d{10,14}$/.test(t)) return send(res, 400, { error: 'bad_img' });
+      const ok = imgs.map(x => typeof x === 'string' && x.length < 150000 && /^data:image\/(jpeg|png|webp);base64,[A-Za-z0-9+/=]+$/.test(x) ? x : null);
+      const ik = 'kq:img:' + id + ':' + t;
+      await db([['SET', ik, JSON.stringify({ imgs: ok }), 'EX', IMG_TTL], ['SADD', 'kq:imgs:' + id, t], ['EXPIRE', 'kq:imgs:' + id, TTL]]);
+      return send(res, 200, { ok: true });
+    }
     const dk = 'kq:data:' + id + (b.part === 'hissan' ? ':hissan' : '');
     await db([['SET', dk, data, 'EX', TTL], ['EXPIRE', 'kq:data:' + id, TTL], ['EXPIRE', 'kq:data:' + id + ':hissan', TTL], ['EXPIRE', 'kq:own:' + id, TTL], ['EXPIRE', 'kq:adm:' + id, TTL], ['EXPIRE', 'kq:dec:' + id, TTL], ['EXPIRE', 'kq:shop:' + id, TTL]]);
     return send(res, 200, { ok: true });
@@ -133,7 +150,9 @@ module.exports = async (req, res) => {
   if (req.method === 'DELETE') {
     const [cur] = await db([['GET', 'kq:own:' + id]]);
     if (cur.result && cur.result !== owner) return send(res, 403, { error: 'not_owner' });
-    await db([['DEL', 'kq:data:' + id, 'kq:data:' + id + ':hissan', 'kq:own:' + id, 'kq:adm:' + id, 'kq:dec:' + id, 'kq:shop:' + id]]);
+    const [im] = await db([['SMEMBERS', 'kq:imgs:' + id]]);
+    const ik = (im.result || []).filter(t => /^\d{10,14}$/.test(t)).map(t => 'kq:img:' + id + ':' + t);
+    await db([['DEL', 'kq:imgs:' + id, ...ik, 'kq:data:' + id, 'kq:data:' + id + ':hissan', 'kq:own:' + id, 'kq:adm:' + id, 'kq:dec:' + id, 'kq:shop:' + id]]);
     return send(res, 200, { ok: true });
   }
   return send(res, 405, { error: 'method' });
