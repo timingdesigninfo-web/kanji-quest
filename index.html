@@ -936,6 +936,7 @@ button:focus-visible{outline:4px solid var(--ink);outline-offset:3px}
   <div class="shop-head"><h2>管理メニュー</h2><button class="btn white small" id="adBack">もどる</button></div>
   <section class="panel parent" id="parentBox"></section>
   <section class="panel fam" id="famBox"></section>
+  <section class="panel parent" id="linkAdm" hidden></section>
   <section class="panel parent fam" id="moveBox"></section>
   <section class="panel parent">
     <h3>そのほか</h3>
@@ -2221,7 +2222,7 @@ function openLinkOffer(id){
   if(W.linked){linkModal(`<p style="font-size:20px;font-weight:800;margin:0">${linkN()}教科 連携中</p>${LINK_TEXT(Math.max(2,linkN()))}`,[{t:'とじる'}]);return}
   id=id||Object.keys(W.apps).find(k=>k!==APP)||Object.keys(NEW_APPS).find(k=>k!==APP);const nm=appName(id);
   linkModal(`<p style="font-size:20px;font-weight:800;margin:0">${wesc(nm)}と 連携しますか？</p>${LINK_TEXT(2)}`,
-    [{t:'今はしない',cls:'white'},{t:'連携する',on:()=>startLink(id)}])}
+    [{t:'今はしない',cls:'white'},{t:'別々で ひらく',cls:'white',on:()=>goApp(id)},{t:'連携する',on:()=>startLink(id)}])}
 function goApp(id){const a=document.querySelector(`.subjects a[data-app="${id}"]`);if(a){a.classList.remove('off');a.onclick=null;a.click()}}
 function startLink(id){freshW();if(!W.linked){Object.assign(W,FUNDS());W.linked=true;W.linkAt=todayKey()}
   if(!S.walletJoined)joinWallet();W.apps[APP].introSeen=true;
@@ -2236,6 +2237,31 @@ function linkIntro(){if(!W.linked||!S.walletJoined||W.apps[APP].introSeen)return
   linkModal(`<p style="font-size:20px;font-weight:800;margin:0">${wesc(linkedApps().map(a=>a.name).join('と'))}が つながりました！</p>${LINK_TEXT(linkN())}`,[{t:'わかった！'}])}
 function resetWallet(){if(W.linked){Object.assign(W,FUNDS());W.shop=DEFAULT_SHOP.map(x=>({...x}));S.walletJoined=true;W.apps[APP]={...(W.apps[APP]||{}),joined:true};bindWallet()}
   else S.walletJoined=false;saveW()}
+// 連携を切る（管理メニューから）：ポイント・チケット・おねがいは 選んだ教科に のこす。ごほうびの一覧と PIN は 両方に。そのあとは 教科ごとに 別々
+const APP_KEYS={kanji:'kanjiQuest4.v1',hissan:'hissanQuest.v1'};
+const joinedApps=()=>{const ids=Object.keys(W.apps).filter(id=>id!==APP&&W.apps[id].joined&&APP_KEYS[id]&&localStorage.getItem(APP_KEYS[id]));return [APP,...ids]};
+function unlinkWallet(keep){freshW();if(!W.linked)return;
+  const f={points:W.points,total:W.total,tickets:W.tickets,reqs:W.reqs},sh={shop:W.shop,shopV:W.shopV,pin:W.pin};
+  const give=id=>JSON.parse(JSON.stringify({...(id===keep?f:{points:0,total:0,tickets:[],reqs:[]}),...sh}));
+  for(const id of joinedApps()){if(id===APP)continue;try{const o=JSON.parse(localStorage.getItem(APP_KEYS[id]));Object.assign(o,give(id),{walletJoined:false});localStorage.setItem(APP_KEYS[id],JSON.stringify(o))}catch(e){}}
+  const mine=give(APP);WF.forEach(k=>{delete S[k];S[k]=mine[k]});S.walletJoined=false;
+  Object.assign(W,FUNDS());W.linked=false;W.unlinkAt=todayKey();
+  for(const id in W.apps)W.apps[id]={...W.apps[id],joined:false,introSeen:false};
+  save();try{if(typeof onWalletChange==='function')onWalletChange()}catch(_){}renderNav()}
+// ほかのタブで 連携が切られたら 読みなおす（古い財布で上書きしないように）
+addEventListener('storage',e=>{if(e.key===WKEY&&!W.linked&&S.walletJoined)location.reload()});
+function renderLinkAdm(){const b=document.getElementById('linkAdm');if(!b)return;freshW();
+  if(!W.linked){b.hidden=true;return}b.hidden=false;
+  b.innerHTML=`<h3>教科の連携</h3><p>${wesc(joinedApps().map(appName).join('と'))}が 連携中です。連携を切ると、ポイント・ごほうびは 教科ごとに 別々になります。</p><button class="btn white" id="unlinkBtn">連携を切る</button>`;
+  document.getElementById('unlinkBtn').onclick=openUnlink}
+function openUnlink(){freshW();const ids=joinedApps(),pt=W.points||0;
+  const done=id=>{unlinkWallet(id);renderLinkAdm();
+    linkModal(`<p style="font-size:20px;font-weight:800;margin:0">連携を切りました</p><p style="font-size:15px;font-weight:500;line-height:1.7;margin:0">${wesc(appName(id))}に ${pt}pt を のこしました。<br>これからは 教科ごとに ポイントが たまります。</p>`,[{t:'OK'}])};
+  if(ids.length<2){linkModal(`<p style="font-size:20px;font-weight:800;margin:0">連携を切りますか？</p>`,[{t:'やめる',cls:'white'},{t:'連携を切る',on:()=>done(APP)}]);return}
+  linkModal(`<p style="font-size:20px;font-weight:800;margin:0">連携を切りますか？</p>
+    <p style="font-size:15px;font-weight:500;line-height:1.7;text-align:left;margin:0">今の <b>${pt}pt</b> と、交換したチケット・ごほうびのおねがいを、どちらの教科に のこしますか？ もう一方は <b>0pt</b> から はじまります。</p>
+    <div class="link-warn">・ごほうびの一覧と PIN は 両方に のこります。<br>・家族と共有は そのままで、両方の記録が 見られます。<br>・あとで また 連携できます（そのときは ポイントを 足し合わせます）。</div>`,
+    [{t:'やめる',cls:'white'},...ids.map(id=>({t:wesc(appName(id)),on:()=>done(id)}))])}
 
 
 const pad=n=>String(n).padStart(2,'0');
@@ -2667,7 +2693,7 @@ async function syncHissanPart(){if(!S.share)return;
     const cut=dkey(new Date(Date.now()-90*864e5)),days={};for(const k in (h.days||{}))if(k>=cut){const d=h.days[k];days[k]={tries:d.tries,passed:d.passed,passRw:d.passRw,best:d.best,earned:d.earned}}
     let st=0;{const dt=new Date();if(!(days[todayKey()]||{}).passed)dt.setDate(dt.getDate()-1);while((h.days||{})[dkey(dt)]?.passed){st++;dt.setDate(dt.getDate()-1)}}
     const wl=h.walletJoined&&W.linked,g=goalItem();
-    const data={v:1,at:Date.now(),name:S.share.name||'',grade:h.grade,points:wl?S.points:h.points,reqs:(wl?S.reqs:h.reqs||[]).slice(-30),tickets:(wl?S.tickets:h.tickets||[]).slice(-50),
+    const data={v:1,at:Date.now(),sep:wl?undefined:1,name:S.share.name||'',grade:h.grade,points:wl?S.points:h.points,reqs:(wl?S.reqs:h.reqs||[]).slice(-30),tickets:(wl?S.tickets:h.tickets||[]).slice(-50),
       shop:wl?S.shop:h.shop,shopV:(wl?S.shopV:h.shopV)||0,streak:st,goal:g?{name:g.name,cost:g.cost}:null,days,log:(h.hlog||[]).filter(x=>x.date>=cut).map(x=>({...x,im:x.im||x.items.some(it=>it.img)?1:undefined,items:x.items.map(({img,...it})=>it)}))}; // 画像は ひっさんクエストが 別に送る
     await fetch(SYNC_URL,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({id:S.share.id,key:S.share.key,part:'hissan',data})})}catch(e){}}
 function syncSoon(){if(!S.share)return;clearTimeout(syncT);syncT=setTimeout(syncNow,800)}
@@ -2734,7 +2760,8 @@ async function claimAdmin(w){const k=rid(40);
   try{const r=await fetch(SYNC_URL,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({act:'claim',id:w.id,admin:k})});
     if(r.ok&&(await r.json()).ok){w.admin=k;save();return true}}catch(e){}return false}
 async function fetchDec(id){try{const r=await fetch(SYNC_URL+'?dec=1&id='+id,{cache:'no-store'});if(r.ok)return await r.json()}catch(e){}return {admin:false,dec:{}}}
-const pendingOf=(data,dec)=>(data.reqs||[]).filter(q=>q.st==='wait'&&!(dec&&q.rid in dec));
+// おねがい（連携を切って 財布が別々なら ひっさんの分も）
+const pendingOf=(data,dec)=>{const L=(data.reqs||[]).concat(data.hissan&&data.hissan.sep?data.hissan.reqs||[]:[]),seen=new Set();return L.filter(q=>q.st==='wait'&&!(dec&&q.rid in dec)&&!seen.has(q.rid)&&seen.add(q.rid))};
 async function decide(q,ok){const w=S.watch.find(w=>w.id===HS.id);if(!w||!w.admin)return;
   try{const r=await fetch(SYNC_URL,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({act:'decide',id:HS.id,admin:w.admin,req:q.rid,ok})});
     if(r.ok){HS.dec[q.rid]=ok?'1':'0';w.pend=pendingOf(HS,HS.dec).length;save();sfx(ok?'clear':'miss');renderWatchHead();renderWatchPills()}}catch(e){}}
@@ -2762,14 +2789,15 @@ function tkHTML(h){const md=k=>{const [,m,d]=String(k||'').split('-');return m?`
     +(old?`<div class="meta">※${esc(h.name||'')}${h.name?'さんの':''}端末のアプリを開き直すと、くわしく表示されます。</div>`:'')}
 let wvTab='kanji'; // 見る画面：かんじ／ひっさん
 const wvH=()=>HS&&HS.hissan&&wvTab==='hissan'?HS.hissan:null;
-function renderWatchHead(){const h=HS,el=$('wvHead'),hh=wvH();
+function renderWatchHead(){const H=HS,el=$('wvHead'),hh=wvH(),sep=!!(H.hissan&&H.hissan.sep);
+  const h=sep&&hh?{...H,points:hh.points,goal:hh.goal||H.goal,tickets:hh.tickets,reqs:hh.reqs}:H; // 財布が別々なら 選んでいる教科のポイント
   const g=h.goal,left=g?Math.max(0,g.cost-h.points):0;
-  const pend=pendingOf(h,h.dec||{}),w=S.watch.find(w=>w.id===h.id)||{},isAdm=!!w.admin;
+  const pend=pendingOf(H,H.dec||{}),w=S.watch.find(w=>w.id===h.id)||{},isAdm=!!w.admin;
   el.innerHTML=`<div class="panel wv"><div class="wv-top"><b>${esc(h.name||'')}${(hh||h).grade?` ${(hh||h).grade}年生`:''}</b><button class="btn white small" id="wvReload">最新にする</button></div>
     ${isAdm?`<div class="adm">このスマホが「管理する人」です。ごほうびのOKと編集ができます。</div>`:''}
     ${pend.length?`<div class="reqs" style="padding:0"><h3>ごほうびのおねがい</h3>${pend.map((q,i)=>`<div class="rq"><div class="t">${esc(q.name)}<small>${q.cost}pt・${dLabel(dkey(new Date(q.at)))} ${hhmm(q.at)}</small></div>
       ${isAdm?`<button class="btn white" data-dq="${i}" data-ok="0">ダメ</button><button class="btn green" data-dq="${i}" data-ok="1">OK</button>`:`<span class="st wait">OKまち</span>`}</div>`).join('')}</div>`:''}
-    <div class="now-pt"><span class="now-l">今のポイント</span><span class="now-v"><span class="coin"></span><span class="pixel">${h.points||0}</span><small>pt</small></span></div></div>
+    <div class="now-pt"><span class="now-l">今のポイント${sep?(hh?'（ひっさん）':'（かんじ）'):''}</span><span class="now-v"><span class="coin"></span><span class="pixel">${h.points||0}</span><small>pt</small></span></div></div>
     <div class="panel wv">${g?`<div class="goal-head"><span>${esc(g.name)} まで</span><span class="pixel">${left?`あと ${left}pt`:'交換できる！'}</span></div><div class="bar"><i style="width:${Math.min(100,(h.points||0)/g.cost*100)}%"></i><span>${h.points||0} / ${g.cost}</span></div>`:''}
     ${tkHTML(h)}
     <div class="wv-edhost"></div></div>`;
@@ -2950,7 +2978,7 @@ $('tmBack').onclick=()=>{const wasAgree=!!tmNext;tmNext=null;if(!S.onboarded){op
   if(!wasAgree&&tmFrom==='admin'){tmFrom='home';openAdmin();return}renderHome();show('home')}; // 未同意なら ホームでまたモーダル
 document.addEventListener('click',e=>{const b=e.target.closest('[data-legal]');if(!b)return;sfx('tap');tmFrom=$('admin').hidden?'home':'admin';openTerms(b.dataset.legal)});
 let tmFrom='home';
-function openAdmin(){famStep='';syncErr='';renderParent();renderFam();if(!mv)renderMove();show('admin')}
+function openAdmin(){famStep='';syncErr='';renderParent();renderLinkAdm();renderFam();if(!mv)renderMove();show('admin')}
 $('adminBtn').onclick=()=>{sfx('tap');withPin('管理メニューを開くには、管理する人のPINを入れてください',openAdmin)};
 $('adBack').onclick=$('adBack2').onclick=()=>{renderHome();show('home')};
 $('tmBack2').onclick=()=>$('tmBack').onclick();
