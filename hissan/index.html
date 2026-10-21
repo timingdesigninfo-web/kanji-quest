@@ -1790,10 +1790,15 @@ async function upImgs(){if(!S.share||upBusy)return;upBusy=true;let n=0;
   try{for(const x of (S.hlog||[]).filter(x=>x.items.some(it=>it.img))){
     const r=await fetch(SYNC_URL,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({id:S.share.id,key:S.share.key,part:'img',t:x.t,imgs:x.items.map(it=>it.img||null)})});
     if(!r.ok)break;x.im=1;x.items.forEach(it=>delete it.img);n++;try{localStorage.setItem(KEY,JSON.stringify(S))}catch(e){}}}catch(e){}upBusy=false;if(n)syncSoon()}
-function syncSoon(){if(!S.share)return;clearTimeout(syncT);syncT=setTimeout(syncNow,1500)}
-async function syncNow(){if(!S.share)return false;
-  try{const r=await fetch(SYNC_URL,{method:'POST',headers:{'Content-Type':'application/json'},body:`{"id":"${S.share.id}","key":"${S.share.key}","part":"hissan","data":${syncPayload()}}`});
-    if(r.ok){S.share.at=Date.now();syncErr='';upImgs();try{localStorage.setItem(KEY,JSON.stringify(S));localStorage.setItem(SHARE_KEY,JSON.stringify(S.share))}catch(e){}if(!$('admin').hidden)renderFam();return true}
+// 中身が前回と同じなら 送らない（データベースの回数を へらす）。at（送った時刻）は くらべない
+const sigOf=s=>{s=s.replace(/"at":\d+,?/,'');let h=0;for(let i=0;i<s.length;i++)h=(h*31+s.charCodeAt(i))|0;return s.length+':'+h};
+const sameSig=(k,s)=>{try{return localStorage.getItem(k)===sigOf(s)}catch(e){return false}};
+const putSig=(k,s)=>{try{localStorage.setItem(k,sigOf(s))}catch(e){}};
+function syncSoon(){if(!S.share)return;clearTimeout(syncT);syncT=setTimeout(()=>syncNow(),4000)}
+async function syncNow(force){if(!S.share)return false;const pl=syncPayload(),sk=KEY+'.sig.'+S.share.id;
+  if(!force&&sameSig(sk,pl)){upImgs();return true}
+  try{const r=await fetch(SYNC_URL,{method:'POST',headers:{'Content-Type':'application/json'},body:`{"id":"${S.share.id}","key":"${S.share.key}","part":"hissan","data":${pl}}`});
+    if(r.ok){putSig(sk,pl);S.share.at=Date.now();syncErr='';upImgs();try{localStorage.setItem(KEY,JSON.stringify(S));localStorage.setItem(SHARE_KEY,JSON.stringify(S.share))}catch(e){}if(!$('admin').hidden)renderFam();return true}
     syncErr=r.status===503?'共有の準備がまだできていません。':'うまく送れませんでした。';}catch(e){syncErr='つながりませんでした。'}
   if(!$('admin').hidden)renderFam();return false}
 let famStep='';
@@ -1823,7 +1828,7 @@ function renderFam(){const b=$('famBox'),sh=S.share;
     drawQR($('famQR'),url);
     $('famName').onchange=e=>{const v=e.target.value.trim().slice(0,12);if(!v){e.target.value=sh.name||'';return}sh.name=v;save();syncNow().then(()=>renderFam())};
     $('famCopy').onclick=()=>{navigator.clipboard?.writeText(url).then(()=>{$('famCopy').textContent='OK!'}).catch(()=>{$('famURL').select()})};
-    $('famSync').onclick=()=>{$('famSync').textContent='更新中…';syncNow()};
+    $('famSync').onclick=()=>{$('famSync').textContent='更新中…';syncNow(true)};
     $('famStop').onclick=()=>ask('共有をやめる？ ほかの端末からは見られなくなります。','やめる',async()=>{const s0=S.share;S.share=null;save();
       try{await fetch(SYNC_URL,{method:'DELETE',headers:{'Content-Type':'application/json'},body:JSON.stringify({id:s0.id,key:s0.key})})}catch(e){}renderFam()});}
 }
@@ -1840,7 +1845,7 @@ async function checkDecisions(){if(!S.share||Date.now()-decT<5000)return;decT=Da
       if(v==='1'||v==='0'){applyDecision(q,v==='1');ch=true;if(v==='1')sfx('clear')}}
     if(d.shop&&Array.isArray(d.shop.list)&&d.shop.v>(S.shopV||0)){S.shop=d.shop.list;S.shopV=d.shop.v;ch=true}
     if(ch){save();if(!$('shop').hidden)renderShop();else if(!$('home').hidden)renderHome();if(!$('admin').hidden)renderFam()}}catch(e){}}
-setInterval(()=>{if(S.share&&(S.reqs||[]).some(q=>q.st==='wait')&&!document.hidden){decT=0;checkDecisions()}},30000);
+setInterval(()=>{if(S.share&&(S.reqs||[]).some(q=>q.st==='wait')&&!document.hidden){decT=0;checkDecisions()}},60000);
 const needOK=()=>!!S.pin||!!(S.share&&S.share.admin);
 function applyDecision(q,ok){if(q.st!=='wait')return;
   if(ok){q.st='ok';S.tickets.push({id:Date.now()+Math.random(),name:q.name,cost:q.cost,date:todayKey(),used:false})}else{q.st='ng';S.points+=q.cost}}

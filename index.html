@@ -2688,18 +2688,24 @@ function syncPayload(){
   return j}
 let syncT=0,syncErr='';
 // ひっさんの記録も 同じ共有に入れる（同じ端末の ひっさんクエストのデータを読んで送る。ひっさんを開かなくても見られるように）
-async function syncHissanPart(){if(!S.share)return;
+async function syncHissanPart(force){if(!S.share)return;
   try{const h=JSON.parse(localStorage.getItem('hissanQuest.v1')||'null');if(!h||!h.onboarded)return;
     const cut=dkey(new Date(Date.now()-90*864e5)),days={};for(const k in (h.days||{}))if(k>=cut){const d=h.days[k];days[k]={tries:d.tries,passed:d.passed,passRw:d.passRw,best:d.best,earned:d.earned}}
     let st=0;{const dt=new Date();if(!(days[todayKey()]||{}).passed)dt.setDate(dt.getDate()-1);while((h.days||{})[dkey(dt)]?.passed){st++;dt.setDate(dt.getDate()-1)}}
     const wl=h.walletJoined&&W.linked,g=goalItem();
     const data={v:1,at:Date.now(),sep:wl?undefined:1,name:S.share.name||'',grade:h.grade,points:wl?S.points:h.points,reqs:(wl?S.reqs:h.reqs||[]).slice(-30),tickets:(wl?S.tickets:h.tickets||[]).slice(-50),
       shop:wl?S.shop:h.shop,shopV:(wl?S.shopV:h.shopV)||0,streak:st,goal:g?{name:g.name,cost:g.cost}:null,days,log:(h.hlog||[]).filter(x=>x.date>=cut).map(x=>({...x,im:x.im||x.items.some(it=>it.img)?1:undefined,items:x.items.map(({img,...it})=>it)}))}; // 画像は ひっさんクエストが 別に送る
-    await fetch(SYNC_URL,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({id:S.share.id,key:S.share.key,part:'hissan',data})})}catch(e){}}
-function syncSoon(){if(!S.share)return;clearTimeout(syncT);syncT=setTimeout(syncNow,800)}
-async function syncNow(){if(!S.share)return false;
-  try{const r=await fetch(SYNC_URL,{method:'POST',headers:{'Content-Type':'application/json'},body:`{"id":"${S.share.id}","key":"${S.share.key}","data":${syncPayload()}}`});
-    if(r.ok){S.share.at=Date.now();syncErr='';save();syncHissanPart();if(!$('admin').hidden)renderFam();return true}
+    const pl=JSON.stringify(data),sk=KEY+'.sigh.'+S.share.id;if(!force&&sameSig(sk,pl))return;
+    const r=await fetch(SYNC_URL,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({id:S.share.id,key:S.share.key,part:'hissan',data})});if(r.ok)putSig(sk,pl)}catch(e){}}
+// 中身が前回と同じなら 送らない（データベースの回数を へらす）。at（送った時刻）は くらべない
+const sigOf=s=>{s=s.replace(/"at":\d+,?/,'');let h=0;for(let i=0;i<s.length;i++)h=(h*31+s.charCodeAt(i))|0;return s.length+':'+h};
+const sameSig=(k,s)=>{try{return localStorage.getItem(k)===sigOf(s)}catch(e){return false}};
+const putSig=(k,s)=>{try{localStorage.setItem(k,sigOf(s))}catch(e){}};
+function syncSoon(){if(!S.share)return;clearTimeout(syncT);syncT=setTimeout(()=>syncNow(),3000)}
+async function syncNow(force){if(!S.share)return false;const pl=syncPayload(),sk=KEY+'.sig.'+S.share.id;
+  if(!force&&sameSig(sk,pl)){syncHissanPart();return true}
+  try{const r=await fetch(SYNC_URL,{method:'POST',headers:{'Content-Type':'application/json'},body:`{"id":"${S.share.id}","key":"${S.share.key}","data":${pl}}`});
+    if(r.ok){putSig(sk,pl);S.share.at=Date.now();syncErr='';save();syncHissanPart(force);if(!$('admin').hidden)renderFam();return true}
     syncErr=r.status===503?'共有の準備がまだできていません。':'うまく送れませんでした。';}catch(e){syncErr='つながりませんでした。'}
   if(!$('admin').hidden)renderFam();return false}
 let qrLib=null;
@@ -2735,7 +2741,7 @@ function renderFam(){const b=$('famBox'),sh=S.share;
     drawQR($('famQR'),url);
     $('famName').onchange=e=>{const v=e.target.value.trim().slice(0,12);if(!v){e.target.value=sh.name||'';return}sh.name=v;save();syncNow().then(()=>renderFam())};
     $('famCopy').onclick=()=>{navigator.clipboard?.writeText(url).then(()=>{$('famCopy').textContent='OK!'}).catch(()=>{$('famURL').select()})};
-    $('famSync').onclick=()=>{$('famSync').textContent='更新中…';syncNow()};
+    $('famSync').onclick=()=>{$('famSync').textContent='更新中…';syncNow(true)};
     $('famStop').onclick=()=>ask('共有をやめる？ ほかの端末からは見られなくなります。','やめる',async()=>{const s0=S.share;S.share=null;save();
       try{await fetch(SYNC_URL,{method:'DELETE',headers:{'Content-Type':'application/json'},body:JSON.stringify({id:s0.id,key:s0.key})})}catch(e){}renderFam()});}
   b.querySelectorAll('[data-watch]').forEach(x=>x.onclick=()=>openWatch(S.watch[+x.dataset.watch].id));
@@ -2754,7 +2760,7 @@ async function checkDecisions(){if(!S.share||Date.now()-decT<5000)return;decT=Da
       if(v==='1'||v==='0'){applyDecision(q,v==='1');ch=true;if(v==='1')sfx('clear')}}
     if(d.shop&&Array.isArray(d.shop.list)&&d.shop.v>(S.shopV||0)){S.shop=d.shop.list;S.shopV=d.shop.v;ch=true}
     if(ch){save();syncSoon();if(!$('shop').hidden)renderShop();else if(!$('home').hidden)renderHome();if(!$('admin').hidden)renderFam()}}catch(e){}}
-setInterval(()=>{if(S.share&&S.reqs.some(q=>q.st==='wait')&&!document.hidden){decT=0;checkDecisions()}},30000);
+setInterval(()=>{if(S.share&&S.reqs.some(q=>q.st==='wait')&&!document.hidden){decT=0;checkDecisions()}},60000);
 /* --- 管理する人の側 --- */
 async function claimAdmin(w){const k=rid(40);
   try{const r=await fetch(SYNC_URL,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({act:'claim',id:w.id,admin:k})});

@@ -152,7 +152,9 @@ async function handle(req, res) {
       return send(res, 200, { ok: true });
     }
     const dk = 'kq:data:' + id + (b.part === 'hissan' ? ':hissan' : '');
-    await db([['SET', dk, data, 'EX', TTL], ['EXPIRE', 'kq:data:' + id, TTL], ['EXPIRE', 'kq:data:' + id + ':hissan', TTL], ['EXPIRE', 'kq:own:' + id, TTL], ['EXPIRE', 'kq:adm:' + id, TTL], ['EXPIRE', 'kq:dec:' + id, TTL], ['EXPIRE', 'kq:shop:' + id, TTL]]);
+    // ほかのキーの期限（180日）の延長は ときどきでよい（データベースの回数を へらす）
+    const more = Math.random() < 0.05 ? [['EXPIRE', 'kq:data:' + id, TTL], ['EXPIRE', 'kq:data:' + id + ':hissan', TTL], ['EXPIRE', 'kq:own:' + id, TTL], ['EXPIRE', 'kq:adm:' + id, TTL], ['EXPIRE', 'kq:dec:' + id, TTL], ['EXPIRE', 'kq:shop:' + id, TTL]] : [];
+    await db([['SET', dk, data, 'EX', TTL], ...more]);
     return send(res, 200, { ok: true });
   }
   if (req.method === 'DELETE') {
