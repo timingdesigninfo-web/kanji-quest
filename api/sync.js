@@ -37,8 +37,12 @@ async function db(cmds) {
     headers: { Authorization: 'Bearer ' + DB_TOKEN, 'Content-Type': 'application/json' },
     body: JSON.stringify(cmds),
   });
-  if (!r.ok) throw new Error('db ' + r.status);
-  return r.json();
+  if (!r.ok) throw new Error('db ' + r.status + ' ' + (await r.text().catch(() => '')).slice(0, 200));
+  const out = await r.json();
+  // 1つでもエラーがあれば「記録がない」とまちがえないよう 止める（上限こえなど）
+  const bad = Array.isArray(out) && out.find(x => x && x.error);
+  if (bad) throw new Error('db ' + String(bad.error).slice(0, 200));
+  return out;
 }
 const sha = s => crypto.createHash('sha256').update(s).digest('hex');
 async function readBody(req) {
@@ -49,6 +53,10 @@ async function readBody(req) {
 }
 
 module.exports = async (req, res) => {
+  try { return await handle(req, res); }
+  catch (e) { console.error(e); return send(res, 503, { error: 'db', detail: String(e.message || e).slice(0, 200) }); }
+};
+async function handle(req, res) {
   if (!DB_URL || !DB_TOKEN) return send(res, 503, { error: 'no_db' });
   const host = req.headers['x-forwarded-host'] || req.headers.host;
 
@@ -156,4 +164,4 @@ module.exports = async (req, res) => {
     return send(res, 200, { ok: true });
   }
   return send(res, 405, { error: 'method' });
-};
+}

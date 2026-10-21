@@ -2818,12 +2818,12 @@ async function openWatch(id){
   HS={id,name:w0.name,grade:w0.grade,log:[],days:{},loading:true};renderHistory();show('history');$('wvHead').hidden=true;wvRestore();$('hiList').innerHTML='<div class="panel hi-empty">読みこみ中…</div>';
   try{const r=await fetch(SYNC_URL+'?id='+encodeURIComponent(id),{cache:'no-store'});
     if(r.status===404){$('hiList').innerHTML='<div class="panel hi-empty">この共有は終了しています。</div>';$('wvHead').hidden=true;return}
-    if(!r.ok)throw 0;const d=await r.json();
+    if(!r.ok){let j={};try{j=await r.json()}catch(_){}throw {detail:j.detail||('HTTP '+r.status)}}const d=await r.json();
     let w=S.watch.find(w=>w.id===id);if(w){w.name=d.name||'';w.grade=d.grade}else{w={id,name:d.name||'',grade:d.grade};S.watch.push(w)}
     let dd=await fetchDec(id);if(!dd.admin&&!w.admin&&await claimAdmin(w))dd=await fetchDec(id);
     HS={...d,id,dec:dd.dec||{}};wvTab=HS.noKanji||(HS.hissan&&wvTab==='hissan')?'hissan':'kanji';if(dd.shop&&dd.shop.v>(d.shopV||0)){HS.shop=dd.shop.list;HS.shopV=dd.shop.v;const g=HS.shop.reduce((a,b)=>!a||b.cost>a.cost?b:a,null);HS.goal=g?{name:g.name,cost:g.cost}:null}w.pend=pendingOf(HS,HS.dec).length;save();renderWatchPills();
     renderHistory();
-  }catch(e){$('hiList').innerHTML='<div class="panel hi-empty">読みこめませんでした。<br>電波のよいところで「最新にする」を押してください。</div>'}}
+  }catch(e){$('hiList').innerHTML='<div class="panel hi-empty">読みこめませんでした。<br>電波のよいところで「最新にする」を押してください。'+(e&&e.detail?`<br><small>（${esc(e.detail)}）</small>`:'')+'</div>'}}
 
 /* ===== SNSシェア ===== */
 const SHARE_URL=/^https?:/.test(location.protocol)&&!/claude|usercontent/.test(location.host)?location.origin:'https://kanji-quest-black.vercel.app';
