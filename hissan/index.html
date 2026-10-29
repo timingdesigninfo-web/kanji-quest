@@ -9,6 +9,10 @@
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-title" content="ひっさんクエスト">
 <style>:root{color-scheme:light;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}html{scroll-padding-top:env(safe-area-inset-top,0px)}body{margin:0;padding:0;font:14px -apple-system,BlinkMacSystemFont,sans-serif}img{max-width:100%}[hidden]:not([hidden=until-found i]){display:none!important}ruby{ruby-align:center}rt{font-size:.5em;letter-spacing:0}
+.fixbox{background:#FFF1E6;border:3px solid #FF6A3D;border-radius:14px;padding:12px 14px;margin:0 0 12px;text-align:center;box-shadow:0 0 0 4px #FFD9C9}
+.fixbox .fx-h{font-weight:800;font-size:20px;color:#D9381E;line-height:1.4}
+.fixbox .fx-s{font-size:14px;margin:4px 0 10px;line-height:1.6}
+.fixbox .fx-go{background:#FF6A3D;color:#fff;width:100%;display:block;text-decoration:none}
 </style>
 <title>ひっさんクエスト｜AIが丸つけする筆算・計算練習。文章題も（小学生・無料）</title>
 <meta name="description" content="AIが丸つけする、筆算・計算の練習アプリ。小学1〜6年の計算（たし算・ひき算・かけ算・わり算・分数）と文章題を、指で筆算して毎日5問。自分で決めたごほうびに向けてポイントを貯める。無料・登録なし。">
@@ -686,6 +690,7 @@ body:has(#quiz:not([hidden])){background-image:none!important;background-color:#
 
   <div class="home-main">
   <section class="panel quest">
+    <div class="fixbox" id="fixBox" hidden></div>
     <h2><span class="flag"></span><span id="qTitle">今日のクエスト</span></h2>
     <div class="status" id="status"></div>
     <div class="linkbox" id="linkBox" hidden></div>
@@ -1323,7 +1328,8 @@ let qs=[],qi=0,results=[],written=[],strokes=[],cur=null,mode='test';
 function startQuiz(m){ensureToday();mode=m;const d=dayRec();
   if(m==='test')qs=S.today.items.slice(0,qn()).map(p=>({...p}));
   else if(m==='practice')qs=d.pending.map(remake); // 同じ形の 新しい問題
-  else qs=buildSet(false);
+  else if(m==='fix')qs=(S.fixQ||[]).filter(p=>UNIT[p.u]).map(remake); // なおし：同じ形の 新しい問題
+  else{const fx=(S.fixQ||[]).filter(p=>UNIT[p.u]).slice(0,2).map(remake),base=buildSet(true);qs=[...fx,...base.slice(fx.length)]} // 復習には なおし・にがてを先に
   if(!qs.length){renderHome();show('home');return}
   qi=0;results=[];written=[];pend=[];reads=[];aiCtl?.abort();show('quiz');showQ()}
 function home(){const d=dayRec();
@@ -1844,8 +1850,35 @@ async function checkDecisions(){if(!S.share||Date.now()-decT<5000)return;decT=Da
     for(const q of S.reqs){if(q.st!=='wait')continue;const v=d.dec&&d.dec[q.rid];
       if(v==='1'||v==='0'){applyDecision(q,v==='1');ch=true;if(v==='1')sfx('clear')}}
     if(d.shop&&Array.isArray(d.shop.list)&&d.shop.v>(S.shopV||0)){S.shop=d.shop.list;S.shopV=d.shop.v;ch=true}
+    if(applyFixes(d.fix))ch=true;if(!$('home').hidden)renderFixBox();
     if(ch){save();if(!$('shop').hidden)renderShop();else if(!$('home').hidden)renderHome();if(!$('admin').hidden)renderFam()}}catch(e){}}
 setInterval(()=>{if(S.share&&(S.reqs||[]).some(q=>q.st==='wait')&&!document.hidden){decT=0;checkDecisions()}},60000);
+const FIX_UNIT='問';
+const fixLabel=()=>'まちがいだった問題と 同じ形の 新しい問題を といてみよう。';
+function fixItem(f){const x=(S.hlog||[]).find(e=>e.t===f.t);if(!x)return null;const it=x.items[f.i];if(!it)return null;
+  it.ok=false;it.fx=1;return {q:it.u&&UNIT[it.u]?{kind:it.w?'word':'',u:it.u,tpl:it.tpl||null}:null,earned:x.earned||0,n:x.items.length}}
+function fixAdd(p){S.fixQ.push(p);S.weak=[p.u,...S.weak.filter(w=>w!==p.u)]} // にがての先頭へ（次のテスト・復習に先に出る）
+/* ===== なおし（管理する人が「この ○ は まちがい」と決めたもの） =====
+   S.fixQ：なおしで出す問題。S.fixDone：受けとった なおし {fid:{amt}}。点数を「減らす」なら その回のポイントの1問ぶんを引く */
+let fixMap={};
+function applyFixes(map){fixMap=map||{};S.fixDone=S.fixDone||{};S.fixQ=S.fixQ||[];let ch=false;
+  for(const [fid,raw] of Object.entries(fixMap)){if(S.fixDone[fid])continue;let f;try{f=JSON.parse(raw)}catch(e){continue}
+    if(f.app!==APP)continue;const r=fixItem(f);let amt=0;
+    if(r&&f.deduct&&r.earned>0){amt=Math.min(S.points,Math.max(1,Math.round(r.earned/r.n)));S.points-=amt}
+    S.fixDone[fid]={amt,at:Date.now()};if(r&&r.q!=null)fixAdd(r.q);ch=true}
+  return ch}
+// ほかの教科に なおしが来ているか（同じ端末なので その教科の保存を見る）
+function otherFix(){
+  for(const raw of Object.values(fixMap)){let f;try{f=JSON.parse(raw)}catch(e){continue}if(f.app===APP||!APP_KEYS[f.app])continue;
+    try{const o=JSON.parse(localStorage.getItem(APP_KEYS[f.app])||'null');if(o&&!Object.keys(o.fixDone||{}).length&&!(o.fixQ||[]).length)return f.app}catch(e){}}
+  for(const id of Object.keys(APP_KEYS)){if(id===APP)continue;try{const o=JSON.parse(localStorage.getItem(APP_KEYS[id])||'null');if(o&&(o.fixQ||[]).length)return id}catch(e){}}
+  return ''}
+function renderFixBox(){const b=$('fixBox');if(!b)return;const n=(S.fixQ||[]).length,oth=n?'':otherFix();
+  if(!n&&!oth){b.hidden=true;return}b.hidden=false;
+  if(n){b.innerHTML=`<div class="fx-h">おうちの人から なおしが きてる！</div><div class="fx-s">${fixLabel()}</div><button class="btn fx-go" id="fixGo">なおしをする（${n}${FIX_UNIT}）</button>`;$('fixGo').onclick=()=>startQuiz('fix');return}
+  const a=document.querySelector(`.subjects a[data-app="${oth}"]`),href=a?a.getAttribute('href'):(oth==='hissan'?'hissan/':'../');
+  b.innerHTML=`<div class="fx-h">${wesc(appName(oth))}に なおしが きてる！</div><div class="fx-s">おうちの人が 見なおしてくれたよ。</div><a class="btn fx-go" href="${href}">${wesc(appName(oth))}を ひらく</a>`}
+{const _rhF=renderHome;renderHome=function(...a){const r=_rhF.apply(this,a);try{renderFixBox();checkDecisions()}catch(e){}return r}}
 const needOK=()=>!!S.pin||!!(S.share&&S.share.admin);
 function applyDecision(q,ok){if(q.st!=='wait')return;
   if(ok){q.st='ok';S.tickets.push({id:Date.now()+Math.random(),name:q.name,cost:q.cost,date:todayKey(),used:false})}else{q.st='ng';S.points+=q.cost}}
@@ -1923,12 +1956,12 @@ function award(d,rw){const e=earn(PTS[Math.min(rw,RW_MAX)]);d.passed=true;d.earn
   streakGot=0;const st=streakNow();if(st>0&&st%STREAK_DAYS===0&&!d.streakBonus){d.streakBonus=earn(STREAK_PT);streakGot=d.streakBonus}
   return e}
 function finish(){
-  try{const c=results.filter(r=>r.ok).length;S.hlog=(S.hlog||[]).concat([{date:todayKey(),t:Date.now(),mode,score:score100(c,results.length),items:results.map(r=>({q:String(probText(r.p)).slice(0,90),a:ansText(r.p),ok:!!r.ok,rd:String(r.read||'').slice(0,40),w:r.p.kind==='word'}))}]).slice(-300);addThumbs(S.hlog[S.hlog.length-1],written.map(w=>w&&w.url))}catch(e){}
+  try{const c=results.filter(r=>r.ok).length;S.hlog=(S.hlog||[]).concat([{date:todayKey(),t:Date.now(),mode,score:score100(c,results.length),items:results.map(r=>({q:String(probText(r.p)).slice(0,90),a:ansText(r.p),ok:!!r.ok,rd:String(r.read||'').slice(0,40),w:r.p.kind==='word',u:r.p.u,tpl:r.p.tpl||undefined}))}]).slice(-300);addThumbs(S.hlog[S.hlog.length-1],written.map(w=>w&&w.url))}catch(e){}
   const d=dayRec();
   const correct=results.filter(r=>r.ok).length,wrong=results.filter(r=>!r.ok).map(r=>({...r.p,read:r.read})),total=results.length;
   let earned=0,head='',body='';streakGot=0;const wasPassed=d.passed;
   // にがての単元：まちがえたら入れる、テストでとけたら外す
-  for(const r of results){const id=r.p.u;if(!r.ok){if(!S.weak.includes(id))S.weak.push(id)}else if(mode!=='practice')S.weak=S.weak.filter(w=>w!==id)}
+  for(const r of results){const id=r.p.u;if(!r.ok){if(!S.weak.includes(id))S.weak.push(id)}else if(mode!=='practice'&&mode!=='fix')S.weak=S.weak.filter(w=>w!==id)}
   if(mode==='test'){
     const score=score100(correct,total);d.tries++;d.best=Math.max(d.best,score);d.testDone=true;d.pending=wrong;d.rewrites=0;
     if(score>=PASS)earned=award(d,0);
@@ -1943,6 +1976,9 @@ function finish(){
     body=earned?`<div class="earn"><span class="coin"></span><span class="pixel">+${earned}</span>pt</div><div class="sub">とき直し${d.rewrites}回で合格。合計 ${S.points}pt</div>`
       :!wrong.length?`<div class="sub">今日のクエスト クリア！</div>`
       :`<div class="sub">答えをたしかめて、もう一度。${wasPassed?'':`<br>次でとければ +${linkPt(PTS[Math.min(d.rewrites+1,RW_MAX)])}pt`}</div>`;
+  }else if(mode==='fix'){
+    head=`<div class="badge ${wrong.length?'ng':''}">${wrong.length?`あと${wrong.length}問！`:'なおし できた！'}</div><div class="big">${correct}<small>/${total}</small></div>`;
+    body=wrong.length?`<div class="sub">答えをたしかめて、もう一度。</div>`:`<div class="sub">おうちの人の なおし、ぜんぶ できたよ！</div>`;
   }else{
     const sc=score100(correct,total);
     if(sc>=PASS&&(d.bonus||0)<BONUS_MAX){d.bonus=(d.bonus||0)+1;earned=earn(BONUS_PT)}
@@ -1951,6 +1987,8 @@ function finish(){
       :(d.bonus||0)>=BONUS_MAX?`<div class="sub">おつかれさま。今日の<ruby>復習<rt>ふくしゅう</rt></ruby>ポイントは終了。</div>`
       :`<div class="sub">80点以上で +${linkPt(BONUS_PT)}pt。もう一度！</div>`;
   }
+  if(mode==='fix'||mode==='free')for(const r of results){if(!r.ok)continue;const k=(S.fixQ||[]).findIndex(q=>q.u===r.p.u&&(q.kind==='word')===(r.p.kind==='word'));if(k>=0)S.fixQ.splice(k,1)} // とけたら なおし完了
+  try{const L=S.hlog[S.hlog.length-1];if(L&&L.mode===mode&&L.earned==null)L.earned=earned}catch(e){}
   settleLink();body=body.replace(/合計 \d+pt/,`合計 ${S.points}pt`); // 連携ボーナスをふくめた合計にする
   if(linkGot)body+=`<div class="sub link-got">連携ボーナス +${linkGot}pt！（${linkedApps().length}教科）</div>`;
   body+=linkSummary();
@@ -1960,7 +1998,7 @@ function finish(){
   const miss=results.filter(r=>!r.ok);
   $('missBox').hidden=!miss.length;
   $('missBox').innerHTML=`<h3>まちがえた問題</h3>`+miss.map(r=>`<div class="miss"><span class="t ${r.p.kind==='word'?'wordk':''}">${esc(probText(r.p))}</span><span class="k">${esc(ansText(r.p))}</span></div>`).join('');
-  const more=mode!=='free'&&d.pending.length;
+  const more=mode!=='free'&&mode!=='fix'&&d.pending.length;
   $('resultBtns').innerHTML=(more?`<button class="btn" id="practiceBtn">とけるまで練習！</button>`:'')+`<button class="btn ${more?'white':'green'}" id="homeBtn">${more?'あとで':'ホームへ'}</button>`;
   $('homeBtn').onclick=()=>{renderHome();show('home')};
   if($('practiceBtn'))$('practiceBtn').onclick=openLearn;
