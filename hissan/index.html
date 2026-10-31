@@ -13,6 +13,7 @@
 .fixbox .fx-h{font-weight:800;font-size:20px;color:#D9381E;line-height:1.4}
 .fixbox .fx-s{font-size:14px;margin:4px 0 10px;line-height:1.6}
 .fixbox .fx-go{background:#FF6A3D;color:#fff;width:100%;display:block;text-decoration:none}
+.gift-ic{width:72px;height:72px;margin:0 auto}.gift-ic svg,.gift-ic canvas,.gift-ic img{width:100%;height:100%}
 </style>
 <title>ひっさんクエスト｜AIが丸つけする筆算・計算練習。文章題も（小学生・無料）</title>
 <meta name="description" content="AIが丸つけする、筆算・計算の練習アプリ。小学1〜6年の計算（たし算・ひき算・かけ算・わり算・分数）と文章題を、指で筆算して毎日5問。自分で決めたごほうびに向けてポイントを貯める。無料・登録なし。">
@@ -1850,7 +1851,7 @@ async function checkDecisions(){if(!S.share||Date.now()-decT<5000)return;decT=Da
     for(const q of S.reqs){if(q.st!=='wait')continue;const v=d.dec&&d.dec[q.rid];
       if(v==='1'||v==='0'){applyDecision(q,v==='1');ch=true;if(v==='1')sfx('clear')}}
     if(d.shop&&Array.isArray(d.shop.list)&&d.shop.v>(S.shopV||0)){S.shop=d.shop.list;S.shopV=d.shop.v;ch=true}
-    if(applyFixes(d.fix))ch=true;if(!$('home').hidden)renderFixBox();
+    if(applyFixes(d.fix))ch=true;if(applyGifts(d.gift))ch=true;if(!$('home').hidden)renderFixBox();
     if(ch){save();if(!$('shop').hidden)renderShop();else if(!$('home').hidden)renderHome();if(!$('admin').hidden)renderFam()}}catch(e){}}
 setInterval(()=>{if(S.share&&(S.reqs||[]).some(q=>q.st==='wait')&&!document.hidden){decT=0;checkDecisions()}},60000);
 const FIX_UNIT='問';
@@ -1858,6 +1859,22 @@ const fixLabel=()=>'まちがいだった問題と 同じ形の 新しい問題�
 function fixItem(f){const x=(S.hlog||[]).find(e=>e.t===f.t);if(!x)return null;const it=x.items[f.i];if(!it)return null;
   it.ok=false;it.fx=1;return {q:it.u&&UNIT[it.u]?{kind:it.w?'word':'',u:it.u,tpl:it.tpl||null}:null,earned:x.earned||0,n:x.items.length}}
 function fixAdd(p){S.fixQ.push(p);S.weak=[p.u,...S.weak.filter(w=>w!==p.u)]} // にがての先頭へ（次のテスト・復習に先に出る）
+/* ===== ポイントのプレゼント（管理する人から） =====
+   連携中は 財布が1つなので、受けとった印も 財布（W.giftDone）に。連携していなければ この教科（S.giftDone）。2回もらわないよう 両方を見る */
+let giftShow=[];
+function applyGifts(map){let ch=false;S.giftDone=S.giftDone||{};
+  for(const [gid,raw] of Object.entries(map||{})){if(S.giftDone[gid]||(W.giftDone||{})[gid])continue;let g;try{g=JSON.parse(raw)}catch(e){continue}
+    if(!W.linked&&g.app&&g.app!==APP)continue; // 別々のときは、送り先の教科だけ
+    if(W.linked){freshW();if((W.giftDone||{})[gid])continue;W.giftDone=W.giftDone||{};W.giftDone[gid]=Date.now()}
+    const pt=Math.max(0,Math.min(1000,Math.round(+g.pt||0)));S.points+=pt;S.total=(S.total||0)+pt;S.giftDone[gid]=Date.now();
+    giftShow.push({pt,msg:g.msg||''});ch=true}
+  if(ch){save();if(!$('home').hidden)showGifts()}return ch} // すぐ保存（このあと財布を読みなおしても消えないように）
+function showGifts(){if(!giftShow.length)return;const L=giftShow.splice(0),pt=L.reduce((a,g)=>a+g.pt,0);
+  linkModal(`<div class="gift-ic">${icon('gem')}</div><p style="font-size:22px;font-weight:800;margin:0;color:#D9381E">おうちの人から プレゼント！</p>
+    <p class="pixel" style="font-size:40px;font-weight:800;margin:0">+${pt}<small style="font-size:20px">pt</small></p>
+    ${L.filter(g=>g.msg).map(g=>`<p style="font-size:17px;font-weight:700;margin:0">「${wesc(g.msg)}」</p>`).join('')}`,[{t:'ありがとう！'}]);
+  try{sfx('clear');rain()}catch(e){}renderHome()}
+{const _rhG=renderHome;renderHome=function(...a){const r=_rhG.apply(this,a);if(giftShow.length)setTimeout(showGifts,300);return r}}
 /* ===== なおし（管理する人が「この ○ は まちがい」と決めたもの） =====
    S.fixQ：なおしで出す問題。S.fixDone：受けとった なおし {fid:{amt}}。点数を「減らす」なら その回のポイントの1問ぶんを引く */
 let fixMap={};
@@ -1866,7 +1883,7 @@ function applyFixes(map){fixMap=map||{};S.fixDone=S.fixDone||{};S.fixQ=S.fixQ||[
     if(f.app!==APP)continue;const r=fixItem(f);let amt=0;
     if(r&&f.deduct&&r.earned>0){amt=Math.min(S.points,Math.max(1,Math.round(r.earned/r.n)));S.points-=amt}
     S.fixDone[fid]={amt,at:Date.now()};if(r&&r.q!=null)fixAdd(r.q);ch=true}
-  return ch}
+  if(ch)save();return ch}
 // ほかの教科に なおしが来ているか（同じ端末なので その教科の保存を見る）
 function otherFix(){
   for(const raw of Object.values(fixMap)){let f;try{f=JSON.parse(raw)}catch(e){continue}if(f.app===APP||!APP_KEYS[f.app])continue;

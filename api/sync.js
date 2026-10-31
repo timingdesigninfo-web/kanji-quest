@@ -73,13 +73,15 @@ async function handle(req, res) {
       return send(res, 200, r.result || '{"imgs":[]}');
     }
     if (q.dec) {
-      const [a, h, sh, fx] = await db([['EXISTS', 'kq:adm:' + id], ['HGETALL', 'kq:dec:' + id], ['GET', 'kq:shop:' + id], ['HGETALL', 'kq:fix:' + id]]);
+      const [a, h, sh, fx, gf] = await db([['EXISTS', 'kq:adm:' + id], ['HGETALL', 'kq:dec:' + id], ['GET', 'kq:shop:' + id], ['HGETALL', 'kq:fix:' + id], ['HGETALL', 'kq:gift:' + id]]);
       const dec = {}; const arr = h.result || [];
       for (let i = 0; i + 1 < arr.length; i += 2) dec[arr[i]] = arr[i + 1];
       const fix = {}; const fa = fx.result || []; // 管理する人の「なおし」（○ を × に）
       for (let i = 0; i + 1 < fa.length; i += 2) fix[fa[i]] = fa[i + 1];
       let shop = null; try { shop = sh.result ? JSON.parse(sh.result) : null; } catch {}
-      return send(res, 200, { admin: Number(a.result) > 0, dec, shop, fix });
+      const gift = {}; const ga = gf.result || []; // 管理する人からの ポイントのプレゼント
+      for (let i = 0; i + 1 < ga.length; i += 2) gift[ga[i]] = ga[i + 1];
+      return send(res, 200, { admin: Number(a.result) > 0, dec, shop, fix, gift });
     }
     const [d, hs] = await db([['GET', 'kq:data:' + id], ['GET', 'kq:data:' + id + ':hissan']]);
     if (!d.result && !hs.result) return send(res, 404, { error: 'not_found' });
@@ -107,7 +109,7 @@ async function handle(req, res) {
   const id = String(b.id || ''), key = String(b.key || '');
   if (!ID_RE.test(id)) return send(res, 400, { error: 'bad_id' });
 
-  if (req.method === 'POST' && (b.act === 'claim' || b.act === 'decide' || b.act === 'shop' || b.act === 'fix')) {
+  if (req.method === 'POST' && (b.act === 'claim' || b.act === 'decide' || b.act === 'shop' || b.act === 'fix' || b.act === 'gift')) {
     const admin = String(b.admin || '');
     if (!KEY_RE.test(admin)) return send(res, 400, { error: 'bad_admin' });
     const [ex] = await db([['EXISTS', 'kq:data:' + id, 'kq:data:' + id + ':hissan']]);
@@ -129,6 +131,15 @@ async function handle(req, res) {
       const v = Date.now();
       await db([['SET', 'kq:shop:' + id, JSON.stringify({ v, list }), 'EX', TTL]]);
       return send(res, 200, { ok: true, v });
+    }
+    if (b.act === 'gift') {
+      // ポイントのプレゼント（お手伝い・特別な日など）。子どもの端末が受けとって 財布に足す
+      const g = b.gift || {};
+      const gid = String(g.gid || ''), pt = Math.round(Number(g.pt)), app = g.app === 'hissan' ? 'hissan' : 'kanji';
+      const msg = String(g.msg || '').replace(/[\u0000-\u001f<>]/g, '').trim().slice(0, 40);
+      if (!REQ_RE.test(gid) || !(pt >= 1 && pt <= 1000)) return send(res, 400, { error: 'bad_gift' });
+      await db([['HSET', 'kq:gift:' + id, gid, JSON.stringify({ pt, msg, app, at: Date.now() })], ['EXPIRE', 'kq:gift:' + id, TTL]]);
+      return send(res, 200, { ok: true });
     }
     if (b.act === 'fix') {
       // なおし：管理する人が「この ○ は まちがい」と決めた問題。子どもの端末が読んで ×にし、なおしの練習に出す
@@ -173,7 +184,7 @@ async function handle(req, res) {
     if (cur.result && cur.result !== owner) return send(res, 403, { error: 'not_owner' });
     const [im] = await db([['SMEMBERS', 'kq:imgs:' + id]]);
     const ik = (im.result || []).filter(t => /^\d{10,14}$/.test(t)).map(t => 'kq:img:' + id + ':' + t);
-    await db([['DEL', 'kq:imgs:' + id, ...ik, 'kq:data:' + id, 'kq:data:' + id + ':hissan', 'kq:own:' + id, 'kq:adm:' + id, 'kq:dec:' + id, 'kq:shop:' + id, 'kq:fix:' + id]]);
+    await db([['DEL', 'kq:imgs:' + id, ...ik, 'kq:data:' + id, 'kq:data:' + id + ':hissan', 'kq:own:' + id, 'kq:adm:' + id, 'kq:dec:' + id, 'kq:shop:' + id, 'kq:fix:' + id, 'kq:gift:' + id]]);
     return send(res, 200, { ok: true });
   }
   return send(res, 405, { error: 'method' });

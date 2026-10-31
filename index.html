@@ -31,6 +31,9 @@
 .fixbox .fx-go{background:#FF6A3D;color:#fff;width:100%;display:block;text-decoration:none}
 .fx-mk{margin-left:auto;font:inherit;font-size:12px;font-weight:700;color:#D9381E;background:#fff;border:2px solid #FF6A3D;border-radius:999px;padding:3px 10px;cursor:pointer;white-space:nowrap}
 .fx-tag{display:inline-block;font-size:12px;font-weight:700;color:#8A6D00;background:#FFF4CC;border-radius:999px;padding:2px 8px;margin-top:4px}.fx-tag.done{color:#D9381E;background:#FFE9E0}
+.gift-ic{width:72px;height:72px;margin:0 auto}.gift-ic svg,.gift-ic canvas,.gift-ic img{width:100%;height:100%}
+.gift-pts{display:flex;flex-wrap:wrap;gap:6px;justify-content:center}.gift-pts .seg{font:inherit;font-weight:700;font-size:15px;padding:8px 12px;border-radius:999px;border:2px solid var(--ink);background:#fff;cursor:pointer}.gift-pts .seg.on{background:var(--yellow,#FFCF1F)}
+.gift-msg{width:100%;box-sizing:border-box;font:inherit;font-size:16px;padding:10px 12px;border:2px solid var(--ink);border-radius:12px;background:#fff}.gift-btn{width:100%;margin-top:10px}
 </style>
 </head>
 <body>
@@ -2771,7 +2774,7 @@ async function checkDecisions(){if(!S.share||Date.now()-decT<5000)return;decT=Da
     for(const q of S.reqs){if(q.st!=='wait')continue;const v=d.dec&&d.dec[q.rid];
       if(v==='1'||v==='0'){applyDecision(q,v==='1');ch=true;if(v==='1')sfx('clear')}}
     if(d.shop&&Array.isArray(d.shop.list)&&d.shop.v>(S.shopV||0)){S.shop=d.shop.list;S.shopV=d.shop.v;ch=true}
-    if(applyFixes(d.fix))ch=true;if(!$('home').hidden)renderFixBox();
+    if(applyFixes(d.fix))ch=true;if(applyGifts(d.gift))ch=true;if(!$('home').hidden)renderFixBox();
     if(ch){save();syncSoon();if(!$('shop').hidden)renderShop();else if(!$('home').hidden)renderHome();if(!$('admin').hidden)renderFam()}}catch(e){}}
 setInterval(()=>{if(S.share&&S.reqs.some(q=>q.st==='wait')&&!document.hidden){decT=0;checkDecisions()}},60000);
 const FIX_UNIT='字';
@@ -2780,6 +2783,22 @@ const kanjiIdOf=it=>{if(it.id!=null&&BANK[it.id])return it.id;const b=BANK.find(
 function fixItem(f){const x=LOG.find(e=>e.t===f.t);if(!x)return null;const it=x.items[f.i];if(!it)return null;
   it.ok=false;it.fx=1;saveLog();return {q:kanjiIdOf(it),earned:x.earned||0,n:x.items.length}}
 function fixAdd(id){if(id==null||!BANK[id])return;if(!S.fixQ.includes(id))S.fixQ.push(id);S.weak=[id,...S.weak.filter(w=>w!==id)]} // にがての先頭へ（次のテスト・復習に先に出る）
+/* ===== ポイントのプレゼント（管理する人から） =====
+   連携中は 財布が1つなので、受けとった印も 財布（W.giftDone）に。連携していなければ この教科（S.giftDone）。2回もらわないよう 両方を見る */
+let giftShow=[];
+function applyGifts(map){let ch=false;S.giftDone=S.giftDone||{};
+  for(const [gid,raw] of Object.entries(map||{})){if(S.giftDone[gid]||(W.giftDone||{})[gid])continue;let g;try{g=JSON.parse(raw)}catch(e){continue}
+    if(!W.linked&&g.app&&g.app!==APP)continue; // 別々のときは、送り先の教科だけ
+    if(W.linked){freshW();if((W.giftDone||{})[gid])continue;W.giftDone=W.giftDone||{};W.giftDone[gid]=Date.now()}
+    const pt=Math.max(0,Math.min(1000,Math.round(+g.pt||0)));S.points+=pt;S.total=(S.total||0)+pt;S.giftDone[gid]=Date.now();
+    giftShow.push({pt,msg:g.msg||''});ch=true}
+  if(ch){save();if(!$('home').hidden)showGifts()}return ch} // すぐ保存（このあと財布を読みなおしても消えないように）
+function showGifts(){if(!giftShow.length)return;const L=giftShow.splice(0),pt=L.reduce((a,g)=>a+g.pt,0);
+  linkModal(`<div class="gift-ic">${icon('gem')}</div><p style="font-size:22px;font-weight:800;margin:0;color:#D9381E">おうちの人から プレゼント！</p>
+    <p class="pixel" style="font-size:40px;font-weight:800;margin:0">+${pt}<small style="font-size:20px">pt</small></p>
+    ${L.filter(g=>g.msg).map(g=>`<p style="font-size:17px;font-weight:700;margin:0">「${wesc(g.msg)}」</p>`).join('')}`,[{t:'ありがとう！'}]);
+  try{sfx('clear');rain()}catch(e){}renderHome()}
+{const _rhG=renderHome;renderHome=function(...a){const r=_rhG.apply(this,a);if(giftShow.length)setTimeout(showGifts,300);return r}}
 /* ===== なおし（管理する人が「この ○ は まちがい」と決めたもの） =====
    S.fixQ：なおしで出す問題。S.fixDone：受けとった なおし {fid:{amt}}。点数を「減らす」なら その回のポイントの1問ぶんを引く */
 let fixMap={};
@@ -2788,7 +2807,7 @@ function applyFixes(map){fixMap=map||{};S.fixDone=S.fixDone||{};S.fixQ=S.fixQ||[
     if(f.app!==APP)continue;const r=fixItem(f);let amt=0;
     if(r&&f.deduct&&r.earned>0){amt=Math.min(S.points,Math.max(1,Math.round(r.earned/r.n)));S.points-=amt}
     S.fixDone[fid]={amt,at:Date.now()};if(r&&r.q!=null)fixAdd(r.q);ch=true}
-  return ch}
+  if(ch)save();return ch}
 // ほかの教科に なおしが来ているか（同じ端末なので その教科の保存を見る）
 function otherFix(){
   for(const raw of Object.values(fixMap)){let f;try{f=JSON.parse(raw)}catch(e){continue}if(f.app===APP||!APP_KEYS[f.app])continue;
@@ -2807,6 +2826,22 @@ async function claimAdmin(w){const k=rid(40);
     if(r.ok&&(await r.json()).ok){w.admin=k;save();return true}}catch(e){}return false}
 async function fetchDec(id){try{const r=await fetch(SYNC_URL+'?dec=1&id='+id,{cache:'no-store'});if(r.ok)return await r.json()}catch(e){}return {admin:false,dec:{}}}
 // おねがい（連携を切って 財布が別々なら ひっさんの分も）
+// ポイントのプレゼント（管理する人だけ）：お手伝い・特別な日などに
+function openGift(){const w=S.watch.find(w=>w.id===HS.id);if(!w||!w.admin)return;let pt=50,msg='';
+  const app=HS.hissan&&HS.hissan.sep&&wvTab==='hissan'?'hissan':'kanji'; // 財布が別々なら 見ている教科へ
+  linkModal(`<p style="font-size:20px;font-weight:800;margin:0">ポイントをプレゼント</p>
+    <div class="gift-pts">${[10,30,50,100,200].map(v=>`<button class="seg ${v===pt?'on':''}" data-gp="${v}">${v}pt</button>`).join('')}</div>
+    <input class="nm gift-msg" maxlength="40" placeholder="ひとこと（例：お手伝いありがとう）" autocomplete="off">
+    <p style="font-size:13px;font-weight:500;margin:0;text-align:left">子どもが次にアプリを開くと「おうちの人から プレゼント！」と出て、ポイントが入ります。${HS.hissan&&HS.hissan.sep?`（送り先：${app==='hissan'?'ひっさん':'かんじ'}）`:''}</p>`,
+    [{t:'やめる',cls:'white'},{t:'送る',on:()=>sendGift(app,pt,msg)}]);
+  const m=[...document.querySelectorAll('.modal.link-intro')].pop();
+  m.querySelectorAll('[data-gp]').forEach(b=>b.onclick=()=>{pt=+b.dataset.gp;m.querySelectorAll('[data-gp]').forEach(x=>x.classList.toggle('on',x===b))});
+  m.querySelector('.gift-msg').oninput=e=>{msg=e.target.value}}
+async function sendGift(app,pt,msg){const w=S.watch.find(w=>w.id===HS.id);if(!w||!w.admin)return;
+  try{const r=await fetch(SYNC_URL,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({act:'gift',id:HS.id,admin:w.admin,gift:{gid:rid(12),pt,msg:msg.trim(),app}})});
+    if(!r.ok)throw 0;sfx('reveal');
+    linkModal(`<p style="font-size:18px;font-weight:800;margin:0">+${pt}pt を送りました</p><p style="font-size:14px;font-weight:500;margin:0">子どもが次にアプリを開くと受けとれます。</p>`,[{t:'OK'}])}
+  catch(e){linkModal('<p style="font-size:16px;margin:0">送れませんでした。電波のよいところで もう一度どうぞ。</p>',[{t:'OK'}])}}
 // なおし（管理する人だけ）：○ の問題を「まちがい」にして、子どもの端末に なおしを送る
 const fixesOf=()=>Object.entries((HS&&HS.fix)||{}).map(([fid,raw])=>{try{return {fid,...JSON.parse(raw)}}catch(e){return null}}).filter(Boolean);
 function fixUI(app,s,it){if(it.fx)return `<span class="fx-tag done">おうちの人が ×に（なおし）</span>`;if(!HS)return '';const i=s.items.indexOf(it);
@@ -2864,7 +2899,7 @@ function renderWatchHead(){const H=HS,el=$('wvHead'),hh=wvH(),sep=!!(H.hissan&&H
     ${isAdm?`<div class="adm">このスマホが「管理する人」です。ごほうびのOKと編集ができます。</div>`:''}
     ${pend.length?`<div class="reqs" style="padding:0"><h3>ごほうびのおねがい</h3>${pend.map((q,i)=>`<div class="rq"><div class="t">${esc(q.name)}<small>${q.cost}pt・${dLabel(dkey(new Date(q.at)))} ${hhmm(q.at)}</small></div>
       ${isAdm?`<button class="btn white" data-dq="${i}" data-ok="0">ダメ</button><button class="btn green" data-dq="${i}" data-ok="1">OK</button>`:`<span class="st wait">OKまち</span>`}</div>`).join('')}</div>`:''}
-    <div class="now-pt"><span class="now-l">今のポイント${sep?(hh?'（ひっさん）':'（かんじ）'):''}</span><span class="now-v"><span class="coin"></span><span class="pixel">${h.points||0}</span><small>pt</small></span></div></div>
+    <div class="now-pt"><span class="now-l">今のポイント${sep?(hh?'（ひっさん）':'（かんじ）'):''}</span><span class="now-v"><span class="coin"></span><span class="pixel">${h.points||0}</span><small>pt</small></span></div>${isAdm?`<button class="btn white small gift-btn" id="wvGift">ポイントをプレゼント</button>`:''}</div>
     <div class="panel wv">${g?`<div class="goal-head"><span>${esc(g.name)} まで</span><span class="pixel">${left?`あと ${left}pt`:'交換できる！'}</span></div><div class="bar"><i style="width:${Math.min(100,(h.points||0)/g.cost*100)}%"></i><span>${h.points||0} / ${g.cost}</span></div>`:''}
     ${tkHTML(h)}
     <div class="wv-edhost"></div></div>`;
@@ -2877,6 +2912,7 @@ function renderWatchHead(){const H=HS,el=$('wvHead'),hh=wvH(),sep=!!(H.hissan&&H
   $('wvReload').onclick=()=>openWatch(h.id);
   $('wvSub').querySelectorAll('[data-wt]').forEach(b=>b.onclick=()=>{wvTab=b.dataset.wt;sfx('tap');renderHistory()});
   if(isAdm){const eb=document.createElement('button');eb.className='btn white';eb.textContent='ごほうびを編集';eb.onclick=()=>edOpen('remote',h.shop||[]);el.querySelector('.wv-edhost').appendChild(eb)}
+  if($('wvGift'))$('wvGift').onclick=openGift;
   el.querySelectorAll('[data-dq]').forEach(b=>b.onclick=()=>{const q=pend[+b.dataset.dq],ok=b.dataset.ok==='1';
     if(ok)decide(q,true);else ask(`${q.name}のおねがいをことわる？ ポイントは戻ります。`,'ことわる',()=>decide(q,false))})}
 async function openWatch(id){
